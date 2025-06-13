@@ -2,7 +2,7 @@
   "name": "home",
   "account_id": "e6d1d3836313d85a258d7a069cb6cfc5",
   "zone_id": "87786b2c6de023192af2486311520a6d",
-  "route": "*.danielslaugh.com/*",
+  "routes": ["danielslaugh.com/*", "*.danielslaugh.com/*"],
   "workers_dev": false,
   "compatibility_date": "2025-04-01",
   "compatibility_flags": ["nodejs_compat"],

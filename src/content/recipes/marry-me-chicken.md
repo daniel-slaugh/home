@@ -44,7 +44,7 @@ ingredients:
   - name: "Parmesan Cheese, freshly grated"
     quantity: 0.75
     unit: "cup"
-pubDate: "Jul 08 2022"
+pubDate: "Jun 16 2025"
 heroImage: "/chicken-orzo.jpg"
 ---
 

@@ -1,9 +1,9 @@
 ---
 title: "Soft Pretzels"
 description: "Homemade soft pretzels with a baking-soda bath and coarse sea salt"
-serves: 10
-prepTime: "15 min"
-cookTime: "30 min"
+serves: 12
+prepTime: "25 min"
+cookTime: "15 min"
 ingredients:
   # Dough
   - name: "Warm water (lukewarm– no need to take temperature but around 100°F (38°C) is great)"

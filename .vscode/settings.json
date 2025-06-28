@@ -1,0 +1,18 @@
+{
+  // globally enable format-on-save
+  "editor.formatOnSave": true,
+
+  // pick your default formatter (Prettier) when you format
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+
+  // for Astro files, explicitly use Prettier’s Astro plugin
+  "[astro]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+
+  // if you want ESLint to auto-fix on save too:
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "explicit",
+    "source.fixAll.eslint": "explicit"
+  }
+}

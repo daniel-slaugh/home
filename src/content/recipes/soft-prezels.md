@@ -11,10 +11,10 @@ ingredients:
     unit: 'cup'
   - name: 'Instant or active dry yeast'
     quantity: 2.25
-    unit: 'teaspoon'
+    unit: 'tsp'
   - name: 'Salt'
     quantity: 1
-    unit: 'teaspoon'
+    unit: 'tsp'
   - name: 'Brown sugar'
     quantity: 1
     unit: 'Tablespoon'
@@ -52,7 +52,7 @@ heroImage: '/soft-pretzels.jpg'
 - [[Unsalted butter, melted and slightly cool]]
 - Gradually stir in [[All-purpose flour]]: start with 3 cups, then add ¾ cup more until dough is no longer sticky (up to an additional ¼–½ cup if needed). Dough should bounce back when poked.
 
-2. Knead in a stand mixer with dough hook for 5 minutes (or by hand on a lightly floured surface for 5 minutes), adding flour teaspoon-by-teaspoon if it sticks. Dough should be soft and pass the windowpane test (thin stretch without tearing).
+2. Knead in a stand mixer with dough hook for 5 minutes (or by hand on a lightly floured surface for 5 minutes), adding flour tsp-by-tsp if it sticks. Dough should be soft and pass the windowpane test (thin stretch without tearing).
 
 3. Shape dough into a ball, cover lightly with a towel, and let rest 10 minutes. Meanwhile, preheat oven to 400°F and line two baking sheets with silicone mats or greased parchment.
 

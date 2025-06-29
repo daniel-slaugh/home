@@ -19,16 +19,16 @@ ingredients:
     unit: 'cup'
   - name: 'Italian seasoning'
     quantity: 2
-    unit: 'teaspoon'
+    unit: 'tsp'
   - name: 'Paprika'
     quantity: 2
-    unit: 'teaspoon'
+    unit: 'tsp'
   - name: 'Kosher Salt'
     quantity: 0.5
-    unit: 'teaspoon'
+    unit: 'tsp'
   - name: 'Ground Black Pepper'
     quantity: 1
-    unit: 'teaspoon'
+    unit: 'tsp'
   - name: 'Orzo'
     quantity: 1
     unit: 'cup'

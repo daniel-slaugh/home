@@ -5,22 +5,22 @@ serves: 4
 prepTime: '10 min'
 cookTime: '15 min'
 ingredients:
-  - title: patty
+  - title: Patty
   - name: 'chopped onion'
     quantity: 0.25
     unit: 'cup'
   - name: 'BBQ sauce'
     quantity: 2
-    unit: 'tablespoons'
+    unit: 'Tbsp'
   - name: 'dried breadcrumbs'
     quantity: 2
-    unit: 'tablespoons'
+    unit: 'Tbsp'
   - name: 'mustard'
     quantity: 2
-    unit: 'teaspoons'
+    unit: 'tsp'
   - name: 'chilli powder'
     quantity: 0.75
-    unit: 'teaspoon'
+    unit: 'tsp'
   - name: 'ground turkey'
     quantity: 1
     unit: 'pound'

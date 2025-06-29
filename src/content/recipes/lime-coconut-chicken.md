@@ -26,16 +26,16 @@ ingredients:
     unit: 'cup'
   - name: 'Curry powder'
     quantity: 4
-    unit: 'teaspoon'
+    unit: 'tsp'
   - name: 'Ground coriander'
     quantity: 1
     unit: 'tablespoon'
   - name: 'Salt'
     quantity: 2
-    unit: 'teaspoon'
+    unit: 'tsp'
   - name: 'Ground cumin'
     quantity: 2
-    unit: 'teaspoon'
+    unit: 'tsp'
   - name: 'Cayenne pepper'
     quantity: 1
     unit: 'pinch'
@@ -52,7 +52,7 @@ ingredients:
     unit: 'cup'
   - name: 'Salt'
     quantity: 1
-    unit: 'teaspoon'
+    unit: 'tsp'
 
   - title: Garnish
   - name: 'chopped fresh cilantro'

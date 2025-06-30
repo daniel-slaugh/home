@@ -8,7 +8,7 @@ ingredients:
   - title: Ingredients
   - name: 'butter'
     quantity: 2
-    unit: 'tbsp'
+    unit: 'Tbsp'
   - name: 'baby portabella mushrooms, sliced'
     quantity: 12
     unit: 'oz'
@@ -29,7 +29,7 @@ ingredients:
     unit: 'oz'
   - name: 'Worcestershire sauce'
     quantity: 1
-    unit: 'tbsp'
+    unit: 'Tbsp'
   - name: 'all-purpose flour'
     quantity: 0.25
     unit: 'cup'

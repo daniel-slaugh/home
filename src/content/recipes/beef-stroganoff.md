@@ -24,7 +24,7 @@ ingredients:
   - name: 'beef broth'
     quantity: 1.5
     unit: 'cup'
-  - name: 'cream of mushrooms soup'
+  - name: 'cream of mushroom soup'
     quantity: 10.5
     unit: 'oz'
   - name: 'Worcestershire sauce'
@@ -37,7 +37,7 @@ ingredients:
     quantity: 4
     unit: 'oz'
   - name: 'sour cream'
-    quantity: 1
+    quantity: .25
     unit: 'cup'
   - name: 'red pepper flakes'
     quantity: 0.25
@@ -55,24 +55,36 @@ pubDate: 'Jun 29 2025'
 heroImage: '/beef-stroganoff.jpg'
 ---
 
-1. Cook [[egg noodles]] in a large pot.
+1. Whisk [[all-purpose flour]] with the [[beef broth]] until smooth. Set aside.
 
-2. While the noodles are cooking, melt [[butter]] in a 10-inch cast iron skillet over medium heat.
+2. Cook the following ingredients in a 10-inch cast iron skillet over medium heat for about 5-7 minutes,
+   until onions are clear.
 
-3. Add [[baby portabella mushrooms, sliced]], [[onion, chopped]], and [[garlic, minced]]; cook 5–7 minutes, stirring occasionally, until tender. Transfer to a small bowl and set aside.
-4. Increase heat to medium-high. Add [[lean ground beef]]; cook 5–7 minutes, stirring frequently and breaking it up, until no longer pink and lightly browned. Drain excess fat.
-5. Stir in:
+- [[butter]]
+- [[baby portabella mushrooms, sliced]]
+- [[onion, chopped]]
+- [[garlic, minced]]
 
-- 1 cup of the [[beef broth]]
+3. Add [[lean ground beef]]
+4. Increase heat to medium high, stirring frequently, until ground beef is no longer pink and lightly browned.
+5. Drain excess fat.
+
+6. Start cooking [[egg noodles]] in a large pot.
+
+7. Stir in:
+
+- The flour broth mixture you made in step 1.
 - [[Worcestershire sauce]]
 - [[red pepper flakes]]
 - [[salt]]
 - [[black pepper]]
 
-5. bring to a boil.
+8. Bring to a boil.
 
-6. Whisk [[all-purpose flour]] with the remaining 0.5 cup of [[beef broth]] until smooth. Stir this mixture into the beef mixture, then add [[cream of mushrooms soup]] and combine.
-7. Add [[cream cheese, cut into cubes and at room temperature]] and stir until melted and fully incorporated.
-8. Return the reserved mushroom mixture to the skillet and stir; bring back to a simmer.
-9. Remove from heat and stir in [[sour cream]] until fully combined.
-10. Spoon over [[cooked egg noodles]] and garnish with chopped parsley, if desired.
+9. Stir in:
+
+- [[cream of mushroom soup]]
+- [[cream cheese, cut into cubes and at room temperature]] and stir until melted and fully incorporated.
+
+10. Remove from heat and stir in [[sour cream]] until fully combined.
+11. Spoon over [[cooked egg noodles]] and garnish with chopped parsley, if desired.

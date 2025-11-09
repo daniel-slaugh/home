@@ -1,0 +1,502 @@
+---
+import spells from '../data/spells.json'
+
+// Derive unique schools & levels (sorted)
+const schools = Array.from(new Set(spells.map((s) => s.school)))
+  .filter(Boolean)
+  .sort()
+const levels = Array.from(new Set(spells.map((s) => s.level)))
+  .filter((v) => v !== null && v !== undefined)
+  .sort((a, b) => a - b)
+
+// Utility: precompute safe IDs for data-attrs
+const toKey = (s) =>
+  String(s)
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9\-]/g, '')
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Spells</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      :root {
+        --hp-bg: #f7f3e8; /* parchment */
+        --hp-ink: #231f1a; /* dark ink */
+        --hp-gold: #c9a227; /* accent */
+        --hp-red: #7a1f1f; /* accent */
+        --chip: #efe6cf;
+        --chip-h: #e6dab6;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        color: var(--hp-ink);
+        background: var(--hp-bg);
+        font-family: 'Cormorant Garamond', 'Garamond', 'Georgia', serif;
+        line-height: 1.45;
+      }
+      .container {
+        max-width: 1100px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+      }
+
+      header h1 {
+        font-size: clamp(2rem, 1.6rem + 2vw, 3rem);
+        letter-spacing: 0.02em;
+        margin: 0 0 0.5rem;
+      }
+      header p {
+        margin: 0.2rem 0 1.2rem;
+        color: #554;
+      }
+      .scroll-shadow {
+        position: sticky;
+        top: 0;
+        background: linear-gradient(var(--hp-bg), var(--hp-bg));
+        padding: 0.8rem 0 1rem;
+        z-index: 5;
+        border-bottom: 1px solid #dacfb6;
+      }
+
+      /* Filter bar */
+      .filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem 1rem;
+        align-items: center;
+      }
+      .group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem 0.5rem;
+        align-items: center;
+      }
+      .group-title {
+        font-variant: small-caps;
+        letter-spacing: 0.06em;
+        color: #533;
+        margin-right: 0.3rem;
+      }
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.3rem 0.6rem;
+        border: 1px solid #cbbd9a;
+        border-radius: 999px;
+        background: var(--chip);
+        cursor: pointer;
+        user-select: none;
+        font-size: 0.95rem;
+        transition:
+          transform 0.05s ease,
+          background 0.15s ease;
+      }
+      .chip:hover {
+        background: var(--chip-h);
+      }
+      .chip[data-active='true'] {
+        background: #e9d9a4;
+        border-color: var(--hp-gold);
+        box-shadow: inset 0 0 0 1px var(--hp-gold);
+      }
+      .toggle {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+      }
+      .checkbox {
+        width: 18px;
+        height: 18px;
+        border: 1px solid #b9a77e;
+        border-radius: 4px;
+        background: #fff;
+        display: inline-block;
+        position: relative;
+        cursor: pointer;
+      }
+      .checkbox[data-checked='true']::after {
+        content: '';
+        position: absolute;
+        inset: 3px;
+        background: var(--hp-gold);
+        border-radius: 2px;
+      }
+      .search {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.35rem 0.6rem;
+        border: 1px solid #cbbd9a;
+        background: #fffdf7;
+        border-radius: 10px;
+      }
+      .search input {
+        border: none;
+        outline: none;
+        background: transparent;
+        min-width: 10ch;
+        font-size: 1rem;
+      }
+      .clear {
+        margin-left: 0.5rem;
+        background: none;
+        border: none;
+        color: var(--hp-red);
+        text-decoration: underline;
+        cursor: pointer;
+        font-size: 0.95rem;
+      }
+
+      /* Summary */
+      .summary {
+        margin: 0.7rem 0 0;
+        font-size: 0.95rem;
+        color: #665;
+      }
+
+      /* Cards */
+      .grid {
+        display: grid;
+        gap: 1rem;
+        margin: 1.2rem 0 3rem;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      }
+      .card {
+        background: #fffdf7;
+        border: 1px solid #d8ccad;
+        border-radius: 14px;
+        padding: 1rem 1rem 0.9rem;
+        position: relative;
+        box-shadow:
+          0 1px 0 #e6dcc5,
+          0 4px 20px rgba(0, 0, 0, 0.04);
+      }
+      .card::before {
+        content: '';
+        position: absolute;
+        inset: 6px;
+        border: 1px dashed #d8ccad;
+        border-radius: 10px;
+        pointer-events: none;
+      }
+      .title {
+        margin: 0 0 0.15rem;
+        font-size: 1.25rem;
+        letter-spacing: 0.02em;
+      }
+      .subtitle {
+        margin: 0 0 0.6rem;
+        color: #624;
+        font-style: italic;
+        font-size: 1rem;
+      }
+      .badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.35rem;
+        margin-bottom: 0.6rem;
+      }
+      .badge {
+        border: 1px solid #ccb78f;
+        background: #fffaf0;
+        border-radius: 999px;
+        padding: 0.15rem 0.5rem;
+        font-size: 0.85rem;
+      }
+      .badge.gold {
+        border-color: var(--hp-gold);
+        background: #fff8d9;
+      }
+      .meta {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.35rem 0.8rem;
+        margin: 0.6rem 0 0.4rem;
+        font-size: 0.95rem;
+      }
+      .meta b {
+        font-variant: small-caps;
+        letter-spacing: 0.06em;
+        color: #433;
+      }
+      .desc {
+        margin-top: 0.4rem;
+        padding-top: 0.6rem;
+        border-top: 1px solid #eadfc7;
+        white-space: pre-wrap;
+      }
+
+      /* Tiny “ornament line” under H1 */
+      .ornament {
+        height: 6px;
+        margin: 0.4rem 0 0;
+        background: linear-gradient(
+          90deg,
+          transparent 0,
+          transparent 10%,
+          var(--hp-gold) 10%,
+          var(--hp-gold) 90%,
+          transparent 90%,
+          transparent 100%
+        );
+        border-radius: 6px;
+      }
+
+      /* Hide helper */
+      .hidden {
+        display: none !important;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>Wands & Wizards Spells</h1>
+        <div class="ornament"></div>
+        <p>
+          A searchable index of cantrips and spells. Toggle filters to quickly
+          find what your character can learn.
+        </p>
+      </header>
+
+      <div class="scroll-shadow">
+        <div class="filters" id="filters">
+          <div class="group">
+            <span class="group-title">Level</span>
+            {
+              levels.map((level) => (
+                <button
+                  class="chip"
+                  data-chip="level"
+                  data-value={String(level)}
+                >
+                  {level === 0 ? 'Cantrip' : `${level}`}
+                </button>
+              ))
+            }
+          </div>
+
+          <div class="group">
+            <span class="group-title">School</span>
+            {
+              schools.map((s) => (
+                <button class="chip" data-chip="school" data-value={toKey(s)}>
+                  {s}
+                </button>
+              ))
+            }
+          </div>
+
+          <div class="group toggle" id="toggle-restricted">
+            <span class="group-title">Subclass only</span>
+            <span
+              class="checkbox"
+              data-check="restricted"
+              data-checked="false"
+              role="checkbox"
+              aria-checked="false"
+              tabindex="0"></span>
+          </div>
+
+          <div class="search">
+            <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"
+              ><path
+                d="M21 21l-4.2-4.2m1.7-5.1A7.5 7.5 0 1 1 4 6.5 7.5 7.5 0 0 1 18.5 11.7z"
+                fill="none"
+                stroke="#6b5"
+                stroke-width="1.5"
+                stroke-linecap="round"></path></svg
+            >
+            <input id="q" type="search" placeholder="Search…" />
+            <button class="clear" id="clear">Clear</button>
+          </div>
+        </div>
+        <div class="summary" id="summary"></div>
+      </div>
+
+      <div class="grid" id="grid">
+        {
+          spells.map((s) => {
+            const levelLabel = s.level === 0 ? 'Cantrip' : `${s.level}`
+            const schoolKey = toKey(s.school)
+            const title = s.english_title ?? ''
+            const restricted = !!s.subclassRestricted
+            const tags = (s.tags ?? []).filter(Boolean)
+            return (
+              <article
+                class="card"
+                data-level={String(s.level ?? '')}
+                data-school={schoolKey}
+                data-restricted={restricted ? 'true' : 'false'}
+                data-name={s.name.toLowerCase()}
+              >
+                <h3 class="title">
+                  {s.name}
+                  {restricted ? ' *' : ''}
+                </h3>
+                {title && <div class="subtitle">{title}</div>}
+                <div class="badges">
+                  <span class="badge gold">{s.school}</span>
+                  <span class="badge">{levelLabel}</span>
+                  {restricted && <span class="badge">Subclass-only</span>}
+                  {tags.map((t) => (
+                    <span class="badge" data-tag={toKey(t)}>
+                      {t}
+                    </span>
+                  ))}
+                </div>
+                <div class="meta">
+                  <div>
+                    <>
+                      <b>Casting Time</b>
+                      <div>{s.casting_time ?? '—'}</div>
+                    </>
+                  </div>
+                  <div>
+                    <>
+                      <b>Range</b>
+                      <div>{s.range ?? '—'}</div>
+                    </>
+                  </div>
+                  <div>
+                    <>
+                      <b>Duration</b>
+                      <div>{s.duration ?? '—'}</div>
+                    </>
+                  </div>
+                  <div>
+                    <>
+                      <b>Traits</b>
+                      <div>
+                        {(s.ritual ? 'Ritual ' : '') +
+                          (s.concentration ? 'Concentration ' : '') +
+                          (s.dedication ? 'Dedication ' : '') || '—'}
+                      </div>
+                    </>
+                  </div>
+                </div>
+                <div class="desc">{s.description ?? ''}</div>
+              </article>
+            )
+          })
+        }
+      </div>
+    </div>
+
+    <script>
+      // @ts-nocheck
+      // Lightweight client-side filtering
+      ;(function () {
+        const grid = document.getElementById('grid')
+        const cards = Array.from(grid.querySelectorAll('.card'))
+        const chips = Array.from(document.querySelectorAll('.chip'))
+        const check = document.querySelector(
+          '.checkbox[data-check="restricted"]',
+        )
+        const search = document.getElementById('q')
+        const clearBtn = document.getElementById('clear')
+        const summary = document.getElementById('summary')
+
+        const state = {
+          levels: new Set(), // numbers as strings: "0","1",...
+          schools: new Set(), // school keys (kebab)
+          restrictedOnly: false,
+          q: '',
+        }
+
+        function applyFilters() {
+          const q = state.q.trim().toLowerCase()
+          let shown = 0
+
+          cards.forEach((card) => {
+            const lvl = card.dataset.level
+            const sch = card.dataset.school
+            const isRes = card.dataset.restricted === 'true'
+            const name = card.dataset.name
+            const text = card.innerText.toLowerCase()
+
+            const passLevel = state.levels.size ? state.levels.has(lvl) : true
+            const passSchool = state.schools.size
+              ? state.schools.has(sch)
+              : true
+            const passRestricted = state.restrictedOnly ? isRes : true
+            const passQuery = q ? name.includes(q) || text.includes(q) : true
+
+            const show = passLevel && passSchool && passRestricted && passQuery
+            card.classList.toggle('hidden', !show)
+            if (show) shown++
+          })
+
+          summary.textContent = shown + ' / ' + cards.length + ' spells'
+        }
+
+        // Chip toggles
+        chips.forEach((chip) => {
+          chip.addEventListener('click', () => {
+            const type = chip.dataset.chip // "level" | "school"
+            const val = chip.dataset.value
+            const set = type === 'level' ? state.levels : state.schools
+
+            if (set.has(val)) set.delete(val)
+            else set.add(val)
+            chip.dataset.active = set.has(val) ? 'true' : 'false'
+            applyFilters()
+          })
+        })
+
+        // Restricted checkbox
+        function toggleRestricted() {
+          state.restrictedOnly = !state.restrictedOnly
+          check.dataset.checked = state.restrictedOnly ? 'true' : 'false'
+          check.setAttribute(
+            'aria-checked',
+            state.restrictedOnly ? 'true' : 'false',
+          )
+          applyFilters()
+        }
+        check.addEventListener('click', toggleRestricted)
+        check.addEventListener('keydown', (e) => {
+          if (e.key === ' ' || e.key === 'Enter') {
+            e.preventDefault()
+            toggleRestricted()
+          }
+        })
+
+        // Search
+        let t
+        search.addEventListener('input', () => {
+          clearTimeout(t)
+          t = setTimeout(() => {
+            state.q = search.value || ''
+            applyFilters()
+          }, 120)
+        })
+
+        // Clear all
+        clearBtn.addEventListener('click', () => {
+          state.levels.clear()
+          state.schools.clear()
+          state.restrictedOnly = false
+          state.q = ''
+          chips.forEach((c) => (c.dataset.active = 'false'))
+          check.dataset.checked = 'false'
+          check.setAttribute('aria-checked', 'false')
+          search.value = ''
+          applyFilters()
+        })
+
+        // Initial
+        applyFilters()
+      })()
+    </script>
+  </body>
+</html>

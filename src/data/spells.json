@@ -1856,7 +1856,7 @@
     "range": "60 feet",
     "duration": "1 minute",
     "tags": [],
-    "description": "Choose up to five falling creatures within range. A falling creature's rate of descent slows to 60 feet per round until the spell ends. If the creature lands before the spell ends, it takes no falling damage and can land on its feet, and the spell ends for that creature. Part 2 | Spells 66 This is unofficial Fan Content permitted under the Fan Content Policy. Not approved/endorsed by Wizards. Portions of the materials used are property of Wizards of the Coast. ©Wizards of the Coast LLC.",
+    "description": "Choose up to five falling creatures within range. A falling creature's rate of descent slows to 60 feet per round until the spell ends. If the creature lands before the spell ends, it takes no falling damage and can land on its feet, and the spell ends for that creature.",
     "subclassRestricted": false
   },
   {
@@ -1871,7 +1871,7 @@
     "range": "60 feet",
     "duration": "1 round",
     "tags": [],
-    "description": "When struck by this spell, a being can't help but belt out a couple of lines from the first song that comes to mind. Make a ranged spell attack against a being within range. On a hit, the target must cast all other spells non-verbally until the end of its next turn. If it tries to cast a spell verbally, it must first succeed on an Intelligence saving throw, or the casting fails and the spell is wasted. Part 2 | Spells 67 This is unofficial Fan Content permitted under the Fan Content Policy. Not approved/endorsed by Wizards. Portions of the materials used are property of Wizards of the Coast. ©Wizards of the Coast LLC.",
+    "description": "When struck by this spell, a being can't help but belt out a couple of lines from the first song that comes to mind. Make a ranged spell attack against a being within range. On a hit, the target must cast all other spells non-verbally until the end of its next turn. If it tries to cast a spell verbally, it must first succeed on an Intelligence saving throw, or the casting fails and the spell is wasted.",
     "subclassRestricted": false
   },
   {
@@ -1886,7 +1886,7 @@
     "range": "30 feet",
     "duration": "1 hour",
     "tags": [],
-    "description": "You change the color of any target within range that lasts for the duration, to any desired complexity. The color may only be reverted by dispelling the charm. Physical interaction with the object reveals that the object has retained its original texture and material, but its color has truly changed. Part 2 | Spells 68 This is unofficial Fan Content permitted under the Fan Content Policy. Not approved/endorsed by Wizards. Portions of the materials used are property of Wizards of the Coast. ©Wizards of the Coast LLC.",
+    "description": "You change the color of any target within range that lasts for the duration, to any desired complexity. The color may only be reverted by dispelling the charm. Physical interaction with the object reveals that the object has retained its original texture and material, but its color has truly changed.",
     "subclassRestricted": false
   },
   {
@@ -1901,7 +1901,7 @@
     "range": "30 feet",
     "duration": "Dedication, up to 1 minute",
     "tags": ["Dark - Unforgivable Curse"],
-    "description": "With a single word and a heart full of hatred, waves of intense pain assail one creature you can see within range. If the target has 100 hit points or fewer, it is subject to crippling pain. Otherwise, the spell has no effect on it. While the target is affected by crippling pain, any speed it has can be no higher than 10 feet. The target also has disadvantage on attack rolls, ability checks, and saving throws, other than Constitution saving throws. Finally, if the target tries to cast a spell, it must first succeed on a Constitution saving throw, or the casting fails and the spell is wasted. A target suffering this pain must make a Constitution saving throw at the end of each of its turns. On a failed save, the target gains one level of exhaustion. Part 2 | Spells 69 This is unofficial Fan Content permitted under the Fan Content Policy. Not approved/endorsed by Wizards. Portions of the materials used are property of Wizards of the Coast. ©Wizards of the Coast LLC.",
+    "description": "With a single word and a heart full of hatred, waves of intense pain assail one creature you can see within range. If the target has 100 hit points or fewer, it is subject to crippling pain. Otherwise, the spell has no effect on it. While the target is affected by crippling pain, any speed it has can be no higher than 10 feet. The target also has disadvantage on attack rolls, ability checks, and saving throws, other than Constitution saving throws. Finally, if the target tries to cast a spell, it must first succeed on a Constitution saving throw, or the casting fails and the spell is wasted. A target suffering this pain must make a Constitution saving throw at the end of each of its turns. On a failed save, the target gains one level of exhaustion.",
     "subclassRestricted": false
   },
   {
@@ -1916,7 +1916,7 @@
     "range": "30 feet",
     "duration": "Instantaneous",
     "tags": [],
-    "description": "An object is precisely torn or cut, as if a magical blade extended from the tip of your wand. This spell was not designed to be used on creatures and only makes very shallow cuts. Choose a target you can see within range that fits within a 5-foot cube. If the target is a creature, it must make a Dexterity saving throw. It takes 4d4 slashing damage on a failed save or half as much damage on a successful one. This is the counterspell to incarcerous, immediately ending that spell's effects. At Higher Levels. When you cast this spell using a spell slot of 2nd level or higher, you can target one additional creature or the cube's size increases by 5 feet for each slot level above 1st. If targeting additional creatures, the targets must be within 10 feet of each other when you target them. Part 2 | Spells 70 This is unofficial Fan Content permitted under the Fan Content Policy. Not approved/endorsed by Wizards. Portions of the materials used are property of Wizards of the Coast. ©Wizards of the Coast LLC.",
+    "description": "An object is precisely torn or cut, as if a magical blade extended from the tip of your wand. This spell was not designed to be used on creatures and only makes very shallow cuts. Choose a target you can see within range that fits within a 5-foot cube. If the target is a creature, it must make a Dexterity saving throw. It takes 4d4 slashing damage on a failed save or half as much damage on a successful one. This is the counterspell to incarcerous, immediately ending that spell's effects. At Higher Levels. When you cast this spell using a spell slot of 2nd level or higher, you can target one additional creature or the cube's size increases by 5 feet for each slot level above 1st. If targeting additional creatures, the targets must be within 10 feet of each other when you target them.",
     "subclassRestricted": false
   },
   {
@@ -1961,7 +1961,7 @@
     "range": "90 feet",
     "duration": "Instantaneous",
     "tags": [],
-    "description": "The spell shoots out from your wand and a wave of thunderous force sweeps out from a point of your choice within range. Each creature in a 10-foot-radius sphere centered on that point must make a Constitution saving throw. On a failed save, a creature takes 4d8 thunder damage and is pushed 10 feet away from that point. On a successful save, the creature takes half as much damage and isn’t pushed. In addition, unsecured objects that are completely within the area of effect are automatically pushed 10 feet away from that point by the spell’s effect, and the spell emits a thunderous boom audible out to 100 feet. At Higher Levels. When you cast this spell using a spell slot of 4th level or higher, the damage increases by 1d8 for each slot level above 3rd. Part 2 | Spells 73 This is unofficial Fan Content permitted under the Fan Content Policy. Not approved/endorsed by Wizards. Portions of the materials used are property of Wizards of the Coast. ©Wizards of the Coast LLC.",
+    "description": "The spell shoots out from your wand and a wave of thunderous force sweeps out from a point of your choice within range. Each creature in a 10-foot-radius sphere centered on that point must make a Constitution saving throw. On a failed save, a creature takes 4d8 thunder damage and is pushed 10 feet away from that point. On a successful save, the creature takes half as much damage and isn’t pushed. In addition, unsecured objects that are completely within the area of effect are automatically pushed 10 feet away from that point by the spell’s effect, and the spell emits a thunderous boom audible out to 100 feet. At Higher Levels. When you cast this spell using a spell slot of 4th level or higher, the damage increases by 1d8 for each slot level above 3rd.",
     "subclassRestricted": false
   },
   {
@@ -2036,7 +2036,7 @@
     "range": "60 feet",
     "duration": "Instantaneous",
     "tags": [],
-    "description": "This will make a person's legs so unsteady and weak that they aren't able to keep their balance. Make a ranged spell attack against a being within range. On a hit, the target is knocked prone. Part 2 | Spells 79 This is unofficial Fan Content permitted under the Fan Content Policy. Not approved/endorsed by Wizards. Portions of the materials used are property of Wizards of the Coast. ©Wizards of the Coast LLC.",
+    "description": "This will make a person's legs so unsteady and weak that they aren't able to keep their balance. Make a ranged spell attack against a being within range. On a hit, the target is knocked prone.",
     "subclassRestricted": false
   },
   {
@@ -2051,7 +2051,7 @@
     "range": "60 feet",
     "duration": "Concentration, up to 1 minute",
     "tags": [],
-    "description": "This terrifying spell transforms the victim's bogies (or boogers) into nasty green bats that crawl out of their nose and attack. Make a ranged spell attack against a being within range. On a hit, the target and any hostile creatures within 5 feet of the target take 6d4 slashing damage. At the start of the target's turn and when any hostile creature starts its turn within 5 feet of the target, it takes 3d4 slashing damage. If any creature has to make a saving throw to maintain concentration because of this spell's damage, the saving throw is made at disadvantage. At Higher Levels. When you cast this spell using a spell slot of 5th level or higher, the initial damage increases by 2d4 for each slot level above 4th. Part 2 | Spells 80 This is unofficial Fan Content permitted under the Fan Content Policy. Not approved/endorsed by Wizards. Portions of the materials used are property of Wizards of the Coast. ©Wizards of the Coast LLC.",
+    "description": "This terrifying spell transforms the victim's bogies (or boogers) into nasty green bats that crawl out of their nose and attack. Make a ranged spell attack against a being within range. On a hit, the target and any hostile creatures within 5 feet of the target take 6d4 slashing damage. At the start of the target's turn and when any hostile creature starts its turn within 5 feet of the target, it takes 3d4 slashing damage. If any creature has to make a saving throw to maintain concentration because of this spell's damage, the saving throw is made at disadvantage. At Higher Levels. When you cast this spell using a spell slot of 5th level or higher, the initial damage increases by 2d4 for each slot level above 4th.",
     "subclassRestricted": false
   },
   {
@@ -2066,7 +2066,7 @@
     "range": "30 feet",
     "duration": "Concentration, up to 1 minute",
     "tags": ["School of Magic - Charms"],
-    "description": "You attempt to reshape another being's memories. One being you can see within range must make a Wisdom saving throw. If you are fighting the creature, it has advantage on the saving throw. On a failed save, the target becomes charmed by you for the duration. The charmed target is incapacitated and unaware of its surroundings, though it can still hear you. If it takes any damage or is targeted by another spell, this spell ends, and none of the target's memories are modified. You can eliminate the target's memory of an event or detail (or any individual aspect of that event or detail) that it experienced or perceived within the last 24 hours and that lasted no more than 10 minutes. You must mentally describe or visualize how the memories are affected. The being's mind fills in any gaps in the details of your description. If the spell ends before you have finished describing or visualizing the modified memories, the target’s memory isn’t altered. Otherwise, the modified memories take hold when the spell ends. A modified memory doesn't necessarily affect how a being behaves, particularly if the memory contradicts the creature's natural inclinations, alignment, or beliefs. An illogical modified memory, such as erasing all memory of how they were transported to and from a location, is dismissed by the target, perhaps as a bad dream. The HM might deem a modified memory too nonsensical to affect a being in a significant manner. A vulnera sanentur or obliviate spell cast on the target restores the creature's true memory. At Higher Levels. If you cast this spell using a spell slot of 6th level or higher, you can eliminate the target's memories of an event that took place up to 7 days ago (6th level), 30 days ago (7th level), 1 year ago (8th level), or any time in the creature's past (9th level). Alternatively, you can eliminate a detail or topic in all memories across those same time frames. Part 2 | Spells 81 This is unofficial Fan Content permitted under the Fan Content Policy. Not approved/endorsed by Wizards. Portions of the materials used are property of Wizards of the Coast. ©Wizards of the Coast LLC.",
+    "description": "You attempt to reshape another being's memories. One being you can see within range must make a Wisdom saving throw. If you are fighting the creature, it has advantage on the saving throw. On a failed save, the target becomes charmed by you for the duration. The charmed target is incapacitated and unaware of its surroundings, though it can still hear you. If it takes any damage or is targeted by another spell, this spell ends, and none of the target's memories are modified. You can eliminate the target's memory of an event or detail (or any individual aspect of that event or detail) that it experienced or perceived within the last 24 hours and that lasted no more than 10 minutes. You must mentally describe or visualize how the memories are affected. The being's mind fills in any gaps in the details of your description. If the spell ends before you have finished describing or visualizing the modified memories, the target’s memory isn’t altered. Otherwise, the modified memories take hold when the spell ends. A modified memory doesn't necessarily affect how a being behaves, particularly if the memory contradicts the creature's natural inclinations, alignment, or beliefs. An illogical modified memory, such as erasing all memory of how they were transported to and from a location, is dismissed by the target, perhaps as a bad dream. The HM might deem a modified memory too nonsensical to affect a being in a significant manner. A vulnera sanentur or obliviate spell cast on the target restores the creature's true memory. At Higher Levels. If you cast this spell using a spell slot of 6th level or higher, you can eliminate the target's memories of an event that took place up to 7 days ago (6th level), 30 days ago (7th level), 1 year ago (8th level), or any time in the creature's past (9th level). Alternatively, you can eliminate a detail or topic in all memories across those same time frames.",
     "subclassRestricted": true
   },
   {
@@ -2081,7 +2081,7 @@
     "range": "Touch",
     "duration": "Concentration, up to 1 hour",
     "tags": [],
-    "description": "With a tap of a wand on the top of the head and a sensation of raw egg being broken where the wand was tapped, a creature becomes invisible until the spell ends. Anything the target is wearing or carrying is invisible as long as it is on the target’s person. The spell ends for a target that attacks or casts a spell. At Higher Levels. When you cast this spell using a spell slot of 3rd level or higher, you can target one additional creature for each slot level above 2nd. The targets must be within 5 feet of each other when you target them. Part 2 | Spells 82 This is unofficial Fan Content permitted under the Fan Content Policy. Not approved/endorsed by Wizards. Portions of the materials used are property of Wizards of the Coast. ©Wizards of the Coast LLC.",
+    "description": "With a tap of a wand on the top of the head and a sensation of raw egg being broken where the wand was tapped, a creature becomes invisible until the spell ends. Anything the target is wearing or carrying is invisible as long as it is on the target’s person. The spell ends for a target that attacks or casts a spell. At Higher Levels. When you cast this spell using a spell slot of 3rd level or higher, you can target one additional creature for each slot level above 2nd. The targets must be within 5 feet of each other when you target them.",
     "subclassRestricted": false
   },
   {
@@ -2096,7 +2096,7 @@
     "range": "Self",
     "duration": "Instantaneous",
     "tags": [],
-    "description": "Placing your wand flat in your open palm, this spell picks up the wand and points north, much like a compass. The spell's usefulness is situational, but often grants advantage on Wisdom (Survival) checks to not get lost outdoors. Part 2 | Spells 83 This is unofficial Fan Content permitted under the Fan Content Policy. Not approved/endorsed by Wizards. Portions of the materials used are property of Wizards of the Coast. ©Wizards of the Coast LLC.",
+    "description": "Placing your wand flat in your open palm, this spell picks up the wand and points north, much like a compass. The spell's usefulness is situational, but often grants advantage on Wisdom (Survival) checks to not get lost outdoors.",
     "subclassRestricted": false
   },
   {
@@ -2111,7 +2111,7 @@
     "range": "Self (60-foot-radius hemisphere)",
     "duration": "8 hours",
     "tags": ["Defensive"],
-    "description": "Frequently used around wizarding areas, this charm keeps Muggles away from dangerous situations or overtly magical locations. You enchant an area to suggest a course of activity and magically influence a non-magical human. Upon entering the warded area, the subject must make a Wisdom saving throw at disadvantage. On a failed save, it pursues a course of action that takes it away from the area of the spell. The subject's mind naturally thinks of the best reason to convince itself that it must depart, or barring an actual reason, invents an arbitrary emergency that demands its attention elsewhere. The spell's effect ends when the subject has either attended to the matter they thought of or when the subject has decided to take another course of action that does not involve entering the area of the spell. Part 2 | Spells 85 This is unofficial Fan Content permitted under the Fan Content Policy. Not approved/endorsed by Wizards. Portions of the materials used are property of Wizards of the Coast. ©Wizards of the Coast LLC.",
+    "description": "Frequently used around wizarding areas, this charm keeps Muggles away from dangerous situations or overtly magical locations. You enchant an area to suggest a course of activity and magically influence a non-magical human. Upon entering the warded area, the subject must make a Wisdom saving throw at disadvantage. On a failed save, it pursues a course of action that takes it away from the area of the spell. The subject's mind naturally thinks of the best reason to convince itself that it must depart, or barring an actual reason, invents an arbitrary emergency that demands its attention elsewhere. The spell's effect ends when the subject has either attended to the matter they thought of or when the subject has decided to take another course of action that does not involve entering the area of the spell.",
     "subclassRestricted": false
   },
   {

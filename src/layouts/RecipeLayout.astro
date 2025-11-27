@@ -1,139 +1,129 @@
 ---
 import type { CollectionEntry } from 'astro:content'
 
-import BaseHead from '../components/BaseHead.astro'
-import Header from '../components/Header.astro'
-import Footer from '../components/Footer.astro'
+import BaseLayout from './BaseLayout.astro'
 import FormattedDate from '../components/FormattedDate.astro'
 
 type Props = CollectionEntry<'recipes'>['data']
-const {
-  title,
-  description,
-  prepTime,
-  cookTime,
-  pubDate,
-  heroImage,
-  ingredients,
-  serves,
-} = Astro.props
+const { title, prepTime, cookTime, pubDate, heroImage, ingredients, serves } = Astro.props
 ---
 
-<html lang="en">
-  <head>
-    <BaseHead title={title} description={description} />
-    <style>
-      main {
-        width: calc(100% - 2em);
-        max-width: 100%;
-        margin: 0;
-      }
-      .hero-image {
-        width: 100%;
-        aspect-ratio: 2 / 1;
-        overflow: hidden;
-        border-radius: 12px;
-        box-shadow: var(--box-shadow);
-      }
-      .hero-image img {
-        width: 100%;
-        height: 100%;
-        display: block;
-        object-fit: cover;
-        object-position: 50% 50%;
-        border-radius: 0;
-        box-shadow: none;
-      }
-      .prose {
-        width: 720px;
-        max-width: calc(100% - 2em);
-        margin: auto;
-        padding: 1em;
-        color: rgb(var(--gray-dark));
-      }
-      .title {
-        margin-bottom: 1em;
-        padding: 1em 0;
-        text-align: center;
-        line-height: 1;
-      }
-      .title h1 {
-        margin: 0 0 0.5em 0;
-      }
-      .date {
-        margin-bottom: 0.5em;
-        color: rgb(var(--gray));
-      }
-      .last-updated-on {
-        font-style: italic;
-      }
+<BaseLayout>
+  <script>
+    import { IngredientScaler } from '../components/ingredient-scaler.ts'
+    customElements.define('ingredient-scaler', IngredientScaler)
+  </script>
 
-      .ingredient-text {
-        color: darkgreen;
-      }
+  <style>
+    main {
+      width: calc(100% - 2em);
+      max-width: 100%;
+      margin: 0;
+    }
+    .hero-image {
+      width: 100%;
+      aspect-ratio: 2 / 1;
+      overflow: hidden;
+      border-radius: 12px;
+      box-shadow: var(--box-shadow);
+    }
+    .hero-image img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+      object-position: 50% 50%;
+      border-radius: 0;
+      box-shadow: none;
+    }
+    .prose {
+      width: 720px;
+      max-width: calc(100% - 2em);
+      margin: auto;
+      padding: 1em;
+      color: rgb(var(--gray-dark));
+    }
+    .title {
+      margin-bottom: 1em;
+      padding: 1em 0;
+      text-align: center;
+      line-height: 1;
+    }
+    .title h1 {
+      margin: 0 0 0.5em 0;
+    }
+    .date {
+      margin-bottom: 0.5em;
+      color: rgb(var(--gray));
+    }
+    .last-updated-on {
+      font-style: italic;
+    }
 
-      #mult-controls label {
-        margin-right: 0.5em;
-      }
-      #multiplier-input {
-        width: 4em;
-        padding: 0.25em;
-        font-size: 1em;
-      }
-    </style>
-  </head>
+    .ingredient-text {
+      color: darkgreen;
+    }
 
-  <body>
-    <Header />
-    <main>
-      <article>
-        <ingredient-scaler
-          data-ingredients={JSON.stringify(ingredients)}
-          data-serves={serves}
-        >
-          <div class="prose">
-            <div class="hero-image">
-              {heroImage && <img src={heroImage} alt="" />}
-            </div>
-            <div class="title">
-              <div class="date">
-                <FormattedDate date={pubDate} />
-              </div>
-              <h1>{title}</h1>
-              <hr />
-              <p>
-                <strong>Prep:</strong>
-                {prepTime} | <strong>Cook:</strong>
-                {cookTime}
-              </p>
-            </div>
+    #mult-controls label {
+      margin-right: 0.5em;
+    }
+    #multiplier-input {
+      width: 4em;
+      padding: 0.25em;
+      font-size: 1em;
+    }
+  </style>
 
-            <div id="mult-controls">
-              <label for="multiplier-input"><strong>Serves:</strong></label>
-              <input
-                type="number"
-                id="multiplier-input"
-                value={serves}
-                step="1"
-              />
-            </div>
-            <br />
-
-            <h3>Ingredients:</h3>
-            <div id="ingredient-root"></div>
-
-            <h3>Instructions:</h3>
-            <div id="instructions-container">
-              <slot />
-            </div>
+  <main>
+    <article>
+      <ingredient-scaler
+        data-ingredients={JSON.stringify(ingredients)}
+        data-serves={serves}
+      >
+        <div class="prose">
+          <div class="hero-image">
+            {
+              heroImage && (
+                <img
+                  src={heroImage}
+                  alt=""
+                />
+              )
+            }
           </div>
-        </ingredient-scaler>
-      </article>
-    </main>
-    <Footer />
-    <script>
-      import { IngredientScaler } from '../components/ingredient-scaler.ts'
-      customElements.define('ingredient-scaler', IngredientScaler)
-    </script>
-  </body>
-</html>
+          <div class="title">
+            <div class="date">
+              <FormattedDate date={pubDate} />
+            </div>
+            <h1>{title}</h1>
+            <hr />
+            <p>
+              <strong>Prep:</strong>
+              {prepTime} | <strong>Cook:</strong>
+              {cookTime}
+            </p>
+          </div>
+
+          <div id="mult-controls">
+            <label for="multiplier-input"><strong>Serves:</strong></label>
+            <input
+              type="number"
+              id="multiplier-input"
+              value={serves}
+              step="1"
+            />
+          </div>
+          <br />
+
+          <h3>Ingredients:</h3>
+          <div id="ingredient-root"></div>
+
+          <h3>Instructions:</h3>
+          <div id="instructions-container">
+            <slot />
+          </div>
+        </div>
+      </ingredient-scaler>
+    </article>
+  </main>
+</BaseLayout>

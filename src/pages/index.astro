@@ -15,7 +15,8 @@ import Footer from '../components/Footer.astro'
       main {
         max-width: 100%;
         margin: 0;
-        padding: 2rem 1rem 4rem;
+        /* padding: 2rem 1rem 4rem; */
+        padding: 0;
         display: grid;
         gap: 1rem;
         width: 100%;
@@ -31,13 +32,13 @@ import Footer from '../components/Footer.astro'
         background: hsl(0 0% 12%);
         border: 1px solid hsl(0 0% 20%);
         border-radius: 10px;
-        box-shadow: var(--box-shadow);
+        /* box-shadow: var(--box-shadow); */
         padding: 1rem;
       }
       canvas {
         width: 100%;
         max-width: 920px;
-        background: linear-gradient(#78c0ff, #9cd5ff 60%, #5bb14f 60%, #4a9c3f);
+        background: #78c0ff;
         border-radius: 8px;
         border: 2px solid hsl(0 0% 25%);
         image-rendering: pixelated;
@@ -60,10 +61,6 @@ import Footer from '../components/Footer.astro'
   <body>
     <Header />
     <main>
-      <!-- <div class="hero">
-        <h1>Hello!</h1>
-        <p>Welcome to my website</p>
-      </div> -->
       <div class="game-shell">
         <canvas
           id="game"
@@ -213,12 +210,11 @@ import Footer from '../components/Footer.astro'
         ctx.clearRect(0, 0, canvas.width, canvas.height)
 
         // platforms
-        ctx.fillStyle = '#4a9c3f'
         for (const p of platforms) {
+          ctx.fillStyle = '#4a9c3f'
           ctx.fillRect(p.x, p.y, p.w, p.h)
           ctx.fillStyle = '#3c8232'
           ctx.fillRect(p.x, p.y, p.w, 6)
-          ctx.fillStyle = '#4a9c3f'
         }
 
         // Recipes doorway

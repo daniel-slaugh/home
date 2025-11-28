@@ -46,9 +46,11 @@
   <style>
     footer {
       padding: 2em 1em 6em 1em;
-      background: linear-gradient(var(--gray-gradient)) no-repeat;
-      color: rgb(var(--gray));
+      background: linear-gradient(180deg, hsl(0 0% 8%) 0%, hsl(0 0% 12%) 100%);
+      color: var(--text);
       text-align: center;
+      border-top: 1px solid hsl(0 0% 20%);
+      box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.35);
     }
     .social-links {
       display: flex;
@@ -58,10 +60,11 @@
     }
     .social-links a {
       text-decoration: none;
-      color: rgb(var(--gray));
+      color: var(--text);
+      transition: color 0.2s ease;
     }
     .social-links a:hover {
-      color: rgb(var(--gray-dark));
+      color: var(--accent);
     }
   </style>
 </footer>

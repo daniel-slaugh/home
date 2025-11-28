@@ -25,7 +25,7 @@ const { title, prepTime, cookTime, pubDate, heroImage, ingredients, serves } = A
       aspect-ratio: 2 / 1;
       overflow: hidden;
       border-radius: 12px;
-      box-shadow: var(--box-shadow);
+      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
     }
     .hero-image img {
       width: 100%;
@@ -41,7 +41,7 @@ const { title, prepTime, cookTime, pubDate, heroImage, ingredients, serves } = A
       max-width: calc(100% - 2em);
       margin: auto;
       padding: 1em;
-      color: rgb(var(--gray-dark));
+      color: var(--text);
     }
     .title {
       margin-bottom: 1em;
@@ -54,14 +54,14 @@ const { title, prepTime, cookTime, pubDate, heroImage, ingredients, serves } = A
     }
     .date {
       margin-bottom: 0.5em;
-      color: rgb(var(--gray));
+      color: var(--text);
     }
     .last-updated-on {
       font-style: italic;
     }
 
     .ingredient-text {
-      color: darkgreen;
+      color: var(--accent);
     }
 
     #mult-controls label {

@@ -36,7 +36,7 @@ pubDate: 'Dec 21 2025'
 heroImage: '/parmesan-egg-in-the-hole.png'
 ---
 
-1. In a wide bowl you can dip the flat side of the bread slices in, mix together all the butter mixture ingredients:
+1. In a bowl that's wide enough to dip the flat side of the bread slices in, mix together all the butter mixture ingredients:
 
 - [[melted butter]]
 - [[olive oil]]

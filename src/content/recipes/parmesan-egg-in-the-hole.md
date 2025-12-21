@@ -8,10 +8,9 @@ ingredients:
   - title: Main ingredients
   - name: 'homemade bread'
     quantity: 1
-    unit: 'thing-sliced'
+    unit: 'thick-sliced'
   - name: 'large egg'
     quantity: 1
-    unit: 'each'
   - name: 'freshly grated parmesan cheese'
     quantity: 1
     unit: 'tsp'
@@ -39,7 +38,7 @@ heroImage: '/parmesan-egg-in-the-hole.png'
 
 1. In a wide bowl you can dip the flat side of the bread slices in, mix together all the butter mixture ingredients:
 
-- [[butter]]
+- [[melted butter]]
 - [[olive oil]]
 - [[smoked paprika]]
 - [[salt]]
@@ -57,4 +56,4 @@ heroImage: '/parmesan-egg-in-the-hole.png'
 
 7. Sprinkle remaining [[freshly grated parmesan cheese]] on the bread surface (avoid covering the yolk). Cover the skillet and cook 2–3 minutes, until the egg is set to your liking.
 
-8. If it looks like the bread is a little light on seasonings, top off with another pinch of [[salt]], [[black pepper]], and or [[smoked paprika]].
+8. If it looks like the bread is a little light on seasonings, top off with another pinch of salt, black pepper, and or smoked paprika.

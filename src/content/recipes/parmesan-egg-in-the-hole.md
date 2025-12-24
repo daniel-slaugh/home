@@ -11,6 +11,7 @@ ingredients:
     unit: 'thick-sliced'
   - name: 'large egg'
     quantity: 1
+    unit: ''
   - name: 'freshly grated parmesan cheese'
     quantity: 1
     unit: 'tsp'

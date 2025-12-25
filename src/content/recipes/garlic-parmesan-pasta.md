@@ -30,7 +30,7 @@ ingredients:
     quantity: 0.25
     unit: 'tsp'
 pubDate: 'Nov 16 2025'
-heroImage: '/garlic-parmesan-pasta.jpg'
+heroImage: './garlic-parmesan-pasta.jpg'
 ---
 
 1. **Prep the ingredients.** Grate [[Parmesan cheese, finely grated]] and let it come to room temperature.

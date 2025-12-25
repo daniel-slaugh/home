@@ -41,7 +41,7 @@ ingredients:
     quantity: 1
     unit: 'spoonful'
 pubDate: 'Jun 18 2025'
-heroImage: '/soft-pretzels.jpg'
+heroImage: './soft-pretzels.jpg'
 ---
 
 1. **Make the dough:** in a large bowl, whisk together:

@@ -62,7 +62,7 @@ ingredients:
     quantity: 1
     unit: ''
 pubDate: 'Jun 17 2025'
-heroImage: '/lime-coconut-chicken.jpg'
+heroImage: './lime-coconut-chicken.jpg'
 ---
 
 1. **For the marinade,** in a medium bowl, whisk together:

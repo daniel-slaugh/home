@@ -63,7 +63,7 @@ ingredients:
     unit: 'oz'
 
 pubDate: 'Jun 29 2025'
-heroImage: '/cheesy-spinach-stuffed-shells.jpg'
+heroImage: './cheesy-spinach-stuffed-shells.jpg'
 ---
 
 1. **Make the sauce:** combine the following in a medium saucepan and simmer for 10-15 minutes:

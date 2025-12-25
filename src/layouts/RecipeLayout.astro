@@ -1,5 +1,6 @@
 ---
 import type { CollectionEntry } from 'astro:content'
+import { Image } from 'astro:assets'
 
 import FormattedDate from '../components/FormattedDate.astro'
 import BaseHead from '../components/BaseHead.astro'
@@ -28,10 +29,13 @@ const { title, prepTime, cookTime, pubDate, heroImage, ingredients, serves } = A
         <div class="w-full aspect-[2/1] overflow-hidden rounded-xl shadow-xl shadow-black/30">
           {
             heroImage && (
-              <img
+              <Image
                 class="block h-full w-full object-cover object-center"
                 src={heroImage}
-                alt=""
+                alt={title}
+                widths={[480, 768, 1024, 1536]}
+                sizes="(min-width: 768px) 768px, 100vw"
+                priority
               />
             )
           }

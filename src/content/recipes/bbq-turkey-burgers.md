@@ -26,7 +26,7 @@ ingredients:
     unit: 'pound'
 
 pubDate: 'Jun 18 2025'
-heroImage: '/turkey-burger.jpg'
+heroImage: './turkey-burger.jpg'
 ---
 
 1. In a large bowl, mix all patty ingredients unit well distributed.

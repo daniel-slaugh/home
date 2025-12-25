@@ -5,7 +5,7 @@ serves: 6
 prepTime: '5 min'
 cookTime: '50 min'
 pubDate: 'Nov 6 2025'
-heroImage: '/white-chicken-chili.png'
+heroImage: './white-chicken-chili.png'
 ingredients:
   - title: Ingredients
   - name: 'vegetable oil'

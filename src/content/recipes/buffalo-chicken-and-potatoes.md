@@ -34,7 +34,7 @@ ingredients:
     quantity: 0.25
     unit: 'cup'
 pubDate: 'Jul 01 2025'
-heroImage: '/buffalo-chicken-and-potatoes.jpg'
+heroImage: './buffalo-chicken-and-potatoes.jpg'
 ---
 
 1. **Prepare the dish:** heat oven to 350°F. Spray a 13×9-inch (3-quart) baking dish with cooking spray.

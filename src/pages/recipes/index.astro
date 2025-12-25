@@ -3,6 +3,7 @@ import BaseHead from '../../components/BaseHead.astro'
 import Header from '../../components/Header.astro'
 import { getCollection } from 'astro:content'
 import FormattedDate from '../../components/FormattedDate.astro'
+import { Image } from 'astro:assets'
 
 const recipes = (await getCollection('recipes')).sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
 ---
@@ -10,10 +11,7 @@ const recipes = (await getCollection('recipes')).sort((a, b) => b.data.pubDate.v
 <!doctype html>
 <html lang="en">
   <head>
-    <BaseHead
-      title="Recipes"
-      description="Recipes Home"
-    />
+    <BaseHead title="Recipes" />
     <style>
       /* THESE WERE THE OLD GLOBAL STYLES */
       h1,
@@ -203,10 +201,16 @@ const recipes = (await getCollection('recipes')).sort((a, b) => b.data.pubDate.v
               <li>
                 <a href={`/recipes/${recipe.id}/`}>
                   <div class="hero-image">
-                    <img
-                      src={recipe.data.heroImage}
-                      alt=""
-                    />
+                    {recipe.data.heroImage && (
+                      <Image
+                        src={recipe.data.heroImage}
+                        alt={recipe.data.title}
+                        widths={[360, 720]}
+                        sizes="(max-width: 720px) 100vw, 360px"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    )}
                   </div>
                   <h4 class="title">{recipe.data.title}</h4>
                   <p class="date">

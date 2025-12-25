@@ -43,7 +43,7 @@ ingredients:
     unit: 'dash'
 
 pubDate: 'Jul 01 2025'
-heroImage: '/pickle-pasta-salad.jpg'
+heroImage: './pickle-pasta-salad.jpg'
 ---
 
 1. **Cook the pasta:**  

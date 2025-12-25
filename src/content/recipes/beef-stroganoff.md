@@ -52,7 +52,7 @@ ingredients:
     quantity: 6
     unit: 'cup'
 pubDate: 'Jun 29 2025'
-heroImage: '/beef-stroganoff.jpg'
+heroImage: './beef-stroganoff.jpg'
 ---
 
 1. Whisk [[all-purpose flour]] with the [[beef broth]] until smooth. Set aside.

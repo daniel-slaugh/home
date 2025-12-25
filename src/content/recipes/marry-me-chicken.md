@@ -45,7 +45,7 @@ ingredients:
     quantity: 0.75
     unit: 'cup'
 pubDate: 'Jun 16 2025'
-heroImage: '/chicken-orzo.jpg'
+heroImage: './chicken-orzo.jpg'
 ---
 
 1. Pat the chicken breasts dry with a paper towel and slice them into cubes. Set them aside while you prepare the skillet.

@@ -31,7 +31,7 @@ ingredients:
     unit: 'kit'
 
 pubDate: 'Jul 26 2025'
-heroImage: '/caesar-salad.jpg'
+heroImage: './caesar-salad.jpg'
 ---
 
 1. In a small bowl, mix all seasoning blend ingredients until well combined.

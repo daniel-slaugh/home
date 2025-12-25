@@ -7,8 +7,13 @@ import tailwindcss from '@tailwindcss/vite'
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://example.com',
+  site: 'https://danielslaugh.com',
   integrations: [mdx(), sitemap()],
+  image: {
+    service: {
+      entrypoint: 'astro/assets/services/compile',
+    },
+  },
   adapter: cloudflare({
     platformProxy: {
       enabled: true,

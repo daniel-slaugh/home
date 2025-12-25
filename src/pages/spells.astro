@@ -21,7 +21,10 @@ const toKey = (s) =>
   <head>
     <meta charset="utf-8" />
     <title>Spells</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1"
+    />
     <style>
       :root {
         --hp-bg: #f7f3e8; /* parchment */
@@ -239,15 +242,7 @@ const toKey = (s) =>
       .ornament {
         height: 6px;
         margin: 0.4rem 0 0;
-        background: linear-gradient(
-          90deg,
-          transparent 0,
-          transparent 10%,
-          var(--hp-gold) 10%,
-          var(--hp-gold) 90%,
-          transparent 90%,
-          transparent 100%
-        );
+        background: linear-gradient(90deg, transparent 0, transparent 10%, var(--hp-gold) 10%, var(--hp-gold) 90%, transparent 90%, transparent 100%);
         border-radius: 6px;
       }
 
@@ -262,14 +257,14 @@ const toKey = (s) =>
       <header>
         <h1>Wands & Wizards Spells</h1>
         <div class="ornament"></div>
-        <p>
-          A searchable index of cantrips and spells. Toggle filters to quickly
-          find what your character can learn.
-        </p>
+        <p>A searchable index of cantrips and spells. Toggle filters to quickly find what your character can learn.</p>
       </header>
 
       <div class="scroll-shadow">
-        <div class="filters" id="filters">
+        <div
+          class="filters"
+          id="filters"
+        >
           <div class="group">
             <span class="group-title">Level</span>
             {
@@ -289,14 +284,21 @@ const toKey = (s) =>
             <span class="group-title">School</span>
             {
               schools.map((s) => (
-                <button class="chip" data-chip="school" data-value={toKey(s)}>
+                <button
+                  class="chip"
+                  data-chip="school"
+                  data-value={toKey(s)}
+                >
                   {s}
                 </button>
               ))
             }
           </div>
 
-          <div class="group toggle" id="toggle-restricted">
+          <div
+            class="group toggle"
+            id="toggle-restricted"
+          >
             <span class="group-title">Subclass only</span>
             <span
               class="checkbox"
@@ -304,26 +306,47 @@ const toKey = (s) =>
               data-checked="false"
               role="checkbox"
               aria-checked="false"
-              tabindex="0"></span>
+              tabindex="0"
+            ></span>
           </div>
 
           <div class="search">
-            <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
               ><path
                 d="M21 21l-4.2-4.2m1.7-5.1A7.5 7.5 0 1 1 4 6.5 7.5 7.5 0 0 1 18.5 11.7z"
                 fill="none"
                 stroke="#6b5"
                 stroke-width="1.5"
-                stroke-linecap="round"></path></svg
+                stroke-linecap="round"
+              ></path></svg
             >
-            <input id="q" type="search" placeholder="Search…" />
-            <button class="clear" id="clear">Clear</button>
+            <input
+              id="q"
+              type="search"
+              placeholder="Search…"
+            />
+            <button
+              class="clear"
+              id="clear"
+              >Clear</button
+            >
           </div>
         </div>
-        <div class="summary" id="summary"></div>
+        <div
+          class="summary"
+          id="summary"
+        >
+        </div>
       </div>
 
-      <div class="grid" id="grid">
+      <div
+        class="grid"
+        id="grid"
+      >
         {
           spells.map((s) => {
             const levelLabel = s.level === 0 ? 'Cantrip' : `${s.level}`
@@ -349,7 +372,10 @@ const toKey = (s) =>
                   <span class="badge">{levelLabel}</span>
                   {restricted && <span class="badge">Subclass-only</span>}
                   {tags.map((t) => (
-                    <span class="badge" data-tag={toKey(t)}>
+                    <span
+                      class="badge"
+                      data-tag={toKey(t)}
+                    >
                       {t}
                     </span>
                   ))}
@@ -376,11 +402,7 @@ const toKey = (s) =>
                   <div>
                     <>
                       <b>Traits</b>
-                      <div>
-                        {(s.ritual ? 'Ritual ' : '') +
-                          (s.concentration ? 'Concentration ' : '') +
-                          (s.dedication ? 'Dedication ' : '') || '—'}
-                      </div>
+                      <div>{(s.ritual ? 'Ritual ' : '') + (s.concentration ? 'Concentration ' : '') + (s.dedication ? 'Dedication ' : '') || '—'}</div>
                     </>
                   </div>
                 </div>
@@ -399,9 +421,7 @@ const toKey = (s) =>
         const grid = document.getElementById('grid')
         const cards = Array.from(grid.querySelectorAll('.card'))
         const chips = Array.from(document.querySelectorAll('.chip'))
-        const check = document.querySelector(
-          '.checkbox[data-check="restricted"]',
-        )
+        const check = document.querySelector('.checkbox[data-check="restricted"]')
         const search = document.getElementById('q')
         const clearBtn = document.getElementById('clear')
         const summary = document.getElementById('summary')
@@ -425,9 +445,7 @@ const toKey = (s) =>
             const text = card.innerText.toLowerCase()
 
             const passLevel = state.levels.size ? state.levels.has(lvl) : true
-            const passSchool = state.schools.size
-              ? state.schools.has(sch)
-              : true
+            const passSchool = state.schools.size ? state.schools.has(sch) : true
             const passRestricted = state.restrictedOnly ? isRes : true
             const passQuery = q ? name.includes(q) || text.includes(q) : true
 
@@ -457,10 +475,7 @@ const toKey = (s) =>
         function toggleRestricted() {
           state.restrictedOnly = !state.restrictedOnly
           check.dataset.checked = state.restrictedOnly ? 'true' : 'false'
-          check.setAttribute(
-            'aria-checked',
-            state.restrictedOnly ? 'true' : 'false',
-          )
+          check.setAttribute('aria-checked', state.restrictedOnly ? 'true' : 'false')
           applyFilters()
         }
         check.addEventListener('click', toggleRestricted)

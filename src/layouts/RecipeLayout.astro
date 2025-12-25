@@ -1,129 +1,91 @@
 ---
 import type { CollectionEntry } from 'astro:content'
 
-import BaseLayout from './BaseLayout.astro'
 import FormattedDate from '../components/FormattedDate.astro'
+import BaseHead from '../components/BaseHead.astro'
+import Header from '../components/Header.astro'
 
 type Props = CollectionEntry<'recipes'>['data']
 const { title, prepTime, cookTime, pubDate, heroImage, ingredients, serves } = Astro.props
 ---
 
-<BaseLayout>
+<head>
+  <BaseHead title={title} />
   <script>
     import { IngredientScaler } from '../components/ingredient-scaler.ts'
     customElements.define('ingredient-scaler', IngredientScaler)
   </script>
-
-  <style>
-    main {
-      width: calc(100% - 2em);
-      max-width: 100%;
-      margin: 0;
-    }
-    .hero-image {
-      width: 100%;
-      aspect-ratio: 2 / 1;
-      overflow: hidden;
-      border-radius: 12px;
-      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
-    }
-    .hero-image img {
-      width: 100%;
-      height: 100%;
-      display: block;
-      object-fit: cover;
-      object-position: 50% 50%;
-      border-radius: 0;
-      box-shadow: none;
-    }
-    .prose {
-      width: 720px;
-      max-width: calc(100% - 2em);
-      margin: auto;
-      padding: 1em;
-      color: var(--text);
-    }
-    .title {
-      margin-bottom: 1em;
-      padding: 1em 0;
-      text-align: center;
-      line-height: 1;
-    }
-    .title h1 {
-      margin: 0 0 0.5em 0;
-    }
-    .date {
-      margin-bottom: 0.5em;
-      color: var(--text);
-    }
-    .last-updated-on {
-      font-style: italic;
-    }
-
-    .ingredient-text {
-      color: var(--accent);
-    }
-
-    #mult-controls label {
-      margin-right: 0.5em;
-    }
-    #multiplier-input {
-      width: 4em;
-      padding: 0.25em;
-      font-size: 1em;
-    }
-  </style>
-
-  <main>
-    <article>
-      <ingredient-scaler
-        data-ingredients={JSON.stringify(ingredients)}
-        data-serves={serves}
-      >
-        <div class="prose">
-          <div class="hero-image">
-            {
-              heroImage && (
-                <img
-                  src={heroImage}
-                  alt=""
-                />
-              )
-            }
-          </div>
-          <div class="title">
-            <div class="date">
-              <FormattedDate date={pubDate} />
-            </div>
-            <h1>{title}</h1>
-            <hr />
-            <p>
-              <strong>Prep:</strong>
-              {prepTime} | <strong>Cook:</strong>
-              {cookTime}
-            </p>
-          </div>
-
-          <div id="mult-controls">
-            <label for="multiplier-input"><strong>Serves:</strong></label>
-            <input
-              type="number"
-              id="multiplier-input"
-              value={serves}
-              step="1"
-            />
-          </div>
-          <br />
-
-          <h3>Ingredients:</h3>
-          <div id="ingredient-root"></div>
-
-          <h3>Instructions:</h3>
-          <div id="instructions-container">
-            <slot />
-          </div>
+</head>
+<main class="w-full bg-gray-900">
+  <Header />
+  <article class="pb-16">
+    <ingredient-scaler
+      class="block"
+      data-ingredients={JSON.stringify(ingredients)}
+      data-serves={serves}
+    >
+      <div class="mx-auto w-full max-w-3xl px-4 py-6 text-[var(--text)] sm:px-6">
+        <div class="w-full aspect-[2/1] overflow-hidden rounded-xl shadow-xl shadow-black/30">
+          {
+            heroImage && (
+              <img
+                class="block h-full w-full object-cover object-center"
+                src={heroImage}
+                alt=""
+              />
+            )
+          }
         </div>
-      </ingredient-scaler>
-    </article>
-  </main>
-</BaseLayout>
+
+        <div class="py-6 text-center leading-none">
+          <div class="text-sm text-white/70">
+            <FormattedDate date={pubDate} />
+          </div>
+          <h1 class="mt-3 text-4xl font-bold tracking-tight text-[var(--text-light)] sm:text-5xl">
+            {title}
+          </h1>
+          <hr class="mx-auto mt-5 w-2/3 border-white/10" />
+          <p class="mt-5 text-base leading-relaxed text-white/80">
+            <strong class="font-semibold text-white">Prep:</strong>
+            {prepTime} | <strong class="font-semibold text-white">Cook:</strong>
+            {cookTime}
+          </p>
+        </div>
+
+        <div
+          id="mult-controls"
+          class="mt-2 flex items-center justify-start gap-3"
+        >
+          <label
+            for="multiplier-input"
+            class="text-sm font-semibold text-white"
+          >
+            Serves:
+          </label>
+          <input
+            class="w-20 rounded-md border border-white/10 bg-white/5 px-2 py-1 text-base text-white outline-none ring-0 focus:border-white/20"
+            type="number"
+            id="multiplier-input"
+            value={serves}
+            step="1"
+          />
+        </div>
+
+        <h3 class="mt-10 text-2xl font-semibold text-[var(--text-light)]">Ingredients:</h3>
+        <div
+          id="ingredient-root"
+          class="mt-3 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6 [&_li]:my-1"
+        >
+        </div>
+
+        <h3 class="mt-10 text-2xl font-semibold text-[var(--text-light)]">Instructions:</h3>
+        <div
+          id="instructions-container"
+          class="mt-3 [&_p]:mb-6 [&_ul]:my-4 [&_ol]:my-4 [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_li]:my-1 [&_a:hover]:underline [&_img]:max-w-full [&_img]:h-auto [&_img]:rounded-lg [&_code]:rounded [&_code]:bg-white/10 [&_code]:px-1.5 [&_code]:py-0.5 [&_pre]:my-6 [&_pre]:overflow-x-auto [&_pre]:rounded-lg [&_pre]:bg-black/40 [&_pre]:p-6 [&_pre_code]:bg-transparent [&_pre_code]:p-0 [&_blockquote]:my-6 [&_blockquote]:border-l-4 [&_blockquote]:pl-5 [&_blockquote]:text-lg [&_hr]:my-6 [&_hr]:border-white/10"
+        >
+          <slot />
+        </div>
+      </div>
+    </ingredient-scaler>
+  </article>
+</main>

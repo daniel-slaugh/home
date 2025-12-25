@@ -1,94 +1,101 @@
 ---
 import HeaderLink from './HeaderLink.astro'
+const { title } = Astro.props
 ---
 
-<header>
-  <nav>
-    <h2>
-      <a href="/">
-        <img
-          src="/slaugh-icon64.png"
-          alt="danielslaugh.com"
-        />
-      </a>
-    </h2>
+<script is:inline>
+  function openNav() {
+    const dialog = document.getElementById('nav')
+    if (!dialog) return
 
-    <div class="internal-links">
+    dialog.showModal()
+
+    // Always start closed (offscreen RIGHT)
+    dialog.classList.remove('closing')
+    dialog.classList.remove('open')
+
+    const panel = dialog.querySelector('.nav-panel')
+    if (!panel) return
+
+    // Force layout so the browser commits the "closed" transform first
+    panel.offsetWidth
+    dialog.classList.add('open')
+  }
+
+  function closeNav() {
+    const dialog = document.getElementById('nav')
+    if (!dialog) return
+
+    dialog.classList.remove('open')
+    dialog.classList.add('closing')
+
+    const panel = dialog.querySelector('.nav-panel')
+    if (!panel) {
+      dialog.classList.remove('closing')
+      dialog.close()
+      return
+    }
+
+    panel.addEventListener(
+      'transitionend',
+      () => {
+        dialog.classList.remove('closing')
+        dialog.close()
+      },
+      { once: true }
+    )
+  }
+</script>
+
+<header class="grid grid-cols-[1fr_auto_1fr] items-center border-b border-white/10 bg-gray-800">
+  <div></div>
+  <p class="justify-self-center">{title}</p>
+  <button
+    class="text-3xl p-4 justify-self-end hover:bg-gray-600"
+    onclick="openNav()"
+    type="button"
+  >
+    ☰
+  </button>
+</header>
+
+<dialog
+  id="nav"
+  class="fixed inset-0 m-0 p-0 w-screen h-screen max-w-none max-h-none bg-transparent backdrop:bg-black/50"
+  onclick="if (event.target === this) closeNav()"
+>
+  <div class="nav-panel fixed top-0 right-0 h-full w-80 bg-gray-800 border-l border-white/10">
+    <button
+      class="text-3xl p-4 hover:bg-gray-600"
+      onclick="closeNav()"
+      type="button"
+    >
+      ☰
+    </button>
+    <div class="pl-4">
       <HeaderLink href="/">Home</HeaderLink>
+    </div>
+    <div class="pl-4">
       <HeaderLink href="/recipes">Recipes</HeaderLink>
     </div>
+  </div>
+</dialog>
 
-    <div class="social-links">
-      <a
-        href="https://github.com/daniel-slaugh"
-        target="_blank"
-      >
-        <span class="sr-only">Go to Astro's GitHub repo</span>
-        <svg
-          viewBox="0 0 16 16"
-          aria-hidden="true"
-          width="32"
-          height="32"
-        >
-          <path
-            fill="currentColor"
-            d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"
-          ></path>
-        </svg>
-      </a>
-    </div>
-  </nav>
-</header>
 <style>
-  header {
-    margin: 0;
-    padding: 0 1em;
-    background: var(--bg);
-    box-shadow: 0 2px 8px rgba(var(--black), 5%);
-  }
-  h2 {
-    margin: 0;
-    font-size: 1em;
+  /* Closed: offscreen to the RIGHT */
+  #nav .nav-panel {
+    transform: translateX(100%);
+    transition: transform 220ms ease-out;
+    will-change: transform;
   }
 
-  h2 a {
-    display: flex;
-    align-items: center;
-    gap: 0.5em;
-    text-decoration: none;
+  /* Open: slide in from RIGHT -> LEFT */
+  #nav.open .nav-panel {
+    transform: translateX(0);
   }
 
-  h2 a.active {
-    text-decoration: none;
-  }
-
-  h2 img {
-    max-height: 1.5em;
-    width: auto;
-    display: block;
-  }
-  nav {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-  nav a {
-    padding: 1em 0.5em;
-    color: var(--text);
-    border-bottom: 4px solid transparent;
-    text-decoration: none;
-  }
-  nav a.active {
-    text-decoration: none;
-    border-bottom-color: var(--accent);
-  }
-  .social-links,
-  .social-links a {
-    display: flex;
-  }
-  @media (max-width: 720px) {
-    .social-links {
-      display: none;
-    }
+  /* Closing: slide out to the RIGHT */
+  #nav.closing .nav-panel {
+    transform: translateX(100%);
   }
 </style>

@@ -38,8 +38,7 @@ export class IngredientScaler extends HTMLElement {
   }
 
   renderAll = () => {
-    const newServes =
-      parseFloat(this.servingsInput!.value) || this.originalServes
+    const newServes = parseFloat(this.servingsInput!.value) || this.originalServes
     this.scaleFactor = newServes / this.originalServes
 
     this.renderIngredients()
@@ -82,10 +81,7 @@ export class IngredientScaler extends HTMLElement {
 
   renderInstructions = () => {
     // 1) Handle [[[Name]]] → just "Name"
-    let html = this.originalInstructions.replace(
-      /\[\[\[\s*([^\]]+?)\s*\]\]\]/g,
-      (_m, token) => this.wrapColored(`${token.trim()}`),
-    )
+    let html = this.originalInstructions.replace(/\[\[\[\s*([^\]]+?)\s*\]\]\]/g, (_m, token) => this.wrapColored(`${token.trim()}`))
 
     // 2) Handle [[Name]] → formatted "qty unit Name"
     html = html.replace(/\[\[\s*([^\]]+?)\s*\]\]/g, (_m, token) => {
@@ -131,7 +127,7 @@ export class IngredientScaler extends HTMLElement {
   }
 
   private wrapColored(text: string) {
-    return `<span style="color: var(--accent);">${text}</span>`
+    return `<span class="text-blue-300">${text}</span>`
   }
 
   private upSteps: Record<

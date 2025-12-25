@@ -3,7 +3,7 @@
 @layer base {
   html,
   body {
-    @apply text-white;
+    @apply text-white bg-gray-900;
   }
   dialog {
     color: inherit;
@@ -17,7 +17,6 @@
   --bg-dark: hsl(0 0% 5%);
   --bg: hsl(0 0% 10%);
   --bg-light: hsl(0 0% 15%);
-  --bg-gradient: hsl(0 0% 15% / 0.5), #131111;
 
   --text-dark: hsl(0 0% 90%);
   --text: hsl(0 0% 95%);
@@ -52,9 +51,6 @@ body {
   margin: 0;
   padding: 0;
   text-align: left;
-  background:
-    linear-gradient(var(--bg-gradient)) no-repeat,
-    var(--bg);
   background-size:
     100% 600px,
     auto;

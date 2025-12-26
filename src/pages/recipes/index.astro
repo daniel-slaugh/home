@@ -29,10 +29,9 @@ const recipes = (await getCollection('recipes')).sort((a, b) => b.data.pubDate.v
                 <div
                   class="
                     aspect-[2/1] overflow-hidden rounded-xl bg-gray-800/40
-                    ring-1 ring-gray-800/60
-                    transition duration-200
-                    group-hover:ring-4 group-hover:ring-gray-500/40
-                    group-hover:shadow-lg
+                    shadow-md
+                    transition-all duration-300 ease-out
+                    group-hover:shadow-[0_0_0_1px_rgba(156,163,175,0.15),_0_12px_40px_-12px_rgba(156,163,175,0.35)]
                   "
                 >
                   {recipe.data.heroImage && (
@@ -48,7 +47,7 @@ const recipes = (await getCollection('recipes')).sort((a, b) => b.data.pubDate.v
                   )}
                 </div>
 
-                <h2 class="mt-3 text-2xl font-semibold leading-tight text-gray-100">{recipe.data.title}</h2>
+                <h2 class="mt-3 text-2xl font-semibold leading-tight">{recipe.data.title}</h2>
 
                 <p class="mt-1 text-sm text-gray-400">
                   <FormattedDate date={recipe.data.pubDate} />

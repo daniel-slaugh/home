@@ -1,5 +1,5 @@
 ---
-title: 'Aromatic Beef Stew With Butternut Squash'
+title: 'Beef and Butternut Squash Stew'
 description: 'A warmly spiced beef stew with tender squash, served over couscous with toasted almonds.'
 serves: 4
 prepTime: '20 min'
@@ -64,7 +64,7 @@ ingredients:
     unit: 'tsp'
 
 pubDate: 'Dec 26 2025'
-heroImage: './beef-stew-with-butternut-squash.png'
+heroImage: './beef-and-butternut-squash-stew.png'
 ---
 
 1. Heat [[olive oil]] in a 4-quart saucepan over medium-high heat. Add [[stew beef, cut into cubes]] and cook until browned on all sides, about 5 minutes. Transfer to a plate, leaving the juices in the pan.

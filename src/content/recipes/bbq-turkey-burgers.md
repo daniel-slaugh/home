@@ -14,6 +14,7 @@ cookingMethod:
   - 'Stovetop'
 tags:
   - 'One Pan'
+  - 'Dairy-Free'
 ingredients:
   - title: Patty
   - name: 'chopped onion'

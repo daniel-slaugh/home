@@ -713,7 +713,11 @@ const timeRangeMax = Math.max(timeRangeStep, Math.ceil(maxRecipeMinutes / timeRa
             const passCuisine = hasAny(cardItem.cuisineKeys, selectedCuisines)
             const passMethod = hasAny(cardItem.methodKeys, selectedMethods)
 
-            const passTags = selectedTags.size ? (tagsMatchAllChecked ? hasAll(cardItem.tagKeys, selectedTags) : hasAny(cardItem.tagKeys, selectedTags)) : true
+            const passTags = selectedTags.size
+              ? tagsMatchAllChecked
+                ? hasAll(cardItem.tagKeys, selectedTags)
+                : hasAny(cardItem.tagKeys, selectedTags)
+              : true
 
             const passTime = minutes >= minValue && minutes <= maxValue
 

@@ -12,7 +12,8 @@ cuisine:
   - 'American'
 cookingMethod:
   - 'Oven'
-tags: []
+tags:
+  - 'Gluten-Free'
 ingredients:
   - title: Potatoes
   - name: 'Yukon Gold potatoes, cubed'

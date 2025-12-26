@@ -72,12 +72,10 @@ const { title } = Astro.props
     >
       ☰
     </button>
-    <div class="pl-4">
-      <HeaderLink href="/">Home</HeaderLink>
-    </div>
-    <div class="pl-4">
-      <HeaderLink href="/recipes">Recipes</HeaderLink>
-    </div>
+    <nav class="mt-2">
+      <HeaderLink href="/" class="nav-link">Home</HeaderLink>
+      <HeaderLink href="/recipes" class="nav-link">Recipes</HeaderLink>
+    </nav>
   </div>
 </dialog>
 
@@ -97,5 +95,19 @@ const { title } = Astro.props
   /* Closing: slide out to the RIGHT */
   #nav.closing .nav-panel {
     transform: translateX(100%);
+  }
+
+  #nav .nav-panel .nav-link {
+    display: block;
+    width: 100%;
+    padding: 12px 16px;
+  }
+
+  #nav .nav-panel .nav-link:hover {
+    background: rgba(255, 255, 255, 0.06);
+  }
+
+  #nav .nav-panel .nav-link.active {
+    color: #bfdbfe;
   }
 </style>

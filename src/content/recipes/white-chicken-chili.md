@@ -14,6 +14,7 @@ cookingMethod:
   - 'Instant Pot'
 tags:
   - 'One Pan'
+  - 'Gluten-Free'
 pubDate: 'Nov 6 2025'
 heroImage: './white-chicken-chili.png'
 ingredients:

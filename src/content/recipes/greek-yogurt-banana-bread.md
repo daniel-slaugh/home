@@ -9,13 +9,13 @@ ingredients:
   - name: 'ripe bananas, mashed'
     quantity: 1.5
     unit: 'cup'
-  - name: 'Greek yogurt'
+  - name: 'vanilla Greek yogurt'
     quantity: 0.5
     unit: 'cup'
   - name: 'butter, melted'
     quantity: 0.5
     unit: 'cup'
-  - name: 'white sugar'
+  - name: 'Splenda brown sugar blend'
     quantity: 0.5
     unit: 'cup'
   - name: 'eggs'
@@ -52,10 +52,10 @@ In a large bowl, mash the [[ripe bananas, mashed]] until mostly smooth.
 
 Whisk in:
 
-- [[Greek yogurt]]
+- [[vanilla Greek yogurt]]
 - [[butter, melted]]
 - [[eggs]]
-- [[white sugar]]
+- [[Splenda brown sugar blend]]
 - [[vanilla extract]]
 
 Mix until smooth and well combined.

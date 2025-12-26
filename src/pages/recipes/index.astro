@@ -80,6 +80,9 @@ const timeRangeMax = Math.max(timeRangeStep, Math.ceil(maxRecipeMinutes / timeRa
       #filters-panel {
         overscroll-behavior: contain;
       }
+      #recipes-list {
+        overflow-anchor: none;
+      }
     </style>
   </head>
 
@@ -436,7 +439,7 @@ const timeRangeMax = Math.max(timeRangeStep, Math.ceil(maxRecipeMinutes / timeRa
           </details>
         </aside>
 
-        <section class="space-y-6">
+        <section id="recipes-list" class="space-y-6">
           <div class="flex flex-wrap items-center justify-between gap-3">
             <p
               id="summary"

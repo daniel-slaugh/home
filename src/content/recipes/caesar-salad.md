@@ -4,6 +4,15 @@ description: 'Pan-Fried Seasoned Chicken Caesar Salad'
 serves: 2
 prepTime: '5 min'
 cookTime: '15 min'
+activeTimeMinutes: 20
+totalTimeMinutes: 20
+course:
+  - 'Main'
+cuisine:
+  - 'Italian'
+cookingMethod:
+  - 'Stovetop'
+tags: []
 ingredients:
   - title: Seasoning Blend (for 2 breasts or 4 thighs)
   - name: 'kosher salt'

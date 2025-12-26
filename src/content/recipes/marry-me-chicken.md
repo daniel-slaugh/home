@@ -4,6 +4,16 @@ description: 'Tender chicken breasts paired with a creamy sun-dried tomato sauce
 serves: 6
 prepTime: '5 min'
 cookTime: '25 min'
+activeTimeMinutes: 30
+totalTimeMinutes: 30
+course:
+  - 'Main'
+cuisine:
+  - 'Italian'
+cookingMethod:
+  - 'Stovetop'
+tags:
+  - 'One Pan'
 ingredients:
   - name: 'Boneless, Skinless Chicken breast'
     quantity: 1.5

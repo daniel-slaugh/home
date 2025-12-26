@@ -2,8 +2,21 @@
 title: 'Lime Coconut Chicken'
 description: 'Tender chicken breasts paired with a creamy sun-dried tomato sauce and hearty orzo'
 serves: 6
-prepTime: '2-12 hr'
+prepTime: '15 min'
 cookTime: '35 min'
+inactiveTime: '2-12 hr (marinate)'
+inactiveTimeMinutes: 120
+activeTimeMinutes: 50
+totalTimeMinutes: 170
+course:
+  - 'Main'
+cuisine:
+  - 'Asian-Inspired'
+cookingMethod:
+  - 'Stovetop'
+tags:
+  - 'Dairy-Free'
+  - 'Make Ahead'
 ingredients:
   - title: Chicken Marinade
   - name: 'Boneless skinless chicken breasts or thighs'

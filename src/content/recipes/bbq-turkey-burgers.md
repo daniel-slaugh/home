@@ -4,6 +4,16 @@ description: 'BBQ Turkey Burgers'
 serves: 4
 prepTime: '10 min'
 cookTime: '15 min'
+activeTimeMinutes: 25
+totalTimeMinutes: 25
+course:
+  - 'Main'
+cuisine:
+  - 'American'
+cookingMethod:
+  - 'Stovetop'
+tags:
+  - 'One Pan'
 ingredients:
   - title: Patty
   - name: 'chopped onion'

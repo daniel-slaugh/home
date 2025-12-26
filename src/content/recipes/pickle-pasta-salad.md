@@ -4,6 +4,19 @@ description: 'Tangy pasta salad with dill pickles, cheddar cheese, and a creamy 
 serves: 6
 prepTime: '10 min'
 cookTime: '8 min'
+inactiveTime: '1 hr (chill)'
+inactiveTimeMinutes: 60
+activeTimeMinutes: 18
+totalTimeMinutes: 78
+course:
+  - 'Side'
+cuisine:
+  - 'American'
+cookingMethod:
+  - 'Stovetop'
+tags:
+  - 'Vegetarian'
+  - 'Make Ahead'
 ingredients:
   - title: Salad
   - name: 'dry shell pasta (about 3 cups)'

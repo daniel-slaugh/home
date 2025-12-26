@@ -4,6 +4,17 @@ description: 'A rich, savory egg-in-the-hole with crispy parmesan edges and warm
 serves: 1
 prepTime: '5 min'
 cookTime: '8 min'
+activeTimeMinutes: 13
+totalTimeMinutes: 13
+course:
+  - 'Main'
+cuisine:
+  - 'American'
+cookingMethod:
+  - 'Stovetop'
+tags:
+  - 'Vegetarian'
+  - 'One Pan'
 ingredients:
   - title: Main ingredients
   - name: 'homemade bread'

@@ -4,6 +4,17 @@ description: 'Moist, easy banana bread made with Greek yogurt for extra richness
 serves: 10
 prepTime: '10 min'
 cookTime: '55 min'
+activeTimeMinutes: 65
+totalTimeMinutes: 65
+course:
+  - 'Dessert'
+cuisine:
+  - 'American'
+cookingMethod:
+  - 'Oven'
+tags:
+  - 'Vegetarian'
+  - 'Make Ahead'
 ingredients:
   - title: Batter
   - name: 'ripe bananas, mashed'

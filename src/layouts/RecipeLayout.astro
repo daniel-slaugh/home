@@ -7,7 +7,7 @@ import BaseHead from '../components/BaseHead.astro'
 import Header from '../components/Header.astro'
 
 type Props = CollectionEntry<'recipes'>['data']
-const { title, prepTime, cookTime, pubDate, heroImage, ingredients, serves } = Astro.props
+const { title, prepTime, cookTime, inactiveTime, pubDate, heroImage, ingredients, serves } = Astro.props
 ---
 
 <head>
@@ -53,6 +53,12 @@ const { title, prepTime, cookTime, pubDate, heroImage, ingredients, serves } = A
             <strong class="font-semibold text-white">Prep:</strong>
             {prepTime} | <strong class="font-semibold text-white">Cook:</strong>
             {cookTime}
+            {inactiveTime && (
+              <>
+                {' '}
+                | <strong class="font-semibold text-white">Inactive:</strong> {inactiveTime}
+              </>
+            )}
           </p>
         </div>
 

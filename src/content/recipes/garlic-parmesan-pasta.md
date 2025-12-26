@@ -4,6 +4,17 @@ description: 'Creamy one-pot angel hair pasta cooked in a buttery garlic-Parmesa
 serves: 4
 prepTime: '10 min'
 cookTime: '10 min'
+activeTimeMinutes: 20
+totalTimeMinutes: 20
+course:
+  - 'Side'
+cuisine:
+  - 'Italian'
+cookingMethod:
+  - 'Stovetop'
+tags:
+  - 'Vegetarian'
+  - 'One Pan'
 ingredients:
   - name: 'Parmesan cheese, finely grated'
     quantity: 0.5

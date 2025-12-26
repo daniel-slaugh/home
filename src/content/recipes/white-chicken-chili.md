@@ -4,6 +4,16 @@ description: 'Instant Pot white chicken chili — creamy, hearty, and easy to ma
 serves: 6
 prepTime: '5 min'
 cookTime: '50 min'
+activeTimeMinutes: 55
+totalTimeMinutes: 55
+course:
+  - 'Main'
+cuisine:
+  - 'Southwest / Tex-Mex'
+cookingMethod:
+  - 'Instant Pot'
+tags:
+  - 'One Pan'
 pubDate: 'Nov 6 2025'
 heroImage: './white-chicken-chili.png'
 ingredients:

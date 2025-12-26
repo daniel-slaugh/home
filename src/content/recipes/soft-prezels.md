@@ -4,6 +4,16 @@ description: 'Homemade soft pretzels with a baking-soda bath and coarse sea salt
 serves: 12
 prepTime: '25 min'
 cookTime: '15 min'
+activeTimeMinutes: 40
+totalTimeMinutes: 40
+course:
+  - 'Side'
+cuisine:
+  - 'European (Non-Italian)'
+cookingMethod:
+  - 'Oven'
+tags:
+  - 'Vegetarian'
 ingredients:
   - title: Dough
   - name: 'lukewarm water (~ 100°F)'

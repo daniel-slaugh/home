@@ -4,6 +4,15 @@ description: 'Easy Ground Beef Stroganoff with a creamy mushroom sauce, ready in
 serves: 8
 prepTime: '5 min'
 cookTime: '25 min'
+activeTimeMinutes: 30
+totalTimeMinutes: 30
+course:
+  - 'Main'
+cuisine:
+  - 'European (Non-Italian)'
+cookingMethod:
+  - 'Stovetop'
+tags: []
 ingredients:
   - title: Ingredients
   - name: 'butter'

@@ -4,6 +4,16 @@ description: 'Pasta shells stuffed with a creamy spinach and cheese filling, bak
 serves: 6
 prepTime: '20 min'
 cookTime: '1 hr'
+activeTimeMinutes: 80
+totalTimeMinutes: 80
+course:
+  - 'Main'
+cuisine:
+  - 'Italian'
+cookingMethod:
+  - 'Oven'
+tags:
+  - 'Vegetarian'
 ingredients:
   - title: Sauce
   - name: 'crushed tomatoes'

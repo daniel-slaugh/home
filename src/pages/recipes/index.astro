@@ -5,58 +5,734 @@ import { getCollection } from 'astro:content'
 import FormattedDate from '../../components/FormattedDate.astro'
 import { Image } from 'astro:assets'
 
-const recipes = (await getCollection('recipes')).sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
+const recipes = (await getCollection('recipes')).sort((a, b) => a.data.title.localeCompare(b.data.title))
+
+const toKey = (s: string) =>
+  String(s)
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9\-]/g, '')
+
+const mealTypes = ['Main', 'Side', 'Dessert']
+const cuisines = [
+  'American',
+  'Southwest / Tex-Mex',
+  'Italian',
+  'Asian-Inspired',
+  'Mediterranean',
+  'Middle Eastern',
+  'Indian',
+  'Caribbean',
+  'European (Non-Italian)',
+  'Global / Fusion',
+]
+const cookingMethods = ['Oven', 'Stovetop', 'Slow Cooker', 'Instant Pot', 'Grill', 'No-Cook']
+const tags = ['Vegetarian', 'Gluten-Free', 'Dairy-Free', 'One Pan', 'Make Ahead']
+
+const timeRangeStep = 5
+const maxRecipeMinutes = recipes.reduce(
+  (max, recipe) => Math.max(max, recipe.data.activeTimeMinutes, recipe.data.totalTimeMinutes),
+  0
+)
+const timeRangeMax = Math.max(timeRangeStep, Math.ceil(maxRecipeMinutes / timeRangeStep) * timeRangeStep)
 ---
 
 <!doctype html>
 <html lang="en">
   <head>
     <BaseHead title="Recipes" />
+    <style>
+      .range-input {
+        -webkit-appearance: none;
+        appearance: none;
+        background: transparent;
+        pointer-events: auto;
+        touch-action: none;
+        cursor: grab;
+      }
+      .range-input:focus {
+        outline: none;
+      }
+      .range-input::-webkit-slider-runnable-track {
+        height: 0;
+      }
+      .range-input::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        height: 20px;
+        width: 20px;
+        border-radius: 999px;
+        background: #22d3ee;
+        border: 2px solid #a5f3fc;
+        box-shadow: 0 0 0 6px rgba(34, 211, 238, 0.35);
+        cursor: pointer;
+      }
+      .range-input:active::-webkit-slider-thumb {
+        cursor: grabbing;
+      }
+      .range-input::-moz-range-track {
+        height: 0;
+        background: transparent;
+      }
+      .range-input::-moz-range-thumb {
+        height: 20px;
+        width: 20px;
+        border-radius: 999px;
+        background: #22d3ee;
+        border: 2px solid #a5f3fc;
+        box-shadow: 0 0 0 6px rgba(34, 211, 238, 0.35);
+        cursor: pointer;
+      }
+      .range-input:active::-moz-range-thumb {
+        cursor: grabbing;
+      }
+      .range-input::-ms-track {
+        height: 0;
+        background: transparent;
+        border-color: transparent;
+        color: transparent;
+      }
+      #filters-panel {
+        overscroll-behavior: contain;
+      }
+    </style>
   </head>
 
   <body class="min-h-screen bg-gray-900 font-sans text-gray-100">
     <Header title="Recipes" />
 
     <main class="mx-auto max-w-6xl px-4 py-10">
-      <ul class="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-        {
-          recipes.map((recipe) => (
-            <li>
-              <a
-                href={`/recipes/${recipe.id}/`}
-                class="group block focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400/40"
+      <div class="grid gap-8 lg:grid-cols-[280px_1fr]">
+        <input id="filters-toggle" type="checkbox" class="peer sr-only" />
+        <label
+          for="filters-toggle"
+          class="fixed inset-0 z-40 hidden bg-black/60 peer-checked:block lg:hidden"
+          aria-hidden="true"
+        ></label>
+
+        <aside
+          id="filters-panel"
+          class="fixed inset-y-0 left-0 z-50 w-[88vw] max-w-xs translate-x-[-100%] space-y-4 overflow-y-auto border-r border-white/10 bg-gray-950/95 p-4 shadow-2xl shadow-black/40 transition-transform duration-300 ease-out peer-checked:translate-x-0 lg:static lg:z-auto lg:w-auto lg:max-w-none lg:translate-x-0 lg:rounded-2xl lg:border lg:border-white/10 lg:bg-gray-900/70 lg:shadow-lg lg:shadow-black/20 lg:sticky lg:top-6 lg:overflow-visible"
+        >
+          <div class="flex items-center justify-between gap-2">
+            <h2 class="text-base font-semibold text-gray-100">Filters</h2>
+            <div class="flex items-center gap-2">
+              <label
+                for="filters-toggle"
+                class="rounded-lg border border-white/10 bg-white/5 px-2.5 py-1 text-xs font-semibold uppercase tracking-widest text-gray-200 hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400/40 lg:hidden"
+                role="button"
               >
-                <div
-                  class="
-                    aspect-[2/1] overflow-hidden rounded-xl bg-gray-800/40
-                    shadow-md
-                    transition-all duration-300 ease-out
-                    group-hover:shadow-[0_0_0_1px_rgba(156,163,175,0.15),_0_12px_40px_-12px_rgba(156,163,175,0.35)]
-                  "
-                >
-                  {recipe.data.heroImage && (
-                    <Image
-                      class="h-full w-full object-cover object-center"
-                      src={recipe.data.heroImage}
-                      alt={recipe.data.title}
-                      widths={[360, 720]}
-                      sizes="(max-width: 720px) 100vw, 360px"
-                      loading="lazy"
-                      decoding="async"
-                    />
-                  )}
+                Close
+              </label>
+              <button
+                id="clear"
+                type="button"
+                class="rounded-lg border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-gray-200 hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400/40"
+              >
+                Clear
+              </button>
+            </div>
+          </div>
+
+          <details open class="group rounded-xl border border-white/10 bg-white/5 px-3 py-2">
+            <summary class="flex cursor-pointer list-none items-center justify-between text-sm font-semibold text-gray-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400/40">
+              Search
+              <svg class="h-4 w-4 text-gray-400 transition-transform group-open:rotate-180" viewBox="0 0 20 20" aria-hidden="true">
+                <path d="M5 7l5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </summary>
+            <div class="mt-3 grid gap-3">
+              <div class="flex items-center gap-2 rounded-lg border border-white/10 bg-gray-900/40 px-2.5 py-1.5">
+                <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+                  <path
+                    d="M21 21l-4.2-4.2m1.7-5.1A7.5 7.5 0 1 1 4 6.5 7.5 7.5 0 0 1 18.5 11.7z"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    class="text-emerald-200/80"
+                  ></path>
+                </svg>
+                <label for="q" class="sr-only">Search</label>
+                <input
+                  id="q"
+                  type="search"
+                  placeholder="Title, description…"
+                  class="w-full bg-transparent text-sm text-gray-100 placeholder:text-gray-500 outline-none"
+                />
+              </div>
+
+              <div class="flex items-center gap-2 rounded-lg border border-white/10 bg-gray-900/40 px-2.5 py-1.5">
+                <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+                  <path
+                    d="M4 7h16M4 12h16M4 17h16"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    class="text-fuchsia-200/80"
+                  ></path>
+                </svg>
+                <label for="ingredients" class="sr-only">Ingredients</label>
+                <input
+                  id="ingredients"
+                  type="text"
+                  placeholder="Ingredients (comma-separated)…"
+                  class="w-full bg-transparent text-sm text-gray-100 placeholder:text-gray-500 outline-none"
+                />
+              </div>
+              <p class="text-xs text-gray-500">Ingredient matching is partial.</p>
+            </div>
+          </details>
+
+          <details open class="group rounded-xl border border-white/10 bg-white/5 px-3 py-2">
+            <summary class="flex cursor-pointer list-none items-center justify-between text-sm font-semibold text-gray-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400/40">
+              Meal Type
+              <svg class="h-4 w-4 text-gray-400 transition-transform group-open:rotate-180" viewBox="0 0 20 20" aria-hidden="true">
+                <path d="M5 7l5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </summary>
+            <div class="mt-3 grid gap-2">
+              {mealTypes.map((course) => (
+                <label class="flex items-start gap-3 rounded-lg border border-white/10 bg-gray-900/40 px-3 py-2 text-sm text-gray-200 transition hover:border-white/20">
+                  <input
+                    type="checkbox"
+                    class="mt-0.5 h-4 w-4 rounded border-white/20 bg-white/5 text-indigo-400 focus:ring-indigo-400/40 focus:ring-offset-0"
+                    data-filter="course"
+                    value={toKey(course)}
+                  />
+                  <span class="leading-tight">{course}</span>
+                </label>
+              ))}
+            </div>
+          </details>
+
+          <details open class="group rounded-xl border border-white/10 bg-white/5 px-3 py-2">
+            <summary class="flex cursor-pointer list-none items-center justify-between text-sm font-semibold text-gray-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400/40">
+              Cuisine
+              <svg class="h-4 w-4 text-gray-400 transition-transform group-open:rotate-180" viewBox="0 0 20 20" aria-hidden="true">
+                <path d="M5 7l5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </summary>
+            <div class="mt-3 grid gap-2">
+              {cuisines.map((cuisine) => (
+                <label class="flex items-start gap-3 rounded-lg border border-white/10 bg-gray-900/40 px-3 py-2 text-sm text-gray-200 transition hover:border-white/20">
+                  <input
+                    type="checkbox"
+                    class="mt-0.5 h-4 w-4 rounded border-white/20 bg-white/5 text-emerald-400 focus:ring-emerald-400/40 focus:ring-offset-0"
+                    data-filter="cuisine"
+                    value={toKey(cuisine)}
+                  />
+                  <span class="leading-tight">{cuisine}</span>
+                </label>
+              ))}
+            </div>
+          </details>
+
+          <details open class="group rounded-xl border border-white/10 bg-white/5 px-3 py-2">
+            <summary class="flex cursor-pointer list-none items-center justify-between text-sm font-semibold text-gray-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400/40">
+              Cooking Method
+              <svg class="h-4 w-4 text-gray-400 transition-transform group-open:rotate-180" viewBox="0 0 20 20" aria-hidden="true">
+                <path d="M5 7l5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </summary>
+            <div class="mt-3 grid gap-2">
+              {cookingMethods.map((method) => (
+                <label class="flex items-start gap-3 rounded-lg border border-white/10 bg-gray-900/40 px-3 py-2 text-sm text-gray-200 transition hover:border-white/20">
+                  <input
+                    type="checkbox"
+                    class="mt-0.5 h-4 w-4 rounded border-white/20 bg-white/5 text-amber-300 focus:ring-amber-300/40 focus:ring-offset-0"
+                    data-filter="method"
+                    value={toKey(method)}
+                  />
+                  <span class="leading-tight">{method}</span>
+                </label>
+              ))}
+            </div>
+          </details>
+
+          <details open class="group rounded-xl border border-white/10 bg-white/5 px-3 py-2">
+            <summary class="flex cursor-pointer list-none items-center justify-between text-sm font-semibold text-gray-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400/40">
+              Time
+              <svg class="h-4 w-4 text-gray-400 transition-transform group-open:rotate-180" viewBox="0 0 20 20" aria-hidden="true">
+                <path d="M5 7l5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </summary>
+            <div class="mt-3 space-y-4">
+              <label class="flex items-center gap-3 rounded-lg border border-white/10 bg-gray-900/40 px-3 py-2 text-sm text-gray-200 transition hover:border-white/20">
+                <input
+                  id="timeIncludeInactive"
+                  type="checkbox"
+                  class="h-4 w-4 rounded border-white/20 bg-white/5 text-cyan-300 focus:ring-cyan-300/40 focus:ring-offset-0"
+                />
+                <span>Include chill/marinate time</span>
+              </label>
+
+              <div class="grid gap-2">
+                <p class="text-xs font-semibold uppercase tracking-widest text-gray-400">Minutes</p>
+                <div class="relative mt-1 h-12">
+                  <div class="absolute left-0 right-0 top-1/2 h-1 -translate-y-1/2 rounded-full bg-slate-700/80"></div>
+                  <div id="time-range-fill" class="absolute top-1/2 h-1 -translate-y-1/2 rounded-full bg-cyan-400/45"></div>
+                  <input
+                    id="minTime"
+                    type="range"
+                    min="0"
+                    max={String(timeRangeMax)}
+                    step={String(timeRangeStep)}
+                    value="0"
+                    class="range-input absolute left-0 top-0 z-20 h-10 w-full"
+                  />
+                  <input
+                    id="maxTime"
+                    type="range"
+                    min="0"
+                    max={String(timeRangeMax)}
+                    step={String(timeRangeStep)}
+                    value={String(timeRangeMax)}
+                    class="range-input absolute left-0 top-0 z-10 h-10 w-full"
+                  />
                 </div>
+                <div class="flex items-center justify-between text-xs text-gray-400">
+                  <span id="minTimeLabel">0 min</span>
+                  <span id="maxTimeLabel">{timeRangeMax} min</span>
+                </div>
+              </div>
+            </div>
+          </details>
 
-                <h2 class="mt-3 text-2xl font-semibold leading-tight">{recipe.data.title}</h2>
+          <details open class="group rounded-xl border border-white/10 bg-white/5 px-3 py-2">
+            <summary class="flex cursor-pointer list-none items-center justify-between text-sm font-semibold text-gray-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400/40">
+              Tags
+              <svg class="h-4 w-4 text-gray-400 transition-transform group-open:rotate-180" viewBox="0 0 20 20" aria-hidden="true">
+                <path d="M5 7l5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </summary>
+            <div class="mt-3 space-y-3">
+              <label class="flex items-center gap-2 text-xs text-gray-400">
+                <input
+                  id="tagsMatchAll"
+                  type="checkbox"
+                  class="h-4 w-4 rounded border-white/20 bg-white/5 text-indigo-400 focus:ring-indigo-400/40 focus:ring-offset-0"
+                />
+                Match all selected tags
+              </label>
+              <div class="grid gap-2">
+                {tags.map((tag) => (
+                  <label class="flex items-start gap-3 rounded-lg border border-white/10 bg-gray-900/40 px-3 py-2 text-sm text-gray-200 transition hover:border-white/20">
+                    <input
+                      type="checkbox"
+                      class="mt-0.5 h-4 w-4 rounded border-white/20 bg-white/5 text-fuchsia-400 focus:ring-fuchsia-400/40 focus:ring-offset-0"
+                      data-filter="tag"
+                      value={toKey(tag)}
+                    />
+                    <span class="leading-tight">{tag}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          </details>
+        </aside>
 
-                <p class="mt-1 text-sm text-gray-400">
-                  <FormattedDate date={recipe.data.pubDate} />
-                </p>
-              </a>
-            </li>
-          ))
-        }
-      </ul>
+        <section class="space-y-6">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <p id="summary" class="text-sm text-gray-400"></p>
+            <label
+              for="filters-toggle"
+              class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-gray-200 hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400/40 lg:hidden"
+              role="button"
+            >
+              Filters
+            </label>
+          </div>
+          <p id="no-results" class="hidden text-sm text-gray-400">No recipes match these filters.</p>
+
+          <ul class="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            {
+              recipes.map((recipe) => (
+                <li
+                  class="recipe-card"
+                  data-course={recipe.data.course.map(toKey).join(',')}
+                  data-cuisine={recipe.data.cuisine.map(toKey).join(',')}
+                  data-method={recipe.data.cookingMethod.map(toKey).join(',')}
+                  data-tags={recipe.data.tags.map(toKey).join(',')}
+                  data-active-minutes={String(recipe.data.activeTimeMinutes)}
+                  data-total-minutes={String(recipe.data.totalTimeMinutes)}
+                  data-search={recipe.data.title.toLowerCase()}
+                  data-ingredients-list={JSON.stringify(
+                    recipe.data.ingredients.filter((i) => 'name' in i).map((i) => i.name)
+                  )}
+                  data-ingredients={recipe.data.ingredients
+                    .filter((i) => 'name' in i)
+                    .map((i) => i.name)
+                    .join(' ')
+                    .toLowerCase()}
+                >
+                  <a
+                    href={`/recipes/${recipe.id}/`}
+                    class="group block focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400/40"
+                  >
+                    <div
+                      class="
+                        aspect-[2/1] overflow-hidden rounded-xl bg-gray-800/40
+                        shadow-md
+                        transition-all duration-300 ease-out
+                        group-hover:shadow-[0_0_0_1px_rgba(156,163,175,0.15),_0_12px_40px_-12px_rgba(156,163,175,0.35)]
+                      "
+                    >
+                      {recipe.data.heroImage && (
+                        <Image
+                          class="h-full w-full object-cover object-center"
+                          src={recipe.data.heroImage}
+                          alt={recipe.data.title}
+                          widths={[360, 720]}
+                          sizes="(max-width: 720px) 100vw, 360px"
+                          loading="lazy"
+                          decoding="async"
+                        />
+                      )}
+                    </div>
+
+                    <h2 class="mt-3 text-2xl font-semibold leading-tight">{recipe.data.title}</h2>
+
+                    <p class="mt-2 text-sm text-gray-400">
+                      <span class="font-medium text-gray-200">{`Prep: ${recipe.data.prepTime}`}</span>
+                      <span>{` • Cook: ${recipe.data.cookTime}`}</span>
+                      {recipe.data.inactiveTime && <span>{` • + ${recipe.data.inactiveTime}`}</span>}
+                    </p>
+
+                    <div class="mt-2 flex flex-wrap gap-2">
+                      {recipe.data.course.map((c) => (
+                        <span class="inline-flex items-center rounded-full bg-white/5 px-2 py-0.5 text-xs text-gray-300 ring-1 ring-white/10">
+                          {c}
+                        </span>
+                      ))}
+                      {recipe.data.cuisine.map((c) => (
+                        <span class="inline-flex items-center rounded-full bg-emerald-500/10 px-2 py-0.5 text-xs text-emerald-200 ring-1 ring-emerald-300/20">
+                          {c}
+                        </span>
+                      ))}
+                      {recipe.data.tags.slice(0, 3).map((t) => (
+                        <span class="inline-flex items-center rounded-full bg-fuchsia-500/10 px-2 py-0.5 text-xs text-fuchsia-200 ring-1 ring-fuchsia-300/20">
+                          {t}
+                        </span>
+                      ))}
+                    </div>
+                  </a>
+                </li>
+              ))
+            }
+          </ul>
+        </section>
+      </div>
     </main>
+
+    <script>
+      // @ts-nocheck
+      ;(function () {
+        const cards = Array.from(document.querySelectorAll('.recipe-card'))
+        const q = document.getElementById('q')
+        const ingredients = document.getElementById('ingredients')
+        const tagsMatchAll = document.getElementById('tagsMatchAll')
+        const timeIncludeInactive = document.getElementById('timeIncludeInactive')
+        const minTime = document.getElementById('minTime')
+        const maxTime = document.getElementById('maxTime')
+        const minTimeLabel = document.getElementById('minTimeLabel')
+        const maxTimeLabel = document.getElementById('maxTimeLabel')
+        const timeFill = document.getElementById('time-range-fill')
+        const clear = document.getElementById('clear')
+        const summary = document.getElementById('summary')
+        const noResults = document.getElementById('no-results')
+
+        if (
+          !q ||
+          !ingredients ||
+          !tagsMatchAll ||
+          !timeIncludeInactive ||
+          !minTime ||
+          !maxTime ||
+          !minTimeLabel ||
+          !maxTimeLabel ||
+          !timeFill ||
+          !clear ||
+          !summary ||
+          !noResults
+        ) {
+          return
+        }
+
+        const courseInputs = Array.from(document.querySelectorAll('input[data-filter="course"]'))
+        const cuisineInputs = Array.from(document.querySelectorAll('input[data-filter="cuisine"]'))
+        const methodInputs = Array.from(document.querySelectorAll('input[data-filter="method"]'))
+        const tagInputs = Array.from(document.querySelectorAll('input[data-filter="tag"]'))
+
+        const timeRangeMax = Number((maxTime && maxTime.max) || '0') || 180
+        const thumbHitArea = 16
+        const pointerBlockWindow = 400
+        let minPointerBlockUntil = 0
+        let maxPointerBlockUntil = 0
+        let lastMinValue = Number(minTime.value || '0')
+        let lastMaxValue = Number(maxTime.value || String(timeRangeMax))
+
+        function normalizeText(text) {
+          return String(text || '')
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, ' ')
+            .trim()
+        }
+
+        function parseList(s) {
+          return String(s || '')
+            .split(',')
+            .map((x) => x.trim())
+            .filter(Boolean)
+        }
+
+        function parseJsonList(value) {
+          if (!value) return []
+          try {
+            const parsed = JSON.parse(value)
+            if (Array.isArray(parsed)) return parsed.map((item) => String(item))
+          } catch (err) {
+            return []
+          }
+          return []
+        }
+
+        function getSelected(inputs) {
+          return new Set(inputs.filter((input) => input.checked).map((input) => input.value))
+        }
+
+        function hasAny(haystack, needles) {
+          if (!needles.size) return true
+          for (const v of haystack) if (needles.has(v)) return true
+          return false
+        }
+
+        function hasAll(haystack, needles) {
+          if (!needles.size) return true
+          for (const v of needles) if (!haystack.includes(v)) return false
+          return true
+        }
+
+        function hasIngredientMatch(ingredientsList, term) {
+          if (!term) return true
+          for (const ingredient of ingredientsList) {
+            if (ingredient.includes(term)) return true
+          }
+          return false
+        }
+
+        function recordTimeValues() {
+          lastMinValue = Number(minTime.value || '0')
+          lastMaxValue = Number(maxTime.value || String(timeRangeMax))
+        }
+
+        function isThumbHit(input, clientX) {
+          const rect = input.getBoundingClientRect()
+          const min = Number(input.min || '0')
+          const max = Number(input.max || '100')
+          const value = Number(input.value || '0')
+          const percent = (value - min) / (max - min || 1)
+          const thumbX = rect.left + percent * rect.width
+          return Math.abs(clientX - thumbX) <= thumbHitArea
+        }
+
+        function handleThumbGuard(input, type, event) {
+          const clientX = event.touches ? event.touches[0]?.clientX : event.clientX
+          if (clientX === undefined) return
+          const allowed = isThumbHit(input, clientX)
+
+          if (type === 'min') minPointerBlockUntil = allowed ? 0 : Date.now() + pointerBlockWindow
+          else maxPointerBlockUntil = allowed ? 0 : Date.now() + pointerBlockWindow
+
+          if (!allowed) {
+            event.preventDefault()
+            event.stopPropagation()
+          }
+        }
+
+        const cardData = cards.map((card) => {
+          const ingredientsList = parseJsonList(card.dataset.ingredientsList)
+          const normalizedIngredients = ingredientsList.length
+            ? ingredientsList.map((item) => normalizeText(item)).filter(Boolean)
+            : [normalizeText(card.dataset.ingredients || '')].filter(Boolean)
+
+          return {
+            card,
+            courseKeys: parseList(card.dataset.course),
+            cuisineKeys: parseList(card.dataset.cuisine),
+            methodKeys: parseList(card.dataset.method),
+            tagKeys: parseList(card.dataset.tags),
+            searchText: normalizeText(card.dataset.search || ''),
+            ingredientsText: normalizedIngredients,
+            activeMinutes: Number(card.dataset.activeMinutes || '0'),
+            totalMinutes: Number(card.dataset.totalMinutes || '0'),
+          }
+        })
+
+        function syncTimeRange(source) {
+          let minValue = Number(minTime.value || '0')
+          let maxValue = Number(maxTime.value || String(timeRangeMax))
+
+          if (minValue > maxValue) {
+            if (source === 'min') maxValue = minValue
+            else minValue = maxValue
+          }
+
+          minTime.value = String(minValue)
+          maxTime.value = String(maxValue)
+          minTimeLabel.textContent = `${minValue} min`
+          maxTimeLabel.textContent = `${maxValue} min`
+
+          const left = (minValue / timeRangeMax) * 100
+          const right = 100 - (maxValue / timeRangeMax) * 100
+          timeFill.style.left = `${left}%`
+          timeFill.style.right = `${right}%`
+
+          minTime.style.zIndex = minValue >= maxValue - 5 ? '30' : '20'
+          maxTime.style.zIndex = minValue >= maxValue - 5 ? '20' : '30'
+          recordTimeValues()
+        }
+
+        function applyFilters() {
+          const selectedCourses = getSelected(courseInputs)
+          const selectedCuisines = getSelected(cuisineInputs)
+          const selectedMethods = getSelected(methodInputs)
+          const selectedTags = getSelected(tagInputs)
+          const tagsMatchAllChecked = !!tagsMatchAll.checked
+          const timeBasis = timeIncludeInactive.checked ? 'total' : 'active'
+
+          const qTokens = normalizeText(q.value).split(/\s+/).filter(Boolean)
+
+          const ingredientTerms = ingredients.value
+            .split(/[,\n]+/)
+            .map((term) => normalizeText(term))
+            .filter(Boolean)
+
+          const minValue = Number(minTime.value || '0')
+          const maxValue = Number(maxTime.value || String(timeRangeMax))
+
+          let shown = 0
+
+          cardData.forEach((cardItem) => {
+            const minutes = timeBasis === 'total' ? cardItem.totalMinutes : cardItem.activeMinutes
+
+            const passCourse = hasAny(cardItem.courseKeys, selectedCourses)
+            const passCuisine = hasAny(cardItem.cuisineKeys, selectedCuisines)
+            const passMethod = hasAny(cardItem.methodKeys, selectedMethods)
+
+            const passTags = selectedTags.size
+              ? tagsMatchAllChecked
+                ? hasAll(cardItem.tagKeys, selectedTags)
+                : hasAny(cardItem.tagKeys, selectedTags)
+              : true
+
+            const passTime = minutes >= minValue && minutes <= maxValue
+
+            const passQuery = qTokens.length ? qTokens.every((t) => cardItem.searchText.includes(t)) : true
+
+            const passIngredients = ingredientTerms.length
+              ? ingredientTerms.every((term) => hasIngredientMatch(cardItem.ingredientsText, term))
+              : true
+
+            const show = passCourse && passCuisine && passMethod && passTags && passTime && passQuery && passIngredients
+            cardItem.card.classList.toggle('hidden', !show)
+            if (show) shown++
+          })
+
+          summary.textContent = `${shown} / ${cards.length} recipes`
+          noResults.classList.toggle('hidden', shown !== 0)
+        }
+
+        courseInputs.forEach((input) => input.addEventListener('change', applyFilters))
+        cuisineInputs.forEach((input) => input.addEventListener('change', applyFilters))
+        methodInputs.forEach((input) => input.addEventListener('change', applyFilters))
+        tagInputs.forEach((input) => input.addEventListener('change', applyFilters))
+
+        q.addEventListener('input', applyFilters)
+        ingredients.addEventListener('input', applyFilters)
+
+        tagsMatchAll.addEventListener('change', () => {
+          applyFilters()
+        })
+
+        timeIncludeInactive.addEventListener('change', () => {
+          applyFilters()
+        })
+
+        minTime.addEventListener('input', () => {
+          if (Date.now() < minPointerBlockUntil) {
+            minTime.value = String(lastMinValue)
+            syncTimeRange('min')
+            return
+          }
+          syncTimeRange('min')
+        })
+
+        maxTime.addEventListener('input', () => {
+          if (Date.now() < maxPointerBlockUntil) {
+            maxTime.value = String(lastMaxValue)
+            syncTimeRange('max')
+            return
+          }
+          syncTimeRange('max')
+        })
+
+        minTime.addEventListener('change', applyFilters)
+        maxTime.addEventListener('change', applyFilters)
+
+        minTime.addEventListener('pointerdown', (event) => {
+          handleThumbGuard(minTime, 'min', event)
+        })
+
+        maxTime.addEventListener('pointerdown', (event) => {
+          handleThumbGuard(maxTime, 'max', event)
+        })
+
+        minTime.addEventListener('mousedown', (event) => {
+          handleThumbGuard(minTime, 'min', event)
+        })
+
+        maxTime.addEventListener('mousedown', (event) => {
+          handleThumbGuard(maxTime, 'max', event)
+        })
+
+        minTime.addEventListener(
+          'touchstart',
+          (event) => {
+            handleThumbGuard(minTime, 'min', event)
+          },
+          { passive: false }
+        )
+
+        maxTime.addEventListener(
+          'touchstart',
+          (event) => {
+            handleThumbGuard(maxTime, 'max', event)
+          },
+          { passive: false }
+        )
+
+
+        clear.addEventListener('click', () => {
+          q.value = ''
+          ingredients.value = ''
+          tagsMatchAll.checked = false
+          timeIncludeInactive.checked = false
+          minTime.value = '0'
+          maxTime.value = String(timeRangeMax)
+
+          courseInputs.forEach((input) => (input.checked = false))
+          cuisineInputs.forEach((input) => (input.checked = false))
+          methodInputs.forEach((input) => (input.checked = false))
+          tagInputs.forEach((input) => (input.checked = false))
+
+          syncTimeRange('max')
+          applyFilters()
+        })
+
+        syncTimeRange('max')
+        applyFilters()
+      })()
+    </script>
   </body>
 </html>

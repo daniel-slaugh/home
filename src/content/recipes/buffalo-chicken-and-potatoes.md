@@ -4,6 +4,15 @@ description: 'Ranch dressing and cream of celery soup offsets the spice from buf
 serves: 6
 prepTime: '10 min'
 cookTime: '1 hr'
+activeTimeMinutes: 70
+totalTimeMinutes: 70
+course:
+  - 'Main'
+cuisine:
+  - 'American'
+cookingMethod:
+  - 'Oven'
+tags: []
 ingredients:
   - title: Ingredients
   - name: 'boneless skinless chicken breasts, cut into 1-inch strips'

@@ -4,6 +4,15 @@ description: 'Creamy roasted potatoes baked with cheddar, bacon, and green onion
 serves: 10
 prepTime: '25 min'
 cookTime: '55 min'
+activeTimeMinutes: 80
+totalTimeMinutes: 80
+course:
+  - 'Side'
+cuisine:
+  - 'American'
+cookingMethod:
+  - 'Oven'
+tags: []
 ingredients:
   - title: Potatoes
   - name: 'Yukon Gold potatoes, cubed'

@@ -513,17 +513,6 @@ const timeRangeMax = Math.max(timeRangeStep, Math.ceil(maxRecipeMinutes / timeRa
                       {recipe.data.inactiveTime && <span>{` • + ${recipe.data.inactiveTime}`}</span>}
                     </p>
 
-                    <div class="mt-2 flex flex-wrap gap-2">
-                      {recipe.data.course.map((c) => (
-                        <span class="inline-flex items-center rounded-full bg-white/5 px-2 py-0.5 text-xs text-gray-300 ring-1 ring-white/10">{c}</span>
-                      ))}
-                      {recipe.data.cuisine.map((c) => (
-                        <span class="inline-flex items-center rounded-full bg-emerald-500/10 px-2 py-0.5 text-xs text-emerald-200 ring-1 ring-emerald-300/20">{c}</span>
-                      ))}
-                      {recipe.data.tags.slice(0, 3).map((t) => (
-                        <span class="inline-flex items-center rounded-full bg-fuchsia-500/10 px-2 py-0.5 text-xs text-fuchsia-200 ring-1 ring-fuchsia-300/20">{t}</span>
-                      ))}
-                    </div>
                   </a>
                 </li>
               ))

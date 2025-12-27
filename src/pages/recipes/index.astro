@@ -40,39 +40,40 @@ const timeRangeMax = Math.max(timeRangeStep, Math.ceil(maxRecipeMinutes / timeRa
         outline: none;
       }
       .range-input::-webkit-slider-runnable-track {
-        height: 0;
+        height: 2px;
       }
       .range-input::-webkit-slider-thumb {
         -webkit-appearance: none;
-        height: 20px;
-        width: 20px;
+        height: 16px;
+        width: 16px;
         border-radius: 999px;
         background: #22d3ee;
         border: 2px solid #a5f3fc;
-        box-shadow: 0 0 0 6px rgba(34, 211, 238, 0.35);
+        box-shadow: 0 0 0 4px rgba(34, 211, 238, 0.35);
+        margin-top: -7px;
         cursor: pointer;
       }
       .range-input:active::-webkit-slider-thumb {
         cursor: grabbing;
       }
       .range-input::-moz-range-track {
-        height: 0;
+        height: 2px;
         background: transparent;
       }
       .range-input::-moz-range-thumb {
-        height: 20px;
-        width: 20px;
+        height: 16px;
+        width: 16px;
         border-radius: 999px;
         background: #22d3ee;
         border: 2px solid #a5f3fc;
-        box-shadow: 0 0 0 6px rgba(34, 211, 238, 0.35);
+        box-shadow: 0 0 0 4px rgba(34, 211, 238, 0.35);
         cursor: pointer;
       }
       .range-input:active::-moz-range-thumb {
         cursor: grabbing;
       }
       .range-input::-ms-track {
-        height: 0;
+        height: 2px;
         background: transparent;
         border-color: transparent;
         color: transparent;
@@ -370,7 +371,7 @@ const timeRangeMax = Math.max(timeRangeStep, Math.ceil(maxRecipeMinutes / timeRa
                     max={String(timeRangeMax)}
                     step={String(timeRangeStep)}
                     value={String(timeRangeMax)}
-                    class="range-input absolute left-0 top-1/2 z-10 h-12 w-full -translate-y-1/2"
+                    class="range-input absolute left-0 top-1/2 z-10 h-8 w-full -translate-y-1/2"
                   />
                 </div>
                 <div class="flex items-center justify-between text-xs text-gray-400">

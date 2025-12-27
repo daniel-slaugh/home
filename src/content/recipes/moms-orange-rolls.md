@@ -84,13 +84,13 @@ heroImage: 'moms-orange-rolls.png'
 
 Adding the whole wheat at this step lets it sponge so the finished rolls are more moist. Freshly grinding the whole wheat flower makes a world of difference in the end taste. If you can't grind your own, use the newest bag you can find.
 
-2. Let sit for about 15 minutes until foamy. Then stir in [[all-purpose flour (10 to 12 cups, as needed)]] until the texture is just right. The perfect texture is more stiff than soft (closer to pizza dough than bread dough). A good test is to touch it with you finger and it should still stick a little - but if you have oil on your finger, it doesn't stick.
+2. Let sit for about 15 minutes until foamy. Then stir in [[all-purpose flour (10 to 12 cups, as needed)]] until the texture is just right. A good test is to touch it with you finger and it should still stick a little - but if you have oil on your finger, it doesn't stick.
 
 3. Spread the dough out with your hands into a rectangle about 1/4-inch thick.
 
 4. Spread the [[butter, softened]] evenly across the dough rectangle. The butter should be very soft but not runny.
 
-5. Mix [[orange zest]] and [[granulated sugar]] in a bowl. Pour a generous layer of this sugar orange mix over the dough rectangle - you shouldn't be able to see the dough once you're done.
+5. Mix [[orange zest]] and approximately [[granulated sugar]] in a bowl. Pour a generous layer of this sugar orange mix over the dough rectangle - you shouldn't be able to see the dough once you're done.
 
 6. Roll up tightly and slice into 1-inch pieces. Kitchen shears work great for this.
 

@@ -84,15 +84,15 @@ heroImage: 'moms-cinnamon-rolls.png'
 
 Adding the whole wheat at this step lets it sponge so the finished rolls are more moist. Freshly grinding the whole wheat flower makes a world of difference in the end taste. If you can't grind your own, use the newest bag you can find.
 
-2. Let sit for about 15 minutes until foamy. Then stir in [[all-purpose flour (10 to 12 cups, as needed)]] until the texture is just right. The perfect texture is more stiff than soft (closer to pizza dough than bread dough). A good test is to touch it with you finger and it should still stick a little - but if you have oil on your finger, it doesn't stick.
+2. Let sit for about 15 minutes until foamy. Then stir in [[all-purpose flour (10 to 12 cups, as needed)]] until the texture is just right. A good test is to touch it with you finger and it should still stick a little - but if you have oil on your finger, it doesn't stick.
 
 3. Spread the dough out with your hands into a rectangle about 1/4-inch thick.
 
 4. Spread the [[butter, softened]] evenly across the dough rectangle. The butter should be very soft but not runny.
 
-5. Sprinkle a generous layer of [[granulated sugar]] over the butter. The right amount of sugar should all be held by the butter (not so much sugar that it's loose) but enough that you pretty much can't see the dough.
+5. Sprinkle a generous layer of approximately [[granulated sugar]] over the butter. The right amount of sugar should all be held by the butter (not so much sugar that it's loose) but enough that you pretty much can't see the dough.
 
-6. Sprinkle a generous layer of [[ground cinnamon]]. You don't want to see the sugar.
+6. Sprinkle a generous layer of approximately [[ground cinnamon]]. You don't want to see the sugar.
 
 7. Roll up tightly and slice into 1-inch pieces. Kitchen shears work great for this.
 

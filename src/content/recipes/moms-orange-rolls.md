@@ -1,6 +1,6 @@
 ---
-title: "Mom's Cinnamon Rolls"
-description: 'Soft, classic cinnamon rolls with a rich cream cheese frosting.'
+title: "Mom's Orange Rolls"
+description: 'Soft, classic orange rolls with a rich cream cheese frosting.'
 serves: 36
 prepTime: '30 min'
 cookTime: '15 min'
@@ -48,11 +48,11 @@ ingredients:
     quantity: 1
     unit: 'cup'
   - name: 'granulated sugar'
-    quantity: 1
+    quantity: 1.5
     unit: 'cup'
-  - name: 'ground cinnamon'
-    quantity: 1
-    unit: 'cup'
+  - name: 'orange zest'
+    quantity: 2
+    unit: 'oranges worth of'
 
   - title: Frosting
   - name: 'butter, softened'
@@ -72,7 +72,7 @@ ingredients:
     unit: 'Tbsp'
 
 pubDate: 'Dec 26 2025'
-heroImage: 'moms-cinnamon-rolls.png'
+heroImage: 'moms-orange-rolls.png'
 ---
 
 1. In a large bowl, combine:
@@ -90,17 +90,15 @@ Adding the whole wheat at this step lets it sponge so the finished rolls are mor
 
 4. Spread the [[butter, softened]] evenly across the dough rectangle. The butter should be very soft but not runny.
 
-5. Sprinkle a generous layer of [[granulated sugar]] over the butter. The right amount of sugar should all be held by the butter (not so much sugar that it's loose) but enough that you pretty much can't see the dough.
+5. Mix [[orange zest]] and [[granulated sugar]] in a bowl. Pour a generous layer of this sugar orange mix over the dough rectangle - you shouldn't be able to see the dough once you're done.
 
-6. Sprinkle a generous layer of [[ground cinnamon]]. You don't want to see the sugar.
+6. Roll up tightly and slice into 1-inch pieces. Kitchen shears work great for this.
 
-7. Roll up tightly and slice into 1-inch pieces. Kitchen shears work great for this.
+7. Place rolls on greased baking sheets, cover, and let rise for about 1 hour (or bake sooner if you prefer a shorter rise).
 
-8. Place rolls on greased baking sheets, cover, and let rise for about 1 hour (or bake sooner if you prefer a shorter rise).
+8. Bake at 400°F for 12 to 15 minutes, until golden.
 
-9. Bake at 400°F for 12 to 15 minutes, until golden.
-
-10. Mix all frosting ingredients together until smooth:
+9. Mix all frosting ingredients together until smooth:
 
 - [[butter, softened]]
 - [[cream cheese, softened]]

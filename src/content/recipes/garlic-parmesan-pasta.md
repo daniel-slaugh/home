@@ -7,7 +7,7 @@ cookTime: '10 min'
 activeTimeMinutes: 20
 totalTimeMinutes: 20
 course:
-  - 'Side'
+  - 'Main'
 cuisine:
   - 'Italian'
 cookingMethod:

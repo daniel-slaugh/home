@@ -1,6 +1,6 @@
 ---
 title: 'Lime Coconut Chicken'
-description: 'Tender chicken breasts paired with a creamy sun-dried tomato sauce and hearty orzo'
+description: 'Tender lime-coconut chicken served with fragrant coconut jasmine rice'
 serves: 6
 prepTime: '15 min'
 cookTime: '35 min'
@@ -18,60 +18,60 @@ tags:
   - 'Dairy-Free'
   - 'Make Ahead'
 ingredients:
-  - title: Chicken Marinade
-  - name: 'Boneless skinless chicken breasts or thighs'
+  - title: Chicken and Marinade/Sauce
+  - name: 'Boneless skinless chicken breasts'
     quantity: 2
-    unit: 'pound'
-  - name: 'Canned coconut milk (light or regular)'
+    unit: 'lb'
+  - name: 'Oil'
+    quantity: 3
+    unit: 'Tbsp'
+  - name: 'Lime (zest and juice of 1 lime)'
     quantity: 1
-    unit: 'cup'
-  - name: 'Olive oil'
-    quantity: 0.25
-    unit: 'cup'
-  - name: 'Lime (zest and juice)'
-    quantity: 2
     unit: ''
-  - name: 'Low-sodium soy sauce'
-    quantity: 0.25
-    unit: 'cup'
-  - name: 'Granulated sugar'
-    quantity: 0.25
-    unit: 'cup'
-  - name: 'Curry powder'
-    quantity: 4
+  - name: 'Ground cumin'
+    quantity: 1
     unit: 'tsp'
   - name: 'Ground coriander'
-    quantity: 1
-    unit: 'tablespoon'
-  - name: 'Salt'
+    quantity: 1.5
+    unit: 'tsp'
+  - name: 'Low-sodium soy sauce'
+    quantity: 2
+    unit: 'Tbsp'
+  - name: 'Salt (for marinade)'
+    quantity: 1.5
+    unit: 'tsp'
+  - name: 'Sugar'
+    quantity: 2
+    unit: 'Tbsp'
+  - name: 'Curry powder'
     quantity: 2
     unit: 'tsp'
-  - name: 'Ground cumin'
-    quantity: 2
-    unit: 'tsp'
+  - name: 'Canned coconut milk (light or regular)'
+    quantity: 0.5
+    unit: 'cup'
   - name: 'Cayenne pepper'
     quantity: 1
     unit: 'pinch'
 
   - title: Coconut Rice
-  - name: 'Long grain white or jasmine rice'
-    quantity: 1.5
+  - name: 'Jasmine rice'
+    quantity: 1
     unit: 'cup'
   - name: 'Canned coconut milk'
-    quantity: 1.5
+    quantity: 1
     unit: 'cup'
   - name: 'Water'
-    quantity: 1.5
-    unit: 'cup'
-  - name: 'Salt'
     quantity: 1
+    unit: 'cup'
+  - name: 'Salt (for rice)'
+    quantity: 0.5
     unit: 'tsp'
 
   - title: Garnish
   - name: 'chopped fresh cilantro'
     quantity: 0.25
     unit: 'cup'
-  - name: 'Lime, cut into wedges'
+  - name: 'Fresh limes, cut into wedges'
     quantity: 1
     unit: ''
 pubDate: 'Jun 17 2025'
@@ -80,15 +80,15 @@ heroImage: './lime-coconut-chicken.jpg'
 
 1. **For the marinade,** in a medium bowl, whisk together:
 
-- [[Olive oil]]
-- [[Lime (zest and juice)]]
+- [[Oil]]
+- [[Lime (zest and juice of 1 lime)]]
 - [[Low-sodium soy sauce]]
-- [[Granulated sugar]]
+- [[Sugar]]
 - [[Curry powder]]
 - [[Canned coconut milk (light or regular)]]
 - [[Ground cumin]]
 - [[Ground coriander]]
-- [[Salt]]
+- [[Salt (for marinade)]]
 - [[Cayenne pepper]]
 
 2. Place the chicken in a shallow dish, pour the marinade over the chicken, seal or cover, and refrigerate for at least 2 hours and up to 12 hours.
@@ -99,17 +99,17 @@ heroImage: './lime-coconut-chicken.jpg'
   </li>
 </ol>
 <ul>
-  <li>[[Long grain white or jasmine rice]]</li>
+  <li>[[Jasmine rice]]</li>
   <li>[[Canned coconut milk]]</li>
   <li>[[Water]]</li>
-  <li>[[Salt]]</li>
+  <li>[[Salt (for rice)]]</li>
   
   and bring to a simmer over medium heat. Cover, reduce heat to low, and simmer for 16 minutes without lifting the lid. Remove from heat, let stand for 5–10 minutes, then fluff lightly before serving.
 </ul>
 
 4. **For the chicken,** preheat a saucepan to medium-high.
 
-5. Cook marinaded chicken with the sauce in pan for 6–7 minutes per side until a thermometer inserted at the thickest part registers 165 °F.
-6. Move chicken to a cutting board, let rest, then chop into bite sizes pieces.
+5. Cook the marinated chicken with the sauce in a pan for 6–7 minutes per side until a thermometer inserted at the thickest part registers 165 °F.
+6. Move the chicken to a cutting board, let it rest, then chop it into bite-size pieces.
 7. Plate rice, chicken, and sauce.
 8. Sprinkle [[[chopped fresh cilantro]]] over the dish and serve with fresh lime wedges.

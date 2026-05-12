@@ -173,7 +173,7 @@ const timeRangeMax = Math.max(timeRangeStep, Math.ceil(maxRecipeMinutes / timeRa
                 <input
                   id="q"
                   type="search"
-                  placeholder="Title, description…"
+                  placeholder="Title..."
                   class="w-full bg-transparent text-sm text-gray-100 placeholder:text-gray-500 outline-none"
                 />
               </div>
@@ -202,11 +202,11 @@ const timeRangeMax = Math.max(timeRangeStep, Math.ceil(maxRecipeMinutes / timeRa
                 <input
                   id="ingredients"
                   type="text"
-                  placeholder="Ingredients (comma-separated)…"
+                  placeholder="Ingredients…"
                   class="w-full bg-transparent text-sm text-gray-100 placeholder:text-gray-500 outline-none"
                 />
               </div>
-              <p class="text-xs text-gray-500">Ingredient matching is partial.</p>
+              <p class="text-xs text-gray-500">Separate ingredients with commas.</p>
             </div>
           </details>
 
@@ -431,7 +431,10 @@ const timeRangeMax = Math.max(timeRangeStep, Math.ceil(maxRecipeMinutes / timeRa
           </details>
         </aside>
 
-        <section id="recipes-list" class="space-y-6">
+        <section
+          id="recipes-list"
+          class="space-y-6"
+        >
           <div class="flex flex-wrap items-center justify-between gap-3">
             <p
               id="summary"
@@ -504,7 +507,6 @@ const timeRangeMax = Math.max(timeRangeStep, Math.ceil(maxRecipeMinutes / timeRa
                       <span>{` • Cook: ${recipe.data.cookTime}`}</span>
                       {recipe.data.inactiveTime && <span>{` • + ${recipe.data.inactiveTime}`}</span>}
                     </p>
-
                   </a>
                 </li>
               ))
@@ -642,11 +644,7 @@ const timeRangeMax = Math.max(timeRangeStep, Math.ceil(maxRecipeMinutes / timeRa
             const passCuisine = hasAny(cardItem.cuisineKeys, selectedCuisines)
             const passMethod = hasAny(cardItem.methodKeys, selectedMethods)
 
-            const passTags = selectedTags.size
-              ? tagsMatchAllChecked
-                ? hasAll(cardItem.tagKeys, selectedTags)
-                : hasAny(cardItem.tagKeys, selectedTags)
-              : true
+            const passTags = selectedTags.size ? (tagsMatchAllChecked ? hasAll(cardItem.tagKeys, selectedTags) : hasAny(cardItem.tagKeys, selectedTags)) : true
 
             const passTime = minutes >= minValue && minutes <= maxValue
 

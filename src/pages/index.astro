@@ -1,6 +1,7 @@
 ---
 import { Image } from 'astro:assets'
 import recipesPreview from '../content/recipes/parmesan-egg-in-the-hole.png'
+import spellsPreview from '../assets/spells-card.png'
 ---
 
 <!doctype html>
@@ -526,120 +527,14 @@ import recipesPreview from '../content/recipes/parmesan-egg-in-the-hole.png'
             <div class="lights"><span></span><span></span><span></span></div>
             <span class="path">~/spells</span>
           </div>
-          <div class="card-preview-wrap">
-            <div class="card-preview">
-              <svg
-                class="card-preview-svg"
-                viewBox="0 0 320 180"
-                preserveAspectRatio="xMidYMid slice"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <defs>
-                  <radialGradient
-                    id="parch"
-                    cx="50%"
-                    cy="40%"
-                    r="70%"
-                  >
-                    <stop
-                      offset="0%"
-                      stop-color="#f7f3e8"
-                    ></stop>
-                    <stop
-                      offset="100%"
-                      stop-color="#d9cfb4"
-                    ></stop>
-                  </radialGradient>
-                </defs>
-                <rect
-                  width="320"
-                  height="180"
-                  fill="url(#parch)"
-                ></rect>
-                <g
-                  fill="none"
-                  stroke="#5a4a2a"
-                  stroke-width="1.2"
-                  opacity="0.6"
-                >
-                  <line
-                    x1="40"
-                    y1="40"
-                    x2="280"
-                    y2="40"
-                  ></line>
-                  <line
-                    x1="40"
-                    y1="60"
-                    x2="220"
-                    y2="60"
-                  ></line>
-                  <line
-                    x1="40"
-                    y1="80"
-                    x2="260"
-                    y2="80"
-                  ></line>
-                  <line
-                    x1="40"
-                    y1="100"
-                    x2="200"
-                    y2="100"
-                  ></line>
-                  <line
-                    x1="40"
-                    y1="120"
-                    x2="270"
-                    y2="120"
-                  ></line>
-                  <line
-                    x1="40"
-                    y1="140"
-                    x2="180"
-                    y2="140"
-                  ></line>
-                </g>
-                <g
-                  fill="#7a1f1f"
-                  font-family="Lora, serif"
-                  font-style="italic"
-                  font-weight="700"
-                >
-                  <text
-                    x="160"
-                    y="28"
-                    text-anchor="middle"
-                    font-size="16"
-                    >Fireball</text
-                  >
-                </g>
-                <g
-                  fill="#7a1f1f"
-                  opacity="0.85"
-                >
-                  <circle
-                    cx="265"
-                    cy="150"
-                    r="14"
-                  ></circle>
-                  <circle
-                    cx="265"
-                    cy="150"
-                    r="9"
-                    fill="#f7f3e8"
-                  ></circle>
-                  <text
-                    x="265"
-                    y="154"
-                    text-anchor="middle"
-                    font-size="10"
-                    font-family="Lora, serif"
-                    font-weight="700"
-                    fill="#7a1f1f"
-                    >3</text
-                  >
-                </g>
-              </svg>
+          <div class="card-preview-wrap parchment">
+            <div class="card-preview contain">
+              <Image
+                src={spellsPreview}
+                alt="An Accio spell card on parchment"
+                widths={[320, 640]}
+                sizes="(min-width: 760px) 320px, 100vw"
+              />
             </div>
           </div>
           <div class="card-body">
@@ -668,10 +563,10 @@ import recipesPreview from '../content/recipes/parmesan-egg-in-the-hole.png'
           </div>
           <div class="card-body">
             <div class="card-head">
-              <h3 class="card-title">Blog, eventually</h3>
+              <h3 class="card-title">Dev blog, eventually</h3>
               <span class="card-arrow">+</span>
             </div>
-            <p class="card-desc">A quiet little writing nook. Notes on building, cooking, and the small things in between. Not yet planted.</p>
+            <p class="card-desc">I have a lot to say about data management and engineering. If only I could find the time to write about it.</p>
             <div class="card-foot">
               <span class="tag">#writing #planted</span>
               <span class="status seed">germinating</span>
@@ -1137,6 +1032,17 @@ import recipesPreview from '../content/recipes/parmesan-egg-in-the-hole.png'
       .card-preview-svg {
         width: 100%;
         height: 100%;
+      }
+      .card-preview-wrap.parchment {
+        background:
+          radial-gradient(ellipse 80% 70% at 50% 35%, #f0e7d2 0%, #d8cdb1 80%, #c2b694 100%);
+      }
+      .card-preview.contain img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center top;
+        filter: none;
       }
 
       .card-body {

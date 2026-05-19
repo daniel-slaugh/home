@@ -410,7 +410,6 @@ import spellsPreview from '../assets/spells-card.png'
         </div>
         <div class="rhs">
           <a href="#projects">~/projects</a>
-          <a href="#about">~/about</a>
           <a href="/recipes">~/recipes</a>
         </div>
       </nav>
@@ -550,10 +549,7 @@ import spellsPreview from '../assets/spells-card.png'
           </div>
         </a>
 
-        <a
-          class="card seed-card"
-          href="#about"
-        >
+        <div class="card seed-card">
           <div class="card-window">
             <div class="lights"><span></span><span></span><span></span></div>
             <span class="path">~/blog</span>
@@ -572,28 +568,6 @@ import spellsPreview from '../assets/spells-card.png'
               <span class="status seed">germinating</span>
             </div>
           </div>
-        </a>
-      </div>
-    </section>
-
-    <section
-      class="about"
-      id="about"
-      data-screen-label="03 About"
-    >
-      <div class="about-inner">
-        <div>
-          <h2>A garden that <em>compiles</em>.</h2>
-        </div>
-        <div>
-          <p>Byte Garden is my personal patch of the internet — a place to share the things I make. Some are useful. Some are just for fun.</p>
-          <!-- <p>Built by hand, no trackers, no newsletter popup. Stay as long as you like.</p> -->
-          <pre class="about-code"><span class="c">// the philosophy</span>
-<span class="k">while</span> (curious) {`{`}
-  build(<span class="s">"things"</span>);
-  share(<span class="s">"freely"</span>);
-  ignore(perfectionism); <span class="c">// TODO: get better at this</span>
-{`}`}</pre>
         </div>
       </div>
     </section>
@@ -1148,61 +1122,6 @@ import spellsPreview from '../assets/spells-card.png'
         letter-spacing: 0.1em;
       }
 
-      .about {
-        position: relative;
-        z-index: 2;
-        border-top: 1px solid var(--border);
-        border-bottom: 1px solid var(--border);
-        background: var(--bg-mid);
-        padding: 4rem 3rem;
-      }
-      .about-inner {
-        max-width: 1080px;
-        margin: 0 auto;
-        display: grid;
-        grid-template-columns: 1fr 1.4fr;
-        gap: 4rem;
-        align-items: center;
-      }
-      .about h2 {
-        font-family: var(--serif);
-        font-size: 2rem;
-        font-weight: 700;
-        letter-spacing: -0.02em;
-        line-height: 1.15;
-      }
-      .about h2 em {
-        font-style: italic;
-        color: var(--green);
-      }
-      .about p {
-        font-size: 0.95rem;
-        line-height: 1.7;
-        color: var(--ink-soft);
-        margin-bottom: 1rem;
-        max-width: 56ch;
-      }
-      .about-code {
-        font-family: var(--mono);
-        font-size: 0.75rem;
-        line-height: 1.7;
-        color: var(--ink-soft);
-        background: var(--bg);
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        padding: 1.25rem 1.4rem;
-        margin-top: 1.25rem;
-      }
-      .about-code .k {
-        color: var(--green);
-      }
-      .about-code .s {
-        color: var(--ember);
-      }
-      .about-code .c {
-        color: var(--ink-ghost);
-      }
-
       footer {
         position: relative;
         z-index: 2;
@@ -1397,14 +1316,9 @@ import spellsPreview from '../assets/spells-card.png'
       @media (max-width: 760px) {
         .hero,
         .section,
-        .about,
         footer {
           padding-left: 1.25rem;
           padding-right: 1.25rem;
-        }
-        .about-inner {
-          grid-template-columns: 1fr;
-          gap: 2rem;
         }
         .section-head {
           flex-direction: column;

@@ -1,0 +1,1740 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+    <title>BRYK - Character Sheet</title>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap');
+      :root {
+        --fire: #c84b11;
+        --ember: #e8751a;
+        --gold: #d4a843;
+        --ash: #1a1614;
+        --smoke: #2c2420;
+        --parchment: #f2e8d9;
+        --stone: #8b7355;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background: var(--ash);
+        color: var(--parchment);
+        font-family: 'Crimson Text', Georgia, serif;
+        font-size: 17px;
+        line-height: 1.5;
+        min-height: 100vh;
+      }
+      header {
+        background: linear-gradient(135deg, var(--smoke) 0%, #3d1f0a 50%, var(--smoke) 100%);
+        border-bottom: 2px solid var(--fire);
+        padding: 1.75rem 2rem;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+      }
+      header::before {
+        content: '🔥';
+        position: absolute;
+        font-size: 8rem;
+        opacity: 0.06;
+        top: -1.5rem;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+      header h1 {
+        font-family: 'Cinzel', serif;
+        font-size: 3.2rem;
+        font-weight: 900;
+        color: var(--gold);
+        letter-spacing: 0.15em;
+        text-shadow: 0 0 30px rgba(200, 75, 17, 0.6);
+      }
+      header .subtitle {
+        font-family: 'Cinzel', serif;
+        font-size: 0.8rem;
+        color: var(--stone);
+        letter-spacing: 0.3em;
+        margin-top: 0.4rem;
+        text-transform: uppercase;
+      }
+      header .tagline {
+        font-style: italic;
+        color: var(--ember);
+        font-size: 1.05rem;
+        margin-top: 0.6rem;
+      }
+      .level-bar {
+        background: #0f0c0a;
+        border-bottom: 1px solid var(--fire);
+        padding: 0.9rem 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        position: sticky;
+        top: 0;
+        z-index: 50;
+      }
+      .level-bar .lbl {
+        font-family: 'Cinzel', serif;
+        font-size: 0.65rem;
+        letter-spacing: 0.2em;
+        color: var(--stone);
+        text-transform: uppercase;
+        margin-right: 0.5rem;
+      }
+      .lv-btn {
+        width: 40px;
+        height: 40px;
+        border: 2px solid #3d2a1a;
+        background: var(--smoke);
+        color: var(--stone);
+        border-radius: 50%;
+        cursor: pointer;
+        font-family: 'Cinzel', serif;
+        font-size: 1rem;
+        font-weight: 600;
+        transition: all 0.18s;
+      }
+      .lv-btn:hover {
+        border-color: var(--ember);
+        color: var(--parchment);
+      }
+      .lv-btn.active {
+        background: var(--fire);
+        border-color: var(--gold);
+        color: var(--parchment);
+        box-shadow: 0 0 14px rgba(200, 75, 17, 0.7);
+        transform: scale(1.12);
+      }
+      .lv-btn.passed {
+        border-color: var(--fire);
+        color: var(--ember);
+      }
+      nav {
+        background: var(--smoke);
+        border-bottom: 1px solid #3d2a1a;
+        display: flex;
+        overflow-x: auto;
+      }
+      nav button {
+        background: none;
+        border: none;
+        border-bottom: 3px solid transparent;
+        color: var(--stone);
+        cursor: pointer;
+        font-family: 'Cinzel', serif;
+        font-size: 0.78rem;
+        letter-spacing: 0.1em;
+        padding: 1rem 1.5rem;
+        text-transform: uppercase;
+        transition: all 0.2s;
+        white-space: nowrap;
+      }
+      nav button:hover {
+        color: var(--parchment);
+      }
+      nav button.active {
+        color: var(--gold);
+        border-bottom-color: var(--fire);
+      }
+      main {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 2rem;
+      }
+      .tab {
+        display: none;
+      }
+      .tab.active {
+        display: block;
+      }
+      .section-title {
+        font-family: 'Cinzel', serif;
+        font-size: 0.7rem;
+        letter-spacing: 0.25em;
+        color: var(--fire);
+        text-transform: uppercase;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid #3d2a1a;
+      }
+      .card {
+        background: var(--smoke);
+        border: 1px solid #3d2a1a;
+        border-radius: 4px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+      }
+      .card h3 {
+        font-family: 'Cinzel', serif;
+        font-size: 0.9rem;
+        color: var(--gold);
+        margin-bottom: 0.75rem;
+      }
+      .lv-banner {
+        background: linear-gradient(135deg, rgba(200, 75, 17, 0.18), rgba(212, 168, 67, 0.08));
+        border: 1px solid var(--fire);
+        border-radius: 4px;
+        padding: 1rem 1.25rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+      }
+      .lv-banner .big-num {
+        font-family: 'Cinzel', serif;
+        font-size: 2.6rem;
+        font-weight: 900;
+        color: var(--gold);
+        line-height: 1;
+      }
+      .lv-banner .lv-info .lv-title {
+        font-family: 'Cinzel', serif;
+        font-size: 1rem;
+        color: var(--gold);
+        letter-spacing: 0.03em;
+      }
+      .lv-banner .lv-info .lv-sub {
+        font-style: italic;
+        color: var(--ember);
+        font-size: 0.9rem;
+        margin-top: 0.2rem;
+      }
+      .quickref {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+      }
+      .qr-box {
+        background: var(--smoke);
+        border: 1px solid #3d2a1a;
+        border-radius: 4px;
+        padding: 0.75rem;
+        text-align: center;
+      }
+      .qr-box .qr-label {
+        font-family: 'Cinzel', serif;
+        font-size: 0.55rem;
+        letter-spacing: 0.15em;
+        color: var(--stone);
+        text-transform: uppercase;
+        display: block;
+        margin-bottom: 0.35rem;
+      }
+      .qr-box .qr-val {
+        font-family: 'Cinzel', serif;
+        font-size: 1.5rem;
+        font-weight: 900;
+        color: var(--gold);
+      }
+      .qr-box .qr-unit {
+        font-size: 0.7rem;
+        color: var(--ember);
+        display: block;
+        margin-top: 0.15rem;
+      }
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+      }
+      .stat-box {
+        background: var(--smoke);
+        border: 1px solid #3d2a1a;
+        border-radius: 4px;
+        padding: 0.75rem 0.5rem;
+        text-align: center;
+      }
+      .stat-box .stat-name {
+        font-family: 'Cinzel', serif;
+        font-size: 0.6rem;
+        letter-spacing: 0.15em;
+        color: var(--stone);
+        text-transform: uppercase;
+        display: block;
+        margin-bottom: 0.3rem;
+      }
+      .stat-box input {
+        background: none;
+        border: none;
+        border-bottom: 1px solid var(--fire);
+        color: var(--gold);
+        font-family: 'Cinzel', serif;
+        font-size: 1.6rem;
+        font-weight: 900;
+        text-align: center;
+        width: 100%;
+        outline: none;
+      }
+      .stat-box .modifier {
+        font-size: 0.8rem;
+        color: var(--ember);
+        margin-top: 0.25rem;
+        font-weight: 600;
+      }
+      .hp-row {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+      }
+      .hp-box {
+        background: var(--smoke);
+        border: 1px solid #3d2a1a;
+        border-radius: 4px;
+        padding: 1rem;
+        text-align: center;
+      }
+      .hp-box label {
+        font-family: 'Cinzel', serif;
+        font-size: 0.6rem;
+        letter-spacing: 0.2em;
+        color: var(--stone);
+        text-transform: uppercase;
+        display: block;
+        margin-bottom: 0.4rem;
+      }
+      .hp-box input {
+        background: none;
+        border: none;
+        border-bottom: 1px solid var(--fire);
+        color: var(--gold);
+        font-family: 'Cinzel', serif;
+        font-size: 1.8rem;
+        font-weight: 900;
+        text-align: center;
+        width: 100%;
+        outline: none;
+      }
+      .dice-track {
+        display: flex;
+        gap: 0.6rem;
+        flex-wrap: wrap;
+        margin-top: 0.5rem;
+      }
+      .die {
+        width: 40px;
+        height: 40px;
+        border: 2px solid var(--fire);
+        border-radius: 4px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: 'Cinzel', serif;
+        font-size: 0.7rem;
+        color: var(--gold);
+        transition: all 0.15s;
+        user-select: none;
+      }
+      .die.spent {
+        background: #3d1f0a;
+        border-color: #3d2a1a;
+        color: var(--stone);
+        text-decoration: line-through;
+      }
+      .die:hover {
+        background: rgba(200, 75, 17, 0.2);
+      }
+      .locked-note {
+        color: var(--stone);
+        font-style: italic;
+        font-size: 0.85rem;
+      }
+      .maneuver {
+        border-left: 3px solid var(--fire);
+        padding: 0.75rem 1rem;
+        margin-bottom: 0.75rem;
+        background: rgba(200, 75, 17, 0.06);
+      }
+      .maneuver.locked {
+        border-left-color: #3d2a1a;
+        opacity: 0.4;
+      }
+      .maneuver h4 {
+        font-family: 'Cinzel', serif;
+        font-size: 0.85rem;
+        color: var(--gold);
+        margin-bottom: 0.3rem;
+      }
+      .maneuver .when {
+        font-size: 0.75rem;
+        color: var(--ember);
+        font-style: italic;
+        margin-bottom: 0.3rem;
+      }
+      .maneuver p {
+        font-size: 0.9rem;
+        color: var(--parchment);
+        opacity: 0.85;
+      }
+      .resource-row {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-bottom: 1.5rem;
+      }
+      .resource {
+        background: var(--smoke);
+        border: 1px solid #3d2a1a;
+        border-radius: 4px;
+        padding: 0.75rem 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        flex: 1;
+        min-width: 170px;
+      }
+      .resource.locked {
+        opacity: 0.35;
+      }
+      .resource label {
+        font-family: 'Cinzel', serif;
+        font-size: 0.65rem;
+        letter-spacing: 0.12em;
+        color: var(--stone);
+        text-transform: uppercase;
+        flex: 1;
+      }
+      .resource-pip {
+        width: 20px;
+        height: 20px;
+        border: 2px solid var(--fire);
+        border-radius: 50%;
+        cursor: pointer;
+        transition: background 0.15s;
+        flex-shrink: 0;
+      }
+      .resource-pip.used {
+        background: var(--fire);
+      }
+      .action-row {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+      }
+      .action-box {
+        background: var(--smoke);
+        border: 1px solid #3d2a1a;
+        border-radius: 4px;
+        padding: 1rem;
+        text-align: center;
+      }
+      .action-box .action-label {
+        font-family: 'Cinzel', serif;
+        font-size: 0.6rem;
+        letter-spacing: 0.2em;
+        color: var(--stone);
+        text-transform: uppercase;
+        margin-bottom: 0.5rem;
+        display: block;
+      }
+      .action-box .action-content {
+        font-size: 0.85rem;
+        color: var(--parchment);
+        opacity: 0.85;
+      }
+      .feat-item {
+        display: flex;
+        gap: 0.75rem;
+        align-items: flex-start;
+        padding: 0.6rem 0;
+        border-bottom: 1px solid #3d2a1a;
+      }
+      .feat-item:last-child {
+        border-bottom: none;
+      }
+      .feat-item.locked {
+        opacity: 0.35;
+      }
+      .feat-badge {
+        font-family: 'Cinzel', serif;
+        font-size: 0.6rem;
+        background: var(--fire);
+        color: var(--parchment);
+        border-radius: 3px;
+        padding: 0.15rem 0.45rem;
+        white-space: nowrap;
+        margin-top: 0.15rem;
+      }
+      .feat-item.locked .feat-badge {
+        background: #3d2a1a;
+        color: var(--stone);
+      }
+      .feat-text .feat-name {
+        color: var(--gold);
+        font-family: 'Cinzel', serif;
+        font-size: 0.82rem;
+      }
+      .feat-text .feat-desc {
+        font-size: 0.86rem;
+        opacity: 0.82;
+      }
+      .weapon-row {
+        display: grid;
+        grid-template-columns: 2fr 1fr 1fr 2.2fr;
+        gap: 0.5rem;
+        align-items: center;
+        padding: 0.6rem 0;
+        border-bottom: 1px solid #3d2a1a;
+        font-size: 0.9rem;
+      }
+      .weapon-row:last-child {
+        border-bottom: none;
+      }
+      .weapon-row .name {
+        color: var(--gold);
+        font-weight: 600;
+      }
+      .weapon-row .stat {
+        color: var(--stone);
+        font-size: 0.8rem;
+        text-align: center;
+      }
+      .weapon-row .note {
+        color: var(--parchment);
+        opacity: 0.7;
+        font-size: 0.8rem;
+        font-style: italic;
+      }
+      .level-entry {
+        border-left: 3px solid #3d2a1a;
+        padding: 1rem 1.25rem;
+        margin-bottom: 1rem;
+        transition: border-color 0.2s;
+      }
+      .level-entry.current {
+        border-left-color: var(--gold);
+        background: rgba(212, 168, 67, 0.05);
+      }
+      .level-entry .level-header {
+        display: flex;
+        align-items: baseline;
+        gap: 1rem;
+        margin-bottom: 0.5rem;
+        cursor: pointer;
+      }
+      .level-num {
+        font-family: 'Cinzel', serif;
+        font-size: 1.4rem;
+        font-weight: 900;
+        color: var(--fire);
+        min-width: 2.5rem;
+      }
+      .level-name {
+        font-family: 'Cinzel', serif;
+        font-size: 0.85rem;
+        color: var(--gold);
+        letter-spacing: 0.05em;
+      }
+      .level-arc {
+        font-style: italic;
+        color: var(--stone);
+        font-size: 0.85rem;
+        margin-bottom: 0.6rem;
+      }
+      .level-gains {
+        display: none;
+        margin-top: 0.75rem;
+      }
+      .level-entry.open .level-gains {
+        display: block;
+      }
+      .gain-item {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 0.3rem;
+        font-size: 0.9rem;
+      }
+      .gain-item::before {
+        content: '▸';
+        color: var(--fire);
+        flex-shrink: 0;
+      }
+      .journal-note {
+        background: rgba(212, 168, 67, 0.06);
+        border: 1px solid rgba(212, 168, 67, 0.2);
+        border-radius: 3px;
+        font-style: italic;
+        font-size: 0.85rem;
+        color: var(--parchment);
+        opacity: 0.8;
+        padding: 0.6rem 0.75rem;
+        margin-top: 0.75rem;
+      }
+      textarea {
+        background: var(--smoke);
+        border: 1px solid #3d2a1a;
+        border-radius: 4px;
+        color: var(--parchment);
+        font-family: 'Crimson Text', serif;
+        font-size: 0.95rem;
+        line-height: 1.6;
+        padding: 1rem;
+        resize: vertical;
+        width: 100%;
+        outline: none;
+      }
+      textarea:focus {
+        border-color: var(--fire);
+      }
+      textarea::placeholder {
+        color: var(--stone);
+        opacity: 0.6;
+      }
+      .save-btn {
+        background: var(--fire);
+        border: none;
+        border-radius: 3px;
+        color: var(--parchment);
+        cursor: pointer;
+        font-family: 'Cinzel', serif;
+        font-size: 0.75rem;
+        letter-spacing: 0.15em;
+        padding: 0.6rem 1.5rem;
+        text-transform: uppercase;
+        transition: background 0.2s;
+        margin-top: 0.75rem;
+      }
+      .save-btn:hover {
+        background: var(--ember);
+      }
+      .save-msg {
+        color: var(--gold);
+        font-style: italic;
+        font-size: 0.85rem;
+        margin-left: 1rem;
+        opacity: 0;
+        transition: opacity 0.3s;
+      }
+      .save-msg.show {
+        opacity: 1;
+      }
+      .myth-text {
+        font-size: 1.05rem;
+        line-height: 1.8;
+        color: var(--parchment);
+        opacity: 0.85;
+      }
+      .skill-row {
+        display: grid;
+        grid-template-columns: 1.6fr auto 1fr auto;
+        gap: 0.6rem;
+        align-items: center;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #3d2a1a;
+      }
+      .skill-row:last-child {
+        border-bottom: none;
+      }
+      .skill-row .sk-name {
+        color: var(--parchment);
+        font-size: 0.92rem;
+      }
+      .skill-row .sk-ability {
+        font-family: 'Cinzel', serif;
+        font-size: 0.55rem;
+        letter-spacing: 0.1em;
+        color: var(--stone);
+        text-transform: uppercase;
+      }
+      .sk-pill {
+        font-family: 'Cinzel', serif;
+        font-size: 0.55rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 0.2rem 0.5rem;
+        border-radius: 10px;
+        border: 1px solid #3d2a1a;
+        color: var(--stone);
+        cursor: pointer;
+        text-align: center;
+        user-select: none;
+        transition: all 0.15s;
+        white-space: nowrap;
+      }
+      .sk-pill.prof {
+        border-color: var(--fire);
+        color: var(--ember);
+        background: rgba(200, 75, 17, 0.12);
+      }
+      .sk-pill.exp {
+        border-color: var(--gold);
+        color: var(--gold);
+        background: rgba(212, 168, 67, 0.15);
+      }
+      .sk-total {
+        font-family: 'Cinzel', serif;
+        font-size: 1.05rem;
+        font-weight: 900;
+        color: var(--gold);
+        text-align: right;
+        min-width: 2.2rem;
+      }
+      .sk-break {
+        font-size: 0.7rem;
+        color: var(--stone);
+        text-align: right;
+        grid-column: 1/-1;
+        margin-top: -0.3rem;
+      }
+      .turn-group {
+        border-left: 3px solid var(--fire);
+        padding: 0.25rem 0 0.25rem 1rem;
+        margin-bottom: 1.25rem;
+      }
+      .turn-head {
+        font-family: 'Cinzel', serif;
+        font-size: 0.7rem;
+        letter-spacing: 0.18em;
+        margin-bottom: 0.6rem;
+      }
+      .turn-item {
+        padding: 0.45rem 0;
+        border-bottom: 1px solid #2a211b;
+      }
+      .turn-item:last-child {
+        border-bottom: none;
+      }
+      .turn-item.turn-locked {
+        opacity: 0.32;
+      }
+      .turn-name {
+        font-family: 'Cinzel', serif;
+        font-size: 0.82rem;
+        color: var(--gold);
+        margin-bottom: 0.15rem;
+      }
+      .turn-at {
+        font-size: 0.6rem;
+        color: var(--stone);
+        letter-spacing: 0;
+      }
+      .turn-desc {
+        font-size: 0.86rem;
+        color: var(--parchment);
+        opacity: 0.82;
+      }
+      .myth-text p {
+        margin-bottom: 1rem;
+      }
+      .myth-pull {
+        font-family: 'Cinzel', serif;
+        font-size: 1.05rem;
+        color: var(--gold);
+        text-align: center;
+        padding: 1.5rem;
+        border-top: 1px solid #3d2a1a;
+        border-bottom: 1px solid #3d2a1a;
+        margin: 1.5rem 0;
+        font-style: italic;
+      }
+      @media (max-width: 600px) {
+        .stats-grid {
+          grid-template-columns: repeat(3, 1fr);
+        }
+        .hp-row {
+          grid-template-columns: 1fr 1fr;
+        }
+        .action-row {
+          grid-template-columns: 1fr;
+        }
+        .quickref {
+          grid-template-columns: 1fr 1fr;
+        }
+        header h1 {
+          font-size: 2rem;
+        }
+        .weapon-row {
+          grid-template-columns: 1fr 1fr;
+        }
+        .lv-btn {
+          width: 34px;
+          height: 34px;
+          font-size: 0.85rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>BRYK</h1>
+      <div class="subtitle">Red Dragonborn · Outlander · Battle Master Fighter</div>
+      <div class="tagline">"I am not yet the dragon. But I am becoming."</div>
+    </header>
+    <div class="level-bar">
+      <span class="lbl">Level</span>
+      <button
+        class="lv-btn"
+        data-lv="1"
+        onclick="setLevel(1)"
+      >
+        1
+      </button>
+      <button
+        class="lv-btn"
+        data-lv="2"
+        onclick="setLevel(2)"
+      >
+        2
+      </button>
+      <button
+        class="lv-btn"
+        data-lv="3"
+        onclick="setLevel(3)"
+      >
+        3
+      </button>
+      <button
+        class="lv-btn"
+        data-lv="4"
+        onclick="setLevel(4)"
+      >
+        4
+      </button>
+      <button
+        class="lv-btn"
+        data-lv="5"
+        onclick="setLevel(5)"
+      >
+        5
+      </button>
+      <button
+        class="lv-btn"
+        data-lv="6"
+        onclick="setLevel(6)"
+      >
+        6
+      </button>
+      <button
+        class="lv-btn"
+        data-lv="7"
+        onclick="setLevel(7)"
+      >
+        7
+      </button>
+      <button
+        class="lv-btn"
+        data-lv="8"
+        onclick="setLevel(8)"
+      >
+        8
+      </button>
+      <button
+        class="lv-btn"
+        data-lv="9"
+        onclick="setLevel(9)"
+      >
+        9
+      </button>
+    </div>
+    <nav>
+      <button
+        class="active"
+        onclick="showTab('combat', this)"
+      >
+        Combat
+      </button>
+      <button onclick="showTab('turn', this)">On Your Turn</button>
+      <button onclick="showTab('levels', this)">Level Guide</button>
+      <button onclick="showTab('weapons', this)">Weapons</button>
+      <button onclick="showTab('skills', this)">Skills</button>
+      <button onclick="showTab('maneuvers', this)">Maneuvers</button>
+      <button onclick="showTab('myth', this)">The Myth</button>
+      <button onclick="showTab('backstory', this)">Backstory</button>
+      <button onclick="showTab('journal', this)">Journal</button>
+    </nav>
+    <main>
+      <div
+        id="combat"
+        class="tab active"
+      >
+        <div class="lv-banner">
+          <div
+            class="big-num"
+            id="banner-num"
+          >
+            3
+          </div>
+          <div class="lv-info">
+            <div
+              class="lv-title"
+              id="banner-title"
+            >
+              The Battle Master Emerges
+            </div>
+            <div
+              class="lv-sub"
+              id="banner-arc"
+            >
+              chaotic, warm, unstoppable
+            </div>
+          </div>
+        </div>
+        <div class="quickref">
+          <div class="qr-box">
+            <span class="qr-label">Attacks / Action</span
+            ><span
+              class="qr-val"
+              id="qr-attacks"
+              >1</span
+            >
+          </div>
+          <div class="qr-box">
+            <span class="qr-label">Proficiency</span
+            ><span
+              class="qr-val"
+              id="qr-prof"
+              >+2</span
+            >
+          </div>
+          <div class="qr-box">
+            <span class="qr-label">Superiority Dice</span
+            ><span
+              class="qr-val"
+              id="qr-dice"
+              >4</span
+            ><span
+              class="qr-unit"
+              id="qr-diesize"
+              >d8</span
+            >
+          </div>
+          <div class="qr-box">
+            <span class="qr-label">Breath Weapon</span
+            ><span
+              class="qr-val"
+              id="qr-breath"
+              style="font-size: 1rem; padding-top: 0.4rem; display: inline-block"
+              >Basic</span
+            >
+          </div>
+        </div>
+        <div class="section-title">Ability Scores</div>
+        <div class="stats-grid">
+          <div class="stat-box">
+            <span class="stat-name">STR</span
+            ><input
+              type="number"
+              id="str"
+              min="1"
+              max="30"
+              placeholder="-"
+              oninput="updateMod('str')"
+            />
+            <div
+              class="modifier"
+              id="str-mod"
+            >
+              -
+            </div>
+          </div>
+          <div class="stat-box">
+            <span class="stat-name">DEX</span
+            ><input
+              type="number"
+              id="dex"
+              min="1"
+              max="30"
+              placeholder="-"
+              oninput="updateMod('dex')"
+            />
+            <div
+              class="modifier"
+              id="dex-mod"
+            >
+              -
+            </div>
+          </div>
+          <div class="stat-box">
+            <span class="stat-name">CON</span
+            ><input
+              type="number"
+              id="con"
+              min="1"
+              max="30"
+              placeholder="-"
+              oninput="updateMod('con')"
+            />
+            <div
+              class="modifier"
+              id="con-mod"
+            >
+              -
+            </div>
+          </div>
+          <div class="stat-box">
+            <span class="stat-name">INT</span
+            ><input
+              type="number"
+              id="int"
+              min="1"
+              max="30"
+              placeholder="-"
+              oninput="updateMod('int')"
+            />
+            <div
+              class="modifier"
+              id="int-mod"
+            >
+              -
+            </div>
+          </div>
+          <div class="stat-box">
+            <span class="stat-name">WIS</span
+            ><input
+              type="number"
+              id="wis"
+              min="1"
+              max="30"
+              placeholder="-"
+              oninput="updateMod('wis')"
+            />
+            <div
+              class="modifier"
+              id="wis-mod"
+            >
+              -
+            </div>
+          </div>
+          <div class="stat-box">
+            <span class="stat-name">CHA</span
+            ><input
+              type="number"
+              id="cha"
+              min="1"
+              max="30"
+              placeholder="-"
+              oninput="updateMod('cha')"
+            />
+            <div
+              class="modifier"
+              id="cha-mod"
+            >
+              -
+            </div>
+          </div>
+        </div>
+        <p
+          class="locked-note"
+          id="feat-stat-hint"
+          style="margin: -0.75rem 0 1.5rem"
+        ></p>
+        <div class="section-title">Hit Points</div>
+        <div class="hp-row">
+          <div class="hp-box">
+            <label>Max HP</label
+            ><input
+              type="number"
+              id="hp-max"
+              placeholder="-"
+            />
+          </div>
+          <div class="hp-box">
+            <label>Current HP</label
+            ><input
+              type="number"
+              id="hp-cur"
+              placeholder="-"
+            />
+          </div>
+          <div class="hp-box">
+            <label>Temp HP</label
+            ><input
+              type="number"
+              id="hp-temp"
+              placeholder="0"
+            />
+          </div>
+        </div>
+        <div class="section-title">Resources</div>
+        <div
+          class="resource-row"
+          id="resource-row"
+        ></div>
+        <div class="section-title">Superiority Dice <span style="color: var(--stone); font-size: 0.85rem; text-transform: none; letter-spacing: 0">- click to spend, right-click to restore</span></div>
+        <div
+          class="card"
+          id="dice-card"
+        >
+          <div
+            class="dice-track"
+            id="dice-track"
+          ></div>
+        </div>
+        <div class="section-title">Combat Loop</div>
+        <div
+          class="action-row"
+          id="action-row"
+        ></div>
+        <div style="text-align: right">
+          <button
+            class="save-btn"
+            onclick="saveAll()"
+          >
+            Save
+          </button>
+          <button
+            class="save-btn"
+            onclick="resetRest()"
+            style="background: var(--smoke); border: 1px solid var(--fire)"
+          >
+            Short Rest
+          </button>
+          <span
+            class="save-msg"
+            id="save-msg"
+            >Saved ✓</span
+          >
+        </div>
+      </div>
+      <div
+        id="turn"
+        class="tab"
+      >
+        <div
+          class="lv-banner"
+          style="margin-bottom: 1rem"
+        >
+          <div
+            class="big-num"
+            id="turn-num"
+          >
+            3
+          </div>
+          <div class="lv-info">
+            <div class="lv-title">Everything Bryk can do on a turn</div>
+            <div class="lv-sub">grouped by what it costs - greyed items aren't online yet</div>
+          </div>
+        </div>
+        <div id="turn-content"></div>
+      </div>
+      <div
+        id="levels"
+        class="tab"
+      >
+        <div class="section-title">Journey to the Stars</div>
+        <div id="level-list"></div>
+      </div>
+      <div
+        id="weapons"
+        class="tab"
+      >
+        <div class="section-title">The Dragon's Arsenal</div>
+        <div class="card">
+          <div
+            class="weapon-row"
+            style="font-family: 'Cinzel', serif; font-size: 0.65rem; letter-spacing: 0.1em; color: var(--stone); text-transform: uppercase"
+          >
+            <div>Weapon</div>
+            <div class="stat">Damage</div>
+            <div class="stat">Weight</div>
+            <div class="note">Use</div>
+          </div>
+          <div class="weapon-row">
+            <div class="name">Pike</div>
+            <div class="stat">1d10+STR</div>
+            <div class="stat">18 lbs</div>
+            <div class="note">Control - Brace at 10 ft, Push back out of reach</div>
+          </div>
+          <div class="weapon-row">
+            <div class="name">Greatsword</div>
+            <div class="stat">2d6+STR</div>
+            <div class="stat">6 lbs</div>
+            <div class="note">Standard combat - fast and reliable</div>
+          </div>
+          <div class="weapon-row">
+            <div class="name">Maul</div>
+            <div class="stat">2d6+STR</div>
+            <div class="stat">10 lbs</div>
+            <div class="note">Armored enemies - bludgeoning bypasses resistances</div>
+          </div>
+          <div class="weapon-row">
+            <div class="name">Javelins ×6</div>
+            <div class="stat">1d6+STR</div>
+            <div class="stat">12 lbs</div>
+            <div class="note">Quick Toss, 30/120 ft range, STR-based</div>
+          </div>
+        </div>
+        <div class="section-title">Total Carry Weight</div>
+        <div class="card">
+          <p style="font-size: 0.9rem; opacity: 0.8">46 lbs total · Carry capacity = STR × 15. Bryk is not even close to encumbered.</p>
+          <p style="font-size: 0.85rem; color: var(--stone); margin-top: 0.5rem; font-style: italic">Nobody comments on the arsenal anymore. It's just Bryk.</p>
+        </div>
+        <div class="section-title">Fighting Style</div>
+        <div class="card">
+          <h3>Great Weapon Fighting (Level 1)</h3>
+          <p style="font-size: 0.9rem; opacity: 0.85">When wielding a two-handed melee weapon, treat any 1 or 2 on a damage die as a 3.</p>
+        </div>
+      </div>
+      <div
+        id="skills"
+        class="tab"
+      >
+        <div class="section-title">Saving Throws</div>
+        <div
+          class="card"
+          style="padding: 1rem 1.5rem"
+        >
+          <p style="font-size: 0.85rem; color: var(--stone); margin-bottom: 0.75rem; font-style: italic">Fighters are proficient in Strength and Constitution saves. Everything else is just the raw ability modifier.</p>
+          <div id="saves-list"></div>
+        </div>
+        <div class="section-title">Skill Checks <span style="color: var(--stone); font-size: 0.8rem; text-transform: none; letter-spacing: 0">- tap the pill to cycle: none → proficient → expertise</span></div>
+        <div
+          class="card"
+          style="padding: 1rem 1.5rem"
+        >
+          <p style="font-size: 0.85rem; color: var(--stone); margin-bottom: 0.75rem; font-style: italic">Outlander grants Athletics + Survival. Pick 2 Fighter skills and 1 Battle Master skill, then mark them here. Each total shows where it comes from.</p>
+          <div id="skills-list"></div>
+        </div>
+      </div>
+      <div
+        id="maneuvers"
+        class="tab"
+      >
+        <div class="section-title">
+          Battle Master Maneuvers
+          <span
+            style="color: var(--stone); font-size: 0.8rem; text-transform: none; letter-spacing: 0"
+            id="man-status"
+          ></span>
+        </div>
+        <div id="maneuver-list"></div>
+        <div
+          class="section-title"
+          style="margin-top: 1.5rem"
+        >
+          Feats
+        </div>
+        <div
+          class="card"
+          id="feat-list"
+        ></div>
+      </div>
+      <div
+        id="myth"
+        class="tab"
+      >
+        <div class="section-title">The Legend of Draco</div>
+        <div class="card">
+          <div class="myth-text">
+            <p>Draco the constellation represents Ladon - the great dragon who guarded the golden apple tree in the garden of the Hesperides. Hera had received the tree as a wedding gift from Zeus, and she planted it on the slopes of Mount Atlas, setting the daughters of Atlas to watch over it. But the Hesperides proved untrustworthy and kept picking the apples themselves. Sterner measures were required.</p>
+            <p>Hera placed the dragon Ladon around the tree. He coiled there faithfully, never sleeping, never faltering, protecting what he had been entrusted to protect.</p>
+            <p>When Heracles came to steal the golden apples as one of his twelve labors, Ladon fell defending the garden. He did not flee. He did not yield. He held his post to the end.</p>
+            <div class="myth-pull">"Hera placed the image of the dragon in the sky as the constellation Draco, to honor his faithful service."</div>
+            <p>Bryk doesn't care about power, glory, or Legacy. He feels that being a dragon is the greatest existence there can be and wants more than anything to become one. There's something zen about his life: he's perfectly content with where he is right now because he loves the thrill of the adventure and is confident he will achieve dragonhood in time. His gaze is always locked at true north: the constellation of Draco.</p>
+          </div>
+        </div>
+      </div>
+      <div
+        id="backstory"
+        class="tab"
+      >
+        <div class="section-title">Backstory</div>
+        <div class="card">
+          <div class="myth-text">
+            <p>
+              Bryk is a red dragonborn who was found as a baby sitting contentedly in the family hearth, roasting happily among the bricks. His soon-to-be parents didn't panic - he was clearly fine, clearly delighted - so they fished him out, named him for where they found him, and raised him as their own. He grew up in the forest, more at home among animals and open fire than among people, and somewhere along the way he came to believe, with complete certainty, that he is destined to become a
+              real dragon, like Ladon of the old stories, who guarded the golden apples so faithfully that the gods set him in the stars forever.
+            </p>
+            <p>In the same way a child will obsess over becoming an astronaut one day, Bryk has molded his entire personality around the ideals of dragonhood. He idolizes the great beasts of legend. He believes dragons are the keepers of peace and use their majesty, wisdom, and strength to protect the little guy. He loves the simple things in life - a quiet forest, family, animals.</p>
+            <p>He met a certain druid in the forest, drawn to the same wild places, and has counted her a friend ever since, entirely unaware that his unique kinship with the animals of the forest is the sort of thing that gets the attention of the goddess of the hunt.</p>
+            <p style="font-style: italic; color: var(--gold)">Bryk does not know what the path to becoming a dragon looks like. He only knows he is on it.</p>
+          </div>
+        </div>
+
+        <div class="section-title">DM Hooks</div>
+        <div class="card">
+          <div class="feat-item">
+            <span class="feat-badge">Dream</span>
+            <div class="feat-text"><span class="feat-name">The Ascension</span><br /><span class="feat-desc">Bryk believes there's a path to becoming a real dragon. He doesn't know what it is but is determined to go the distance.</span></div>
+          </div>
+          <div class="feat-item">
+            <span class="feat-badge">Bond</span>
+            <div class="feat-text"><span class="feat-name">The Druid in the Woods</span><br /><span class="feat-desc">He knows Cheyenne's Artemis druid from the forest. Animals trust him without reason - possibly the goddess of wild things has noticed.</span></div>
+          </div>
+          <div class="feat-item">
+            <span class="feat-badge">Flaw</span>
+            <div class="feat-text"><span class="feat-name">Caught up in the role-play</span><br /><span class="feat-desc">He spends so much of his time practicing being a dragon, he forgets he isn't actually one yet: self-preservation and danger sense aren't as strong as they should be. In ever situation, he asks 'what would a dragon do' which frequently gets him in trouble.</span></div>
+            <div class="feat-text"><span class="feat-name">Dragon 'wisdom'</span><br /><span class="feat-desc">Bryk knows dragons are intelligent and wise. He is neither. He thinks wise decisions and simple decisions are the same thing. When presented with an obstacle, he will generally use brute force or the first thought that comes to mind.</span></div>
+          </div>
+          <div class="feat-item">
+            <span class="feat-badge">Joy</span>
+            <div class="feat-text"><span class="feat-name">At Home in Fire</span><br /><span class="feat-desc">Fire is comfort, not danger. He sits in campfires. Enemy fireballs feel pleasant. He shares food, moves boulders for foxes, and keeps a journal of his progress toward dragonhood.</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div
+        id="journal"
+        class="tab"
+      >
+        <div class="section-title">Bryk's Journal</div>
+        <p style="font-style: italic; color: var(--stone); font-size: 0.9rem; margin-bottom: 1rem">Personal field notes on the journey toward becoming a dragon.</p>
+        <textarea
+          id="journal-text"
+          rows="18"
+          placeholder="Journal Entry 1:&#10;Today I left the forest. The city is very loud. A horse looked at me for a long time. I looked back. We understood each other.&#10;&#10;The transformation continues.&#10;&#10;- Bryk, Future Dragon"
+        ></textarea>
+        <div>
+          <button
+            class="save-btn"
+            onclick="saveAll()"
+          >
+            Save Journal</button
+          ><span
+            class="save-msg"
+            id="save-msg-2"
+            >Saved ✓</span
+          >
+        </div>
+      </div>
+    </main>
+    <script>
+      const LEVELS = {
+        1: {
+          name: 'The Hearth Boy Leaves Home',
+          arc: 'the hearth boy steps into the world',
+          gains: ['Fighter chassis - heavy armor, all weapon proficiencies', 'Great Weapon Fighting style - treat 1s and 2s on damage dice as 3s', 'Second Wind - bonus action self heal once per short rest', 'Tough feat (Outlander) - +2 HP per level immediately'],
+          journal: 'Bryk has never really left the forest before. Everything is new and interesting. He is not scared. Dragons are not scared. He does find cities very loud and confusing but he would never admit this. He has introduced himself to three horses already today.',
+        },
+        2: {
+          name: 'The Dragon Learns Patience',
+          arc: 'he discovers he can do more than he thought',
+          gains: ['Action Surge - one extra action, once per short/long rest', 'Tactical Mind - spend a Second Wind use to add 1d10 to a failed ability check (not expended if it still fails)'],
+          journal: "Something is stirring inside Bryk. He can feel it. He doesn't know what it is yet. Probably the dragon awakening. Definitely the dragon awakening. He has started doing stretches in the morning. For the transformation.",
+        },
+        3: {
+          name: 'The Battle Master Emerges',
+          arc: 'chaotic, warm, unstoppable',
+          gains: ['Battle Master subclass', '4 Superiority Dice (d8) - stay d8 the whole campaign', '3 maneuvers learned: Quick Toss, Menacing Attack, Brace', "Know Your Enemy - bonus action read on a creature's resistances, immunities, vulnerabilities", 'Full combat loop online: Bonus Action Quick Toss + Action attack + Reaction Brace'],
+          journal: "Journal entry one: 'Today I threw a javelin at a goblin and then hit it with my sword. The goblin flew quite far. I believe this is what dragons do. I feel the transformation is proceeding well.'",
+        },
+        4: {
+          name: "The Dragon's Strength",
+          arc: "the dragon's strength is real",
+          gains: ['Feat: Great Weapon Master', 'Proficiency bonus added to damage once per turn on a heavy hit', 'Bonus action attack when you crit or drop a creature to 0 HP', 'Pike control loop fully active: Brace at 10 ft → Push back 15 ft → repeat'],
+          journal: "Bryk has started telling the animals about his progress. They seem supportive. The Artemis druid seems mildly irritated that the deer listen to him so attentively. Bryk has not noticed. He has begun signing his journal entries 'Bryk, Future Dragon.'",
+        },
+        5: {
+          name: "The Dragon's Second Strike",
+          arc: 'the dragon is fully awake',
+          gains: ['Extra Attack - two weapon attacks per action', 'Proficiency bonus rises to +3 (3 breath weapon uses now)', 'Tactical Shift - when you use Second Wind, move up to half speed without provoking opportunity attacks', 'Breath weapon scales to 2d10', 'Action Surge turn: four attacks + Quick Toss - the biggest power spike in the build'],
+          journal: "Journal entry 47: 'I fought a hill giant today. I hit it twice. It flew quite far on the second hit. A nearby shepherd applauded. I acknowledged this graciously. I feel the dragon is very close now. Perhaps next week.'",
+        },
+        6: { name: "The Dragon's Body", arc: 'he is physically magnificent', gains: ['ASI: STR +2 - higher attack and damage on every single hit', 'Everything hits harder - Pushing Attack sends enemies further', 'If STR reaches 20, the dragon stirs within'], journal: "Journal entry: 'I am stronger than I was last season. I tested my strength against a boulder that was blocking a fox den. The boulder lost. The fox seemed grateful. This is what dragons do. They move boulders for foxes.'" },
+        7: {
+          name: "The Dragon's Wisdom",
+          arc: 'he learns to think before charging. almost',
+          gains: ['5th Superiority Die - stop rationing maneuvers', '2 more maneuvers learned: Parry, plus a flex pick (Precision / Disarming / Riposte)', 'Bryk now sometimes pauses before charging. This is new. He is growing.'],
+          journal: 'For the first time Bryk studied his enemy before engaging. He assessed the threat. He considered his approach. He then charged anyway, but the pause was there. He did not write about this in his journal. Some things are too significant for words.',
+        },
+        8: {
+          name: 'The Savage Dragon',
+          arc: 'his strikes land harder and meaner',
+          gains: ['Feat: Savage Attacker - once per turn, reroll your weapon damage dice and keep either total', '', 'Your breath weapon already scaled to 2d10 back at level 5 on its own - the fire grew without a feat'],
+          journal: "Bryk breathed fire at three bandits today and none of them shrugged it off. He stood very still afterward and looked at his hands for a long moment. Journal entry: 'The fire is no longer merely decorative. Something has changed. I am becoming. I can feel it in my chest, where the hearth has always lived.'",
+        },
+        9: {
+          name: 'The Dragon Remembers',
+          arc: 'he does not fall. dragons do not fall',
+          gains: ['Indomitable - reroll a failed saving throw, adding your Fighter level (+9) to the reroll, once per long rest', 'Proficiency bonus rises to +4 (4 breath weapon uses, 5 superiority dice)', 'Full arsenal, full maneuvers, full resources - Bryk is complete'],
+          journal: "Bryk looks up at the constellation Draco one clear night. He doesn't say anything for a long time. The party watches him, unsure. Finally: 'Not yet. But soon.' He goes back to sleep next to the campfire. The fire doesn't bother him. It never has. It never will.",
+        },
+      }
+      function levelState(lv) {
+        return {
+          attacks: lv >= 5 ? 2 : 1,
+          prof: lv >= 9 ? 4 : lv >= 5 ? 3 : 2,
+          supDice: lv >= 7 ? 5 : lv >= 3 ? 4 : 0,
+          supDie: 'd8',
+          secondWindUses: lv >= 4 ? 3 : 2, // 2 at L1-3, 3 at L4+
+          breathUses: lv >= 9 ? 4 : lv >= 5 ? 3 : lv >= 1 ? 2 : 0, // = proficiency bonus
+          breathDice: lv >= 5 ? '2d10' : '1d10', // scales at level 5
+          weaponMasteries: lv >= 4 ? 4 : lv >= 1 ? 3 : 0, // 3 at L1-3, 4 at L4+
+          secondWind: lv >= 1,
+          actionSurge: lv >= 2,
+          tacticalMind: lv >= 2,
+          battleMaster: lv >= 3,
+          maneuvers: lv >= 3,
+          knowYourEnemy: lv >= 3,
+          tacticalShift: lv >= 5,
+          indomitable: lv >= 9,
+          gwm: lv >= 4,
+          strFeat: lv >= 6,
+        }
+      }
+      const MANEUVERS = [
+        { lv: 3, name: 'Quick Toss', when: 'Bonus action · Expend 1 superiority die', desc: "As a bonus action, you can expend one superiority die and make a ranged attack with a weapon that has the thrown property. You can draw the weapon as part of making this attack. If you hit, add the superiority die to the weapon's damage roll." },
+        { lv: 3, name: 'Menacing Attack', when: 'On a hit · Expend 1 superiority die', desc: "Add the die to damage. Target makes a Wisdom save or is Frightened of you until the end of your next turn - disadvantage on its attacks and it can't move closer to you. Works on a javelin throw, so you can hobble the backline from across the field." },
+        { lv: 3, name: 'Brace', when: 'Reaction when enemy enters reach · Expend 1 superiority die', desc: 'When a creature enters your reach, make one attack and add the die to damage. With pike reach at 10 ft, this fires before they even arrive.' },
+        {
+          lv: 7,
+          name: 'Riposte',
+          when: 'Reaction on enemy melee miss · Expend 1 superiority die',
+          desc: "When a creature misses you with a melee attack, you can use your reaction and expend one superiority die to make a melee weapon attack against the creature. If you hit, you add the superiority die to the attack's damage roll.",
+        },
+        { lv: 7, name: 'Precision Attack', when: 'Before or after an attack roll', desc: 'When you make a weapon attack roll against a creature, you can expend one superiority die to add it to the roll. You can use this maneuver before or after making the attack roll, but before any effects of the attack are applied.' },
+      ]
+      const FEATS = [
+        { lv: 1, name: 'Tough (Origin feat)', desc: '+2 HP per level. Comes from Outlander background.' },
+        { lv: 4, name: 'Great Weapon Master', desc: 'Add proficiency bonus to damage once per turn on a heavy weapon hit. Bonus action attack on crit or kill (Hew).' },
+        { lv: 6, name: 'Strength +2', desc: 'Higher attack and damage on every hit. Push enemies further. Peak physical power.' },
+        { lv: 8, name: 'Savage Attacker', desc: "Once per turn, reroll your weapon's damage dice and use either total. Clean damage with no anti-synergy." },
+      ]
+      const SKILLS = [
+        { name: 'Acrobatics', abil: 'dex' },
+        { name: 'Animal Handling', abil: 'wis' },
+        { name: 'Arcana', abil: 'int' },
+        { name: 'Athletics', abil: 'str' },
+        { name: 'Deception', abil: 'cha' },
+        { name: 'History', abil: 'int' },
+        { name: 'Insight', abil: 'wis' },
+        { name: 'Intimidation', abil: 'cha' },
+        { name: 'Investigation', abil: 'int' },
+        { name: 'Medicine', abil: 'wis' },
+        { name: 'Nature', abil: 'int' },
+        { name: 'Perception', abil: 'wis' },
+        { name: 'Performance', abil: 'cha' },
+        { name: 'Persuasion', abil: 'cha' },
+        { name: 'Religion', abil: 'int' },
+        { name: 'Sleight of Hand', abil: 'dex' },
+        { name: 'Stealth', abil: 'dex' },
+        { name: 'Survival', abil: 'wis' },
+      ]
+      const SAVES = [
+        { name: 'Strength', abil: 'str', prof: true },
+        { name: 'Dexterity', abil: 'dex', prof: false },
+        { name: 'Constitution', abil: 'con', prof: true },
+        { name: 'Intelligence', abil: 'int', prof: false },
+        { name: 'Wisdom', abil: 'wis', prof: false },
+        { name: 'Charisma', abil: 'cha', prof: false },
+      ]
+      // skillProf: 0 none, 1 proficient, 2 expertise. Default Outlander = Athletics + Survival proficient.
+      function getSkillProf() {
+        const saved = JSON.parse(localStorage.getItem('bryk-sheet') || '{}')
+        if (saved.skillProf) return saved.skillProf
+        return { Athletics: 1, Survival: 1 }
+      }
+      function abilMod(abil) {
+        const v = parseInt(document.getElementById(abil).value)
+        if (isNaN(v)) return null
+        return Math.floor((v - 10) / 2)
+      }
+      function fmt(n) {
+        return (n >= 0 ? '+' : '') + n
+      }
+      function buildSaves(lv) {
+        const prof = levelState(lv).prof
+        document.getElementById('saves-list').innerHTML = SAVES.map((s) => {
+          const m = abilMod(s.abil)
+          const total = m === null ? null : m + (s.prof ? prof : 0)
+          const breakdown = m === null ? 'enter ' + s.abil.toUpperCase() : s.prof ? s.abil.toUpperCase() + ' ' + fmt(m) + ' + prof +' + prof : s.abil.toUpperCase() + ' ' + fmt(m)
+          return '<div class="skill-row"><div class="sk-name">' + s.name + (s.prof ? ' <span class="sk-ability">· proficient</span>' : '') + '</div><div></div><div class="sk-break" style="grid-column:auto; margin:0; text-align:left;">' + breakdown + '</div><div class="sk-total">' + (total === null ? '-' : fmt(total)) + '</div></div>'
+        }).join('')
+      }
+      function buildSkills(lv) {
+        const prof = levelState(lv).prof
+        const sp = getSkillProf()
+        document.getElementById('skills-list').innerHTML = SKILLS.map((s) => {
+          const lvl = sp[s.name] || 0
+          const m = abilMod(s.abil)
+          const bonus = lvl === 2 ? prof * 2 : lvl === 1 ? prof : 0
+          const total = m === null ? null : m + bonus
+          const pillClass = lvl === 2 ? 'sk-pill exp' : lvl === 1 ? 'sk-pill prof' : 'sk-pill'
+          const pillText = lvl === 2 ? 'Expert' : lvl === 1 ? 'Prof' : '-'
+          let breakdown
+          if (m === null) breakdown = 'enter ' + s.abil.toUpperCase()
+          else if (lvl === 2) breakdown = s.abil.toUpperCase() + ' ' + fmt(m) + ' + prof +' + prof + ' ×2'
+          else if (lvl === 1) breakdown = s.abil.toUpperCase() + ' ' + fmt(m) + ' + prof +' + prof
+          else breakdown = s.abil.toUpperCase() + ' ' + fmt(m) + ' (no prof)'
+          return '<div class="skill-row"><div class="sk-name">' + s.name + '</div><div class="sk-ability">' + s.abil + '</div>' + '<div class="' + pillClass + '" onclick="cycleSkill(\'' + s.name + '\')">' + pillText + '</div>' + '<div class="sk-total">' + (total === null ? '-' : fmt(total)) + '</div>' + '<div class="sk-break">' + breakdown + '</div></div>'
+        }).join('')
+      }
+      function cycleSkill(name) {
+        const sp = getSkillProf()
+        sp[name] = ((sp[name] || 0) + 1) % 3
+        const saved = JSON.parse(localStorage.getItem('bryk-sheet') || '{}')
+        saved.skillProf = sp
+        localStorage.setItem('bryk-sheet', JSON.stringify(saved))
+        buildSkills(currentLevel)
+      }
+      let currentLevel = 3
+      function setLevel(lv) {
+        currentLevel = lv
+        const st = levelState(lv),
+          data = LEVELS[lv]
+        document.querySelectorAll('.lv-btn').forEach((b) => {
+          const n = parseInt(b.dataset.lv)
+          b.classList.toggle('active', n === lv)
+          b.classList.toggle('passed', n < lv)
+        })
+        document.getElementById('banner-num').textContent = lv
+        document.getElementById('banner-title').textContent = data.name
+        document.getElementById('banner-arc').textContent = data.arc
+        document.getElementById('qr-attacks').textContent = st.attacks
+        document.getElementById('qr-prof').textContent = '+' + st.prof
+        document.getElementById('qr-dice').textContent = st.supDice > 0 ? st.supDice : '-'
+        document.getElementById('qr-diesize').textContent = st.supDice > 0 ? st.supDie : 'locked'
+        document.getElementById('qr-breath').textContent = st.breathDice
+        let hint = ''
+        if (lv >= 6) hint = 'Includes Strength +2 from your level 6 ASI.'
+        if (lv >= 8) hint = 'Includes Strength +2 (Lv 6). Savage Attacker (Lv 8) lets you reroll weapon damage once per turn.'
+        document.getElementById('feat-stat-hint').textContent = hint
+        buildResources(st)
+        buildDice(st)
+        buildActions(st, lv)
+        buildManeuvers(st, lv)
+        buildFeats(lv)
+        markCurrentLevelGuide(lv)
+        buildSaves(lv)
+        buildSkills(lv)
+        buildTurn(st, lv)
+        saveAll()
+      }
+      function buildResources(st) {
+        const row = document.getElementById('resource-row')
+        const saved = JSON.parse(localStorage.getItem('bryk-sheet') || '{}')
+        const used = saved.resources || {}
+        const items = [
+          { key: 'sw', label: 'Second Wind', count: st.secondWindUses, on: st.secondWind, note: 'heal · Tactical Mind · Tactical Shift' },
+          { key: 'as', label: 'Action Surge', count: 1, on: st.actionSurge, note: 'extra action' },
+          { key: 'breath', label: 'Breath Weapon', count: st.breathUses, on: true, note: st.breathDice + ' fire' },
+          { key: 'kye', label: 'Know Your Enemy', count: 1, on: st.battleMaster, note: 'bonus action read' },
+          { key: 'ind', label: 'Indomitable', count: 1, on: st.indomitable, note: 'reroll a save' },
+        ]
+        row.innerHTML = items
+          .map((it) => {
+            const arr = used[it.key] || []
+            let pips = ''
+            for (let i = 0; i < it.count; i++) {
+              pips += '<div class="resource-pip ' + (arr[i] ? 'used' : '') + '" ' + (it.on ? 'onclick="togglePip(\'' + it.key + "'," + i + ',this)"' : '') + '></div>'
+            }
+            return '<div class="resource ' + (it.on ? '' : 'locked') + '" style="flex-direction:column; align-items:flex-start; gap:0.4rem;">' + '<label style="width:100%;">' + it.label + ' <span style="color:#5a4a3a; font-size:0.6rem; letter-spacing:0;">' + it.note + '</span></label>' + '<div style="display:flex; gap:0.4rem;">' + pips + '</div></div>'
+          })
+          .join('')
+      }
+      function buildDice(st) {
+        const track = document.getElementById('dice-track')
+        if (st.supDice === 0) {
+          track.innerHTML = '<span class="locked-note">Superiority dice unlock at level 3.</span>'
+          return
+        }
+        const saved = JSON.parse(localStorage.getItem('bryk-sheet') || '{}')
+        const spent = saved.dice || []
+        track.innerHTML = ''
+        for (let i = 0; i < st.supDice; i++) {
+          const die = document.createElement('div')
+          die.className = 'die' + (spent[i] ? ' spent' : '')
+          die.textContent = st.supDie
+          die.title = 'Left click to spend, right click to restore'
+          die.onclick = () => {
+            die.classList.toggle('spent')
+            saveAll()
+          }
+          die.oncontextmenu = (e) => {
+            e.preventDefault()
+            die.classList.remove('spent')
+            saveAll()
+          }
+          track.appendChild(die)
+        }
+      }
+      function buildActions(st, lv) {
+        const row = document.getElementById('action-row')
+        let bonus, action, reaction
+        if (lv < 3) {
+          bonus = 'Second Wind if hurt' + (st.actionSurge ? ' · Action Surge available' : '')
+          action = st.attacks + '× weapon attack · javelin if out of reach'
+          reaction = 'Opportunity attacks only'
+        } else {
+          bonus = 'Quick Toss a javelin at the biggest threat'
+          action = st.attacks + '× weapon attack + Menacing Attack on best hit'
+          reaction = lv >= 7 ? 'Brace if approached · Parry if hit' : 'Brace if an enemy enters reach'
+        }
+        row.innerHTML = '<div class="action-box"><span class="action-label">Bonus Action</span><div class="action-content">' + bonus + '</div></div><div class="action-box"><span class="action-label">Action</span><div class="action-content">' + action + '</div></div><div class="action-box"><span class="action-label">Reaction</span><div class="action-content">' + reaction + '</div></div>'
+      }
+      function buildManeuvers(st, lv) {
+        const list = document.getElementById('maneuver-list')
+        const status = document.getElementById('man-status')
+        const known = MANEUVERS.filter((m) => lv >= m.lv).length
+        status.textContent = st.maneuvers ? '- ' + known + ' known · ' + st.supDice + '× ' + st.supDie + ' to spend' : '- unlocks at level 3'
+        list.innerHTML = MANEUVERS.map((m) => {
+          const active = lv >= m.lv
+          const badge = active ? '' : ' <span style="color:var(--stone); font-size:0.7rem;">(Lv ' + m.lv + ')</span>'
+          return '<div class="maneuver ' + (active ? '' : 'locked') + '"><h4>' + m.name + badge + '</h4><div class="when">' + m.when + '</div><p>' + m.desc + '</p></div>'
+        }).join('')
+      }
+      function buildFeats(lv) {
+        const list = document.getElementById('feat-list')
+        list.innerHTML = FEATS.map((f) => {
+          const active = lv >= f.lv
+          return '<div class="feat-item ' + (active ? '' : 'locked') + '"><span class="feat-badge">Lv ' + f.lv + '</span><div class="feat-text"><span class="feat-name">' + f.name + '</span><br><span class="feat-desc">' + f.desc + '</span></div></div>'
+        }).join('')
+      }
+      function markCurrentLevelGuide(lv) {
+        document.querySelectorAll('.level-entry').forEach((el) => el.classList.toggle('current', parseInt(el.dataset.lv) === lv))
+      }
+      function showTab(id, btn) {
+        document.querySelectorAll('.tab').forEach((t) => t.classList.remove('active'))
+        document.querySelectorAll('nav button').forEach((b) => b.classList.remove('active'))
+        document.getElementById(id).classList.add('active')
+        btn.classList.add('active')
+      }
+      function updateMod(stat) {
+        const val = parseInt(document.getElementById(stat).value)
+        const modEl = document.getElementById(stat + '-mod')
+        if (isNaN(val)) {
+          modEl.textContent = '-'
+        } else {
+          const mod = Math.floor((val - 10) / 2)
+          modEl.textContent = (mod >= 0 ? '+' : '') + mod
+        }
+        if (document.getElementById('saves-list')) {
+          buildSaves(currentLevel)
+          buildSkills(currentLevel)
+        }
+        saveAll()
+      }
+      function togglePip(key, idx, el) {
+        el.classList.toggle('used')
+        const saved = JSON.parse(localStorage.getItem('bryk-sheet') || '{}')
+        saved.resources = saved.resources || {}
+        saved.resources[key] = saved.resources[key] || []
+        saved.resources[key][idx] = el.classList.contains('used')
+        localStorage.setItem('bryk-sheet', JSON.stringify(saved))
+      }
+      function resetRest() {
+        document.querySelectorAll('.die').forEach((d) => d.classList.remove('spent'))
+        const saved = JSON.parse(localStorage.getItem('bryk-sheet') || '{}')
+        saved.resources = {}
+        saved.dice = []
+        localStorage.setItem('bryk-sheet', JSON.stringify(saved))
+        setLevel(currentLevel)
+        flashSave()
+      }
+      function buildTurn(st, lv) {
+        document.getElementById('turn-num').textContent = lv
+        const c = document.getElementById('turn-content')
+        function group(title, colour, rows) {
+          const body = rows
+            .map((r) => {
+              const locked = r.on === false
+              return '<div class="turn-item' + (locked ? ' turn-locked' : '') + '"><div class="turn-name">' + r.name + (locked && r.at ? ' <span class="turn-at">Lv ' + r.at + '</span>' : '') + '</div><div class="turn-desc">' + r.desc + '</div></div>'
+            })
+            .join('')
+          return '<div class="turn-group" style="border-left-color:' + colour + '"><div class="turn-head" style="color:' + colour + '">' + title + '</div>' + body + '</div>'
+        }
+        const action = group('ACTION (pick one)', '#E8751A', [
+          { name: 'Attack', desc: st.attacks + '× weapon attack. Each hit can carry a weapon mastery, and one attack per turn can carry a maneuver.', on: true },
+          { name: 'Breath Weapon', desc: 'Replace ONE of your attacks with ' + st.breathDice + ' fire in a 15-ft cone or 30-ft line. DEX save (DC 8 + CON + prof), half on success. ' + st.breathUses + ' uses/long rest.', on: true },
+          { name: 'Action Surge → second Action', desc: 'Take an entire extra action - usually a second Attack (so up to ' + st.attacks * 2 + ' attacks in one turn). Once per rest.', on: st.actionSurge },
+          { name: 'Standard actions', desc: 'Dash, Disengage, Dodge, Help, Hide, Shove, Grapple, Search, Ready - always available.', on: true },
+        ])
+        const bonus = group('BONUS ACTION (one per turn)', '#D4A843', [
+          { name: 'Quick Toss (javelin)', desc: 'Draw a javelin and throw it, adding a ' + st.supDie + ' to damage on a hit. Your default opener.', on: st.maneuvers },
+          { name: 'Second Wind', desc: 'Regain 1d10 + Fighter level HP. ' + st.secondWindUses + ' uses (regain 1 on short rest, all on long rest).', on: st.secondWind },
+          { name: 'Know Your Enemy', desc: 'Learn a visible creature\u2019s immunities, resistances, and vulnerabilities. Once/long rest (or spend a superiority die).', on: st.battleMaster },
+          { name: 'GWM bonus attack (Hew)', desc: 'Right after you crit or drop a creature to 0 with a heavy weapon, make one extra melee attack.', on: st.gwm },
+        ])
+        const reaction = group('REACTION (one per round)', '#C84B11', [
+          { name: 'Brace', desc: 'When a creature enters your reach (10 ft with the pike) while you hold a MELEE weapon, attack it + ' + st.supDie + ' to damage.', on: st.maneuvers },
+          { name: 'Riposte', desc: "When a creature misses you with a melee attack, you can use your reaction and expend one superiority die to make a melee weapon attack against the creature. If you hit, you add the superiority die to the attack's damage roll.", on: lv >= 7, at: 7 },
+          { name: 'Opportunity Attack', desc: 'When a creature leaves your reach, one melee attack. Frightened enemies fleeing you trigger this often.', on: true },
+        ])
+        const move = group('MOVEMENT & FREE', '#8B7355', [
+          { name: 'Weapon Mastery', desc: 'You can keep ' + st.weaponMasteries + ' masteries active' + (st.weaponMasteries < 4 ? ' (you have 4 weapons - pick which 3 until level 4)' : ' (all four weapons covered)') + ': Pike=Push, Greatsword=Graze, Maul=Topple, Javelin=Slow.', on: true },
+          { name: 'Tactical Shift', desc: 'When you use Second Wind, move up to half your speed without provoking opportunity attacks.', on: st.tacticalShift, at: 5 },
+          { name: 'Tactical Mind', desc: 'Failed an ability check? Spend a Second Wind use to add 1d10 - and keep the use if it still fails.', on: st.tacticalMind, at: 2 },
+          { name: 'Indomitable', desc: 'Failed a saving throw? Reroll it adding your Fighter level. Once/long rest.', on: st.indomitable, at: 9 },
+        ])
+        c.innerHTML = action + bonus + reaction + move + '<p style="color:var(--stone); font-size:0.8rem; font-style:italic; margin-top:0.5rem;">Reminder: one maneuver per attack, and GWM\u2019s +prof damage is once per turn. Track superiority dice, Second Wind, breath, and Indomitable on the Combat tab.</p>'
+      }
+      function buildLevelGuide() {
+        const container = document.getElementById('level-list')
+        Object.keys(LEVELS).forEach((k) => {
+          const lv = parseInt(k),
+            d = LEVELS[k]
+          const el = document.createElement('div')
+          el.className = 'level-entry'
+          el.dataset.lv = lv
+          el.innerHTML = '<div class="level-header" onclick="toggleLevel(' + lv + ')"><span class="level-num">' + lv + '</span><span class="level-name">' + d.name + '</span></div><div class="level-arc">' + d.arc + '</div><div class="level-gains">' + d.gains.map((g) => '<div class="gain-item">' + g + '</div>').join('') + '<div class="journal-note">' + d.journal + '</div></div>'
+          container.appendChild(el)
+        })
+      }
+      function toggleLevel(num) {
+        document.querySelector('.level-entry[data-lv="' + num + '"]').classList.toggle('open')
+      }
+      function gatherDice() {
+        return Array.from(document.querySelectorAll('#dice-track .die')).map((d) => d.classList.contains('spent'))
+      }
+      function gatherResources() {
+        const saved = JSON.parse(localStorage.getItem('bryk-sheet') || '{}')
+        return saved.resources || {}
+      }
+      function saveAll() {
+        const prev = JSON.parse(localStorage.getItem('bryk-sheet') || '{}')
+        const data = {
+          level: currentLevel,
+          str: val('str'),
+          dex: val('dex'),
+          con: val('con'),
+          int: val('int'),
+          wis: val('wis'),
+          cha: val('cha'),
+          hpMax: val('hp-max'),
+          hpCur: val('hp-cur'),
+          hpTemp: val('hp-temp'),
+          dice: gatherDice(),
+          resources: gatherResources(),
+          journal: val('journal-text'),
+          skillProf: prev.skillProf || getSkillProf(),
+        }
+        localStorage.setItem('bryk-sheet', JSON.stringify(data))
+        flashSave()
+      }
+      function flashSave() {
+        ;['save-msg', 'save-msg-2'].forEach((id) => {
+          const el = document.getElementById(id)
+          if (!el) return
+          el.classList.add('show')
+          setTimeout(() => el.classList.remove('show'), 1500)
+        })
+      }
+      function val(id) {
+        return document.getElementById(id).value
+      }
+      function loadAll() {
+        const raw = localStorage.getItem('bryk-sheet')
+        let lv = 3
+        if (raw) {
+          const d = JSON.parse(raw)
+          ;['str', 'dex', 'con', 'int', 'wis', 'cha'].forEach((s) => {
+            if (d[s]) document.getElementById(s).value = d[s]
+          })
+          if (d.hpMax) document.getElementById('hp-max').value = d.hpMax
+          if (d.hpCur) document.getElementById('hp-cur').value = d.hpCur
+          if (d.hpTemp) document.getElementById('hp-temp').value = d.hpTemp
+          if (d.journal) document.getElementById('journal-text').value = d.journal
+          if (d.level) lv = d.level
+        }
+        ;['str', 'dex', 'con', 'int', 'wis', 'cha'].forEach(updateMod)
+        buildLevelGuide()
+        setLevel(lv)
+      }
+      loadAll()
+    </script>
+  </body>
+</html>

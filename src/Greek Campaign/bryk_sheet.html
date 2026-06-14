@@ -1145,37 +1145,14 @@
           >
             <div>Weapon</div>
             <div class="stat">Damage</div>
-            <div class="stat">Weight</div>
+            <div class="stat">Mastery</div>
             <div class="note">Use</div>
           </div>
-          <div class="weapon-row">
-            <div class="name">Pike</div>
-            <div class="stat">1d10+STR</div>
-            <div class="stat">18 lbs</div>
-            <div class="note">Control - Brace at 10 ft, Push back out of reach</div>
-          </div>
-          <div class="weapon-row">
-            <div class="name">Greatsword</div>
-            <div class="stat">2d6+STR</div>
-            <div class="stat">6 lbs</div>
-            <div class="note">Standard combat - fast and reliable</div>
-          </div>
-          <div class="weapon-row">
-            <div class="name">Maul</div>
-            <div class="stat">2d6+STR</div>
-            <div class="stat">10 lbs</div>
-            <div class="note">Armored enemies - bludgeoning bypasses resistances</div>
-          </div>
-          <div class="weapon-row">
-            <div class="name">Javelins ×6</div>
-            <div class="stat">1d6+STR</div>
-            <div class="stat">12 lbs</div>
-            <div class="note">Quick Toss, 30/120 ft range, STR-based</div>
-          </div>
+          <div id="weapon-list"></div>
         </div>
         <div class="section-title">Total Carry Weight</div>
         <div class="card">
-          <p style="font-size: 0.9rem; opacity: 0.8">46 lbs total · Carry capacity = STR × 15. Bryk is not even close to encumbered.</p>
+          <p style="font-size: 0.9rem; opacity: 0.8">50 lbs total · Carry capacity = STR × 15. Bryk is not even close to encumbered.</p>
           <p style="font-size: 0.85rem; color: var(--stone); margin-top: 0.5rem; font-style: italic">Nobody comments on the arsenal anymore. It's just Bryk.</p>
         </div>
         <div class="section-title">Fighting Style</div>
@@ -1331,13 +1308,13 @@
         3: {
           name: 'The Battle Master Emerges',
           arc: 'chaotic, warm, unstoppable',
-          gains: ['Battle Master subclass', '4 Superiority Dice (d8) - stay d8 the whole campaign', '3 maneuvers learned: Quick Toss, Menacing Attack, Brace', "Know Your Enemy - bonus action read on a creature's resistances, immunities, vulnerabilities", "Student of War - proficiency in Perception (skill) + Cook's Utensils (tool)", 'Full combat loop online: Bonus Action Quick Toss + Action attack + Reaction Brace'],
+          gains: ['Battle Master subclass', '4 Superiority Dice (d8) - stay d8 the whole campaign', '3 maneuvers learned: Quick Toss, Menacing Attack, Brace', "Know Your Enemy - bonus action read on a creature's resistances, immunities, vulnerabilities", "Student of War - proficiency in Perception (skill) + Cook's Utensils (tool)", 'Weapon Masteries: Greatsword (Graze), Pike (Push), Handaxe (Vex)', 'Full combat loop online: Bonus Action Quick Toss + Action attack + Reaction Brace'],
           journal: "Journal entry one: 'Today I threw a javelin at a goblin and then hit it with my sword. The goblin flew quite far. I believe this is what dragons do. I feel the transformation is proceeding well.'",
         },
         4: {
           name: "The Dragon's Strength",
           arc: "the dragon's strength is real",
-          gains: ['Feat: Great Weapon Master', 'Proficiency bonus added to damage once per turn on a heavy hit', 'Bonus action attack when you crit or drop a creature to 0 HP', 'Pike control loop fully active: Brace at 10 ft → Push back 15 ft → repeat'],
+          gains: ['Feat: Great Weapon Master', 'Proficiency bonus added to damage once per turn on a heavy hit', 'Bonus action attack when you crit or drop a creature to 0 HP', '4th Weapon Mastery: Maul (Topple) - knock armored foes Prone', 'Pike control loop fully active: Brace at 10 ft → Push back 15 ft → repeat'],
           journal: "Bryk has started telling the animals about his progress. They seem supportive. The Artemis druid seems mildly irritated that the deer listen to him so attentively. Bryk has not noticed. He has begun signing his journal entries 'Bryk, Future Dragon.'",
         },
         5: {
@@ -1412,6 +1389,15 @@
       ]
       // Tool proficiencies. Cook's Utensils is the artisan tool from Battle Master's Student of War (Lv 3).
       const TOOLS = [{ lv: 3, name: "Cook's Utensils", src: 'Battle Master 3', desc: 'Artisan tool from Student of War. Used to prepare meals - a good cook makes the long rest worth it (and it suits a forest-raised dragonborn).' }]
+      // Each weapon carries a Mastery property. A Fighter can use a number of masteries = 3 (Lv 1-3) / 4 (Lv 4+).
+      // activeAt = the level Bryk trained that weapon's mastery; null = not chosen. Greatsword/Pike/Handaxe at Lv 3, Maul at Lv 4.
+      const WEAPONS = [
+        { name: 'Pike', dmg: '1d10+STR', weight: '18 lbs', note: 'Control - Brace at 10 ft, Push back out of reach', mastery: 'Push', masteryDesc: 'On a hit, push the target up to 10 ft straight away (Large or smaller).', activeAt: 3 },
+        { name: 'Greatsword', dmg: '2d6+STR', weight: '6 lbs', note: 'Standard combat - fast and reliable', mastery: 'Graze', masteryDesc: 'On a miss, still deal STR-mod damage to the target.', activeAt: 3 },
+        { name: 'Handaxes ×2', dmg: '1d6+STR', weight: '4 lbs', note: 'Light, thrown 20/60 - dual-wield or hurl', mastery: 'Vex', masteryDesc: 'On a hit, you have advantage on your next attack against that creature before the end of your next turn.', activeAt: 3 },
+        { name: 'Maul', dmg: '2d6+STR', weight: '10 lbs', note: 'Armored enemies - bludgeoning bypasses resistances', mastery: 'Topple', masteryDesc: 'On a hit, force a CON save (DC 8 + STR + prof) or the target is knocked Prone.', activeAt: 4 },
+        { name: 'Javelins ×6', dmg: '1d6+STR', weight: '12 lbs', note: 'Quick Toss, 30/120 ft range, STR-based', mastery: 'Slow', masteryDesc: "On a hit, the target's speed drops by 10 ft until the start of your next turn.", activeAt: null },
+      ]
       const FEATS = [
         { lv: 1, name: 'Tough (Origin feat)', desc: '+2 HP per level. Comes from Outlander background.' },
         { lv: 4, name: 'Great Weapon Master', desc: 'Add proficiency bonus to damage once per turn on a heavy weapon hit. Bonus action attack on crit or kill (Hew).' },
@@ -1515,6 +1501,7 @@
         buildSaves(lv)
         buildSkills(lv)
         buildTools(lv)
+        buildWeapons(lv)
         buildTurn(st, lv)
         saveAll()
       }
@@ -1597,6 +1584,16 @@
         list.innerHTML = FEATS.map((f) => {
           const active = lv >= f.lv
           return '<div class="feat-item ' + (active ? '' : 'locked') + '"><span class="feat-badge">Lv ' + f.lv + '</span><div class="feat-text"><span class="feat-name">' + f.name + '</span><br><span class="feat-desc">' + f.desc + '</span></div></div>'
+        }).join('')
+      }
+      function buildWeapons(lv) {
+        document.getElementById('weapon-list').innerHTML = WEAPONS.map((w) => {
+          const trained = w.activeAt !== null && lv >= w.activeAt
+          const pending = w.activeAt !== null && lv < w.activeAt
+          const cls = trained ? 'sk-pill prof' : 'sk-pill'
+          const label = w.mastery + (pending ? ' (Lv ' + w.activeAt + ')' : '')
+          const title = trained ? w.mastery + ' - ' + w.masteryDesc : pending ? w.mastery + ' (trained at level ' + w.activeAt + ') - ' + w.masteryDesc : w.mastery + ' (not trained) - ' + w.masteryDesc
+          return '<div class="weapon-row"><div class="name">' + w.name + ' <span style="color:var(--stone); font-weight:400; font-size:0.7rem;">' + w.weight + '</span></div><div class="stat">' + w.dmg + '</div><div class="stat"><span class="' + cls + '" style="cursor:default" title="' + title + '">' + label + '</span></div><div class="note">' + w.note + '</div></div>'
         }).join('')
       }
       function buildTools(lv) {
@@ -1688,7 +1685,18 @@
           { name: 'Opportunity Attack', desc: 'When a creature leaves your reach, one melee attack. Frightened enemies fleeing you trigger this often.', on: true },
         ])
         const move = group('MOVEMENT & FREE', '#8B7355', [
-          { name: 'Weapon Mastery', desc: 'You can keep ' + st.weaponMasteries + ' masteries active' + (st.weaponMasteries < 4 ? ' (you have 4 weapons - pick which 3 until level 4)' : ' (all four weapons covered)') + ': Pike=Push, Greatsword=Graze, Maul=Topple, Javelin=Slow.', on: true },
+          {
+            name: 'Weapon Mastery',
+            desc:
+              'You can keep ' +
+              st.weaponMasteries +
+              ' masteries active. Trained now: ' +
+              WEAPONS.filter((w) => w.activeAt !== null && lv >= w.activeAt)
+                .map((w) => w.name.replace(/ ×\d+$/, '') + '=' + w.mastery)
+                .join(', ') +
+              (lv < 4 ? ' (Maul=Topple comes online at level 4).' : '.'),
+            on: true,
+          },
           { name: 'Tactical Shift', desc: 'When you use Second Wind, move up to half your speed without provoking opportunity attacks.', on: st.tacticalShift, at: 5 },
           { name: 'Tactical Mind', desc: 'Failed an ability check? Spend a Second Wind use to add 1d10 - and keep the use if it still fails.', on: st.tacticalMind, at: 2 },
           { name: 'Indomitable', desc: 'Failed a saving throw? Reroll it adding your Fighter level. Once/long rest.', on: st.indomitable, at: 9 },

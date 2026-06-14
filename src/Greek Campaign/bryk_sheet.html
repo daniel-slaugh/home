@@ -1079,6 +1079,11 @@
           class="action-row"
           id="action-row"
         ></div>
+        <div class="section-title">Dragonborn Traits <span style="color: var(--stone); font-size: 0.8rem; text-transform: none; letter-spacing: 0">- Red draconic ancestry (fire)</span></div>
+        <div
+          class="card"
+          id="traits-card"
+        ></div>
         <div style="text-align: right">
           <button
             class="save-btn"
@@ -1191,13 +1196,20 @@
           <p style="font-size: 0.85rem; color: var(--stone); margin-bottom: 0.75rem; font-style: italic">Fighters are proficient in Strength and Constitution saves. Everything else is just the raw ability modifier.</p>
           <div id="saves-list"></div>
         </div>
-        <div class="section-title">Skill Checks <span style="color: var(--stone); font-size: 0.8rem; text-transform: none; letter-spacing: 0">- tap the pill to cycle: none → proficient → expertise</span></div>
+        <div class="section-title">Skill Checks <span style="color: var(--stone); font-size: 0.8rem; text-transform: none; letter-spacing: 0">- proficiencies are locked in from Bryk's background and class</span></div>
         <div
           class="card"
           style="padding: 1rem 1.5rem"
         >
-          <p style="font-size: 0.85rem; color: var(--stone); margin-bottom: 0.75rem; font-style: italic">Outlander grants Athletics + Survival. Pick 2 Fighter skills and 1 Battle Master skill, then mark them here. Each total shows where it comes from.</p>
+          <p style="font-size: 0.85rem; color: var(--stone); margin-bottom: 0.75rem; font-style: italic">Outlander grants Athletics + Survival. Fighter level 1 adds Animal Handling + Persuasion. Battle Master's Student of War (Lv 3) adds Perception. Dragonborn is a species and grants no skills. The pill shows the source; each total recalculates with your proficiency bonus.</p>
           <div id="skills-list"></div>
+        </div>
+        <div class="section-title">Tool Proficiencies</div>
+        <div
+          class="card"
+          style="padding: 1rem 1.5rem"
+        >
+          <div id="tools-list"></div>
         </div>
       </div>
       <div
@@ -1307,7 +1319,7 @@
         1: {
           name: 'The Hearth Boy Leaves Home',
           arc: 'the hearth boy steps into the world',
-          gains: ['Fighter chassis - heavy armor, all weapon proficiencies', 'Great Weapon Fighting style - treat 1s and 2s on damage dice as 3s', 'Second Wind - bonus action self heal once per short rest', 'Tough feat (Outlander) - +2 HP per level immediately'],
+          gains: ['Fighter chassis - heavy armor, all weapon proficiencies', 'Great Weapon Fighting style - treat 1s and 2s on damage dice as 3s', 'Second Wind - bonus action self heal once per short rest', 'Tough feat (Outlander) - +2 HP per level immediately', 'Dragonborn (Red): Breath Weapon, Fire Resistance, Darkvision 60 ft', 'Skills: Athletics + Survival (Outlander), Animal Handling + Persuasion (Fighter)'],
           journal: 'Bryk has never really left the forest before. Everything is new and interesting. He is not scared. Dragons are not scared. He does find cities very loud and confusing but he would never admit this. He has introduced himself to three horses already today.',
         },
         2: {
@@ -1319,7 +1331,7 @@
         3: {
           name: 'The Battle Master Emerges',
           arc: 'chaotic, warm, unstoppable',
-          gains: ['Battle Master subclass', '4 Superiority Dice (d8) - stay d8 the whole campaign', '3 maneuvers learned: Quick Toss, Menacing Attack, Brace', "Know Your Enemy - bonus action read on a creature's resistances, immunities, vulnerabilities", 'Full combat loop online: Bonus Action Quick Toss + Action attack + Reaction Brace'],
+          gains: ['Battle Master subclass', '4 Superiority Dice (d8) - stay d8 the whole campaign', '3 maneuvers learned: Quick Toss, Menacing Attack, Brace', "Know Your Enemy - bonus action read on a creature's resistances, immunities, vulnerabilities", "Student of War - proficiency in Perception (skill) + Cook's Utensils (tool)", 'Full combat loop online: Bonus Action Quick Toss + Action attack + Reaction Brace'],
           journal: "Journal entry one: 'Today I threw a javelin at a goblin and then hit it with my sword. The goblin flew quite far. I believe this is what dragons do. I feel the transformation is proceeding well.'",
         },
         4: {
@@ -1331,7 +1343,7 @@
         5: {
           name: "The Dragon's Second Strike",
           arc: 'the dragon is fully awake',
-          gains: ['Extra Attack - two weapon attacks per action', 'Proficiency bonus rises to +3 (3 breath weapon uses now)', 'Tactical Shift - when you use Second Wind, move up to half speed without provoking opportunity attacks', 'Breath weapon scales to 2d10', 'Action Surge turn: four attacks + Quick Toss - the biggest power spike in the build'],
+          gains: ['Extra Attack - two weapon attacks per action', 'Proficiency bonus rises to +3 (3 breath weapon uses now)', 'Draconic Flight (Dragonborn) - bonus action spectral wings, fly speed equal to your speed for 10 min, once per long rest', 'Tactical Shift - when you use Second Wind, move up to half speed without provoking opportunity attacks', 'Breath weapon scales to 2d10', 'Action Surge turn: four attacks + Quick Toss - the biggest power spike in the build'],
           journal: "Journal entry 47: 'I fought a hill giant today. I hit it twice. It flew quite far on the second hit. A nearby shepherd applauded. I acknowledged this graciously. I feel the dragon is very close now. Perhaps next week.'",
         },
         6: { name: "The Dragon's Body", arc: 'he is physically magnificent', gains: ['ASI: STR +2 - higher attack and damage on every single hit', 'Everything hits harder - Pushing Attack sends enemies further', 'If STR reaches 20, the dragon stirs within'], journal: "Journal entry: 'I am stronger than I was last season. I tested my strength against a boulder that was blocking a fox den. The boulder lost. The fox seemed grateful. This is what dragons do. They move boulders for foxes.'" },
@@ -1371,6 +1383,7 @@
           maneuvers: lv >= 3,
           knowYourEnemy: lv >= 3,
           tacticalShift: lv >= 5,
+          draconicFlight: lv >= 5,
           indomitable: lv >= 9,
           gwm: lv >= 4,
           strFeat: lv >= 6,
@@ -1388,31 +1401,44 @@
         },
         { lv: 7, name: 'Precision Attack', when: 'Before or after an attack roll', desc: 'When you make a weapon attack roll against a creature, you can expend one superiority die to add it to the roll. You can use this maneuver before or after making the attack roll, but before any effects of the attack are applied.' },
       ]
+      // Dragonborn (2024) species traits. Red ancestry = fire. Breath Weapon is tracked as a resource above;
+      // it is listed here for reference and renders its current dice. Draconic Flight unlocks at character level 5.
+      const TRAITS = [
+        { lv: 1, name: 'Draconic Ancestry — Red', desc: 'Your lineage is the red dragon. This fixes your Breath Weapon and Damage Resistance to fire.' },
+        { lv: 1, name: 'Damage Resistance — Fire', desc: 'You have resistance to fire damage: enemy fireballs, dragon breath, and the campfires Bryk sleeps in all deal half damage. Fire is comfort, not danger.' },
+        { lv: 1, name: 'Darkvision 60 ft', desc: 'You can see in dim light within 60 ft as if it were bright light, and in darkness as if it were dim light (shades of grey).' },
+        { lv: 1, name: 'Breath Weapon', dyn: true, desc: 'Action or replace one attack: exhale a 15-ft cone or 30-ft line (5 ft wide). Each target makes a DEX save (DC 8 + CON + prof) for half. ' },
+        { lv: 5, name: 'Draconic Flight (Spectral Wings)', desc: 'Bonus action: sprout spectral wings for 10 minutes, gaining a fly speed equal to your speed. Retract them anytime (no action). Once per long rest — tracked on the resource pips above.' },
+      ]
+      // Tool proficiencies. Cook's Utensils is the artisan tool from Battle Master's Student of War (Lv 3).
+      const TOOLS = [{ lv: 3, name: "Cook's Utensils", src: 'Battle Master 3', desc: 'Artisan tool from Student of War. Used to prepare meals - a good cook makes the long rest worth it (and it suits a forest-raised dragonborn).' }]
       const FEATS = [
         { lv: 1, name: 'Tough (Origin feat)', desc: '+2 HP per level. Comes from Outlander background.' },
         { lv: 4, name: 'Great Weapon Master', desc: 'Add proficiency bonus to damage once per turn on a heavy weapon hit. Bonus action attack on crit or kill (Hew).' },
         { lv: 6, name: 'Strength +2', desc: 'Higher attack and damage on every hit. Push enemies further. Peak physical power.' },
         { lv: 8, name: 'Savage Attacker', desc: "Once per turn, reroll your weapon's damage dice and use either total. Clean damage with no anti-synergy." },
       ]
+      // prof: 0 none, 1 proficient, 2 expertise. src = where the proficiency comes from. All of Bryk's
+      // skills are locked in at level 1 (Outlander background + Fighter 1 choices) - hardcoded, not editable.
       const SKILLS = [
-        { name: 'Acrobatics', abil: 'dex' },
-        { name: 'Animal Handling', abil: 'wis' },
-        { name: 'Arcana', abil: 'int' },
-        { name: 'Athletics', abil: 'str' },
-        { name: 'Deception', abil: 'cha' },
-        { name: 'History', abil: 'int' },
-        { name: 'Insight', abil: 'wis' },
-        { name: 'Intimidation', abil: 'cha' },
-        { name: 'Investigation', abil: 'int' },
-        { name: 'Medicine', abil: 'wis' },
-        { name: 'Nature', abil: 'int' },
-        { name: 'Perception', abil: 'wis' },
-        { name: 'Performance', abil: 'cha' },
-        { name: 'Persuasion', abil: 'cha' },
-        { name: 'Religion', abil: 'int' },
-        { name: 'Sleight of Hand', abil: 'dex' },
-        { name: 'Stealth', abil: 'dex' },
-        { name: 'Survival', abil: 'wis' },
+        { name: 'Acrobatics', abil: 'dex', prof: 0 },
+        { name: 'Animal Handling', abil: 'wis', prof: 1, src: 'Fighter 1', srcLv: 1 },
+        { name: 'Arcana', abil: 'int', prof: 0 },
+        { name: 'Athletics', abil: 'str', prof: 1, src: 'Outlander', srcLv: 1 },
+        { name: 'Deception', abil: 'cha', prof: 0 },
+        { name: 'History', abil: 'int', prof: 0 },
+        { name: 'Insight', abil: 'wis', prof: 0 },
+        { name: 'Intimidation', abil: 'cha', prof: 0 },
+        { name: 'Investigation', abil: 'int', prof: 0 },
+        { name: 'Medicine', abil: 'wis', prof: 0 },
+        { name: 'Nature', abil: 'int', prof: 0 },
+        { name: 'Perception', abil: 'wis', prof: 1, src: 'Battle Master 3', srcLv: 3 },
+        { name: 'Performance', abil: 'cha', prof: 0 },
+        { name: 'Persuasion', abil: 'cha', prof: 1, src: 'Fighter 1', srcLv: 1 },
+        { name: 'Religion', abil: 'int', prof: 0 },
+        { name: 'Sleight of Hand', abil: 'dex', prof: 0 },
+        { name: 'Stealth', abil: 'dex', prof: 0 },
+        { name: 'Survival', abil: 'wis', prof: 1, src: 'Outlander', srcLv: 1 },
       ]
       const SAVES = [
         { name: 'Strength', abil: 'str', prof: true },
@@ -1422,12 +1448,6 @@
         { name: 'Wisdom', abil: 'wis', prof: false },
         { name: 'Charisma', abil: 'cha', prof: false },
       ]
-      // skillProf: 0 none, 1 proficient, 2 expertise. Default Outlander = Athletics + Survival proficient.
-      function getSkillProf() {
-        const saved = JSON.parse(localStorage.getItem('bryk-sheet') || '{}')
-        if (saved.skillProf) return saved.skillProf
-        return { Athletics: 1, Survival: 1 }
-      }
       function abilMod(abil) {
         const v = parseInt(document.getElementById(abil).value)
         if (isNaN(v)) return null
@@ -1447,29 +1467,21 @@
       }
       function buildSkills(lv) {
         const prof = levelState(lv).prof
-        const sp = getSkillProf()
         document.getElementById('skills-list').innerHTML = SKILLS.map((s) => {
-          const lvl = sp[s.name] || 0
+          const locked = s.srcLv && lv < s.srcLv
+          const lvl = locked ? 0 : s.prof || 0
           const m = abilMod(s.abil)
           const bonus = lvl === 2 ? prof * 2 : lvl === 1 ? prof : 0
           const total = m === null ? null : m + bonus
           const pillClass = lvl === 2 ? 'sk-pill exp' : lvl === 1 ? 'sk-pill prof' : 'sk-pill'
-          const pillText = lvl === 2 ? 'Expert' : lvl === 1 ? 'Prof' : '-'
+          const pillText = lvl === 2 ? 'Expert' : lvl === 1 ? s.src || 'Prof' : locked ? s.src + ' (Lv ' + s.srcLv + ')' : '-'
           let breakdown
           if (m === null) breakdown = 'enter ' + s.abil.toUpperCase()
           else if (lvl === 2) breakdown = s.abil.toUpperCase() + ' ' + fmt(m) + ' + prof +' + prof + ' ×2'
-          else if (lvl === 1) breakdown = s.abil.toUpperCase() + ' ' + fmt(m) + ' + prof +' + prof
+          else if (lvl === 1) breakdown = s.abil.toUpperCase() + ' ' + fmt(m) + ' + prof +' + prof + ' · ' + s.src
           else breakdown = s.abil.toUpperCase() + ' ' + fmt(m) + ' (no prof)'
-          return '<div class="skill-row"><div class="sk-name">' + s.name + '</div><div class="sk-ability">' + s.abil + '</div>' + '<div class="' + pillClass + '" onclick="cycleSkill(\'' + s.name + '\')">' + pillText + '</div>' + '<div class="sk-total">' + (total === null ? '-' : fmt(total)) + '</div>' + '<div class="sk-break">' + breakdown + '</div></div>'
+          return '<div class="skill-row"><div class="sk-name">' + s.name + '</div><div class="sk-ability">' + s.abil + '</div>' + '<div class="' + pillClass + '" style="cursor:default">' + pillText + '</div>' + '<div class="sk-total">' + (total === null ? '-' : fmt(total)) + '</div>' + '<div class="sk-break">' + breakdown + '</div></div>'
         }).join('')
-      }
-      function cycleSkill(name) {
-        const sp = getSkillProf()
-        sp[name] = ((sp[name] || 0) + 1) % 3
-        const saved = JSON.parse(localStorage.getItem('bryk-sheet') || '{}')
-        saved.skillProf = sp
-        localStorage.setItem('bryk-sheet', JSON.stringify(saved))
-        buildSkills(currentLevel)
       }
       let currentLevel = 3
       function setLevel(lv) {
@@ -1498,9 +1510,11 @@
         buildActions(st, lv)
         buildManeuvers(st, lv)
         buildFeats(lv)
+        buildTraits(st, lv)
         markCurrentLevelGuide(lv)
         buildSaves(lv)
         buildSkills(lv)
+        buildTools(lv)
         buildTurn(st, lv)
         saveAll()
       }
@@ -1512,6 +1526,7 @@
           { key: 'sw', label: 'Second Wind', count: st.secondWindUses, on: st.secondWind, note: 'heal · Tactical Mind · Tactical Shift' },
           { key: 'as', label: 'Action Surge', count: 1, on: st.actionSurge, note: 'extra action' },
           { key: 'breath', label: 'Breath Weapon', count: st.breathUses, on: true, note: st.breathDice + ' fire' },
+          { key: 'wings', label: 'Draconic Flight', count: 1, on: st.draconicFlight, note: 'spectral wings · fly speed' },
           { key: 'kye', label: 'Know Your Enemy', count: 1, on: st.battleMaster, note: 'bonus action read' },
           { key: 'ind', label: 'Indomitable', count: 1, on: st.indomitable, note: 'reroll a save' },
         ]
@@ -1584,6 +1599,23 @@
           return '<div class="feat-item ' + (active ? '' : 'locked') + '"><span class="feat-badge">Lv ' + f.lv + '</span><div class="feat-text"><span class="feat-name">' + f.name + '</span><br><span class="feat-desc">' + f.desc + '</span></div></div>'
         }).join('')
       }
+      function buildTools(lv) {
+        document.getElementById('tools-list').innerHTML = TOOLS.map((t) => {
+          const active = lv >= t.lv
+          const pill = active ? t.src : t.src + ' (Lv ' + t.lv + ')'
+          const cls = active ? 'sk-pill prof' : 'sk-pill'
+          return '<div class="skill-row"><div class="sk-name">' + t.name + '</div><div class="sk-ability"></div><div class="' + cls + '" style="cursor:default">' + pill + '</div><div></div><div class="sk-break" style="grid-column:1/-1; text-align:left; margin-top:0.1rem;">' + t.desc + '</div></div>'
+        }).join('')
+      }
+      function buildTraits(st, lv) {
+        const list = document.getElementById('traits-card')
+        list.innerHTML = TRAITS.map((t) => {
+          const active = lv >= t.lv
+          const desc = t.dyn ? t.desc + st.breathDice + ' fire, ' + st.breathUses + ' uses/long rest.' : t.desc
+          const badge = active ? 'Lv ' + t.lv : 'Lv ' + t.lv
+          return '<div class="feat-item ' + (active ? '' : 'locked') + '"><span class="feat-badge">' + badge + '</span><div class="feat-text"><span class="feat-name">' + t.name + '</span><br><span class="feat-desc">' + desc + '</span></div></div>'
+        }).join('')
+      }
       function markCurrentLevelGuide(lv) {
         document.querySelectorAll('.level-entry').forEach((el) => el.classList.toggle('current', parseInt(el.dataset.lv) === lv))
       }
@@ -1648,6 +1680,7 @@
           { name: 'Second Wind', desc: 'Regain 1d10 + Fighter level HP. ' + st.secondWindUses + ' uses (regain 1 on short rest, all on long rest).', on: st.secondWind },
           { name: 'Know Your Enemy', desc: 'Learn a visible creature\u2019s immunities, resistances, and vulnerabilities. Once/long rest (or spend a superiority die).', on: st.battleMaster },
           { name: 'GWM bonus attack (Hew)', desc: 'Right after you crit or drop a creature to 0 with a heavy weapon, make one extra melee attack.', on: st.gwm },
+          { name: 'Draconic Flight (Spectral Wings)', desc: 'Sprout spectral wings for 10 minutes, gaining a fly speed equal to your speed. Once per long rest.', on: st.draconicFlight, at: 5 },
         ])
         const reaction = group('REACTION (one per round)', '#C84B11', [
           { name: 'Brace', desc: 'When a creature enters your reach (10 ft with the pike) while you hold a MELEE weapon, attack it + ' + st.supDie + ' to damage.', on: st.maneuvers },
@@ -1685,7 +1718,6 @@
         return saved.resources || {}
       }
       function saveAll() {
-        const prev = JSON.parse(localStorage.getItem('bryk-sheet') || '{}')
         const data = {
           level: currentLevel,
           str: val('str'),
@@ -1700,7 +1732,6 @@
           dice: gatherDice(),
           resources: gatherResources(),
           journal: val('journal-text'),
-          skillProf: prev.skillProf || getSkillProf(),
         }
         localStorage.setItem('bryk-sheet', JSON.stringify(data))
         flashSave()

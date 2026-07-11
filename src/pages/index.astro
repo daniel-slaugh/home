@@ -2,6 +2,7 @@
 import { Image } from 'astro:assets'
 import recipesPreview from '../content/recipes/parmesan-egg-in-the-hole.png'
 import spellsPreview from '../assets/spells-card.png'
+import hydroserverPreview from '../assets/hydroserver-preview.png'
 ---
 
 <!doctype html>
@@ -38,6 +39,10 @@ import spellsPreview from '../assets/spells-card.png'
       data-screen-label="01 Hero"
     >
       <div class="grid"></div>
+      <canvas
+        class="circuit-garden"
+        aria-hidden="true"
+      ></canvas>
 
       <div
         class="vines"
@@ -415,7 +420,7 @@ import spellsPreview from '../assets/spells-card.png'
       </nav>
 
       <div class="hero-content">
-        <div class="hero-pill">A GROWING COLLECTION OF PROJECTS</div>
+        <div class="hero-pill">Daniel Presents</div>
         <h1 class="wordmark">
           Byte<svg
             class="sprout"
@@ -483,7 +488,7 @@ import spellsPreview from '../assets/spells-card.png'
     >
       <div class="section-head">
         <h2 class="section-title"><span class="prompt">$ ls</span>projects/</h2>
-        <span class="section-meta">3 directories</span>
+        <span class="section-meta">4 directories</span>
       </div>
 
       <div class="cards">
@@ -549,6 +554,39 @@ import spellsPreview from '../assets/spells-card.png'
           </div>
         </a>
 
+        <a
+          class="card"
+          href="https://hydroserver.org/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <div class="card-window">
+            <div class="lights"><span></span><span></span><span></span></div>
+            <span class="path">hydroserver.org</span>
+          </div>
+          <div class="card-preview-wrap">
+            <div class="card-preview hydro-preview">
+              <Image
+                src={hydroserverPreview}
+                alt="The HydroServer homepage"
+                widths={[320, 640]}
+                sizes="(min-width: 760px) 320px, 100vw"
+              />
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="card-head">
+              <h3 class="card-title">HydroServer</h3>
+              <span class="card-arrow">↗</span>
+            </div>
+            <p class="card-desc">Open-source tools for streaming, storing, and sharing environmental sensor data.</p>
+            <div class="card-foot">
+              <span class="tag">#water #open-source</span>
+              <span class="status">active</span>
+            </div>
+          </div>
+        </a>
+
         <div class="card seed-card">
           <div class="card-window">
             <div class="lights"><span></span><span></span><span></span></div>
@@ -573,21 +611,52 @@ import spellsPreview from '../assets/spells-card.png'
     </section>
 
     <footer>
-      <div></div>
-      <div>
+      <div class="social-links">
         <a
           href="https://github.com/daniel-slaugh"
           target="_blank"
           rel="noopener noreferrer"
-          >github</a
         >
-        &nbsp;·&nbsp;
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3.28-.36 6.72-1.61 6.72-7.25A5.65 5.65 0 0 0 19.22 3.3 5.38 5.38 0 0 0 19.08 1S17.9.65 15 2.48a13.38 13.38 0 0 0-7 0C5.1.65 3.92 1 3.92 1a5.38 5.38 0 0 0-.14 2.3 5.65 5.65 0 0 0-1.5 3.95c0 5.63 3.44 6.88 6.72 7.25A4.8 4.8 0 0 0 8 18v4"></path>
+            <path d="M8 19c-3 .9-3-1.5-4-2"></path>
+          </svg>
+          GitHub
+        </a>
         <a
           href="https://orcid.org/0009-0005-7886-0822"
           target="_blank"
           rel="noopener noreferrer"
-          >orcid</a
         >
+          <svg
+            viewBox="0 0 32 32"
+            aria-hidden="true"
+          >
+            <circle
+              cx="16"
+              cy="16"
+              r="14.75"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            ></circle>
+            <path
+              fill="currentColor"
+              fill-rule="evenodd"
+              d="M18.813 9.637h-5.45v13.9h5.474c4.555 0 7.35-3.378 7.35-6.95 0-1.635-.562-3.372-1.77-4.704-1.215-1.336-3.065-2.246-5.605-2.246ZM18.6 21.3h-2.813v-9.425H18.5c1.823 0 3.12.552 3.96 1.4.842.849 1.252 2.021 1.252 3.312 0 .784-.239 1.967-.993 2.948-.745.969-2.01 1.765-4.119 1.765ZM8.363 9.675v13.887h2.425V9.675H8.363ZM9.575 8.65c.84 0 1.513-.689 1.513-1.513 0-.823-.673-1.512-1.513-1.512-.838 0-1.512.674-1.512 1.513 0 .823.672 1.512 1.512 1.512Z"
+              clip-rule="evenodd"
+            ></path>
+          </svg>
+          ORCID
+        </a>
       </div>
     </footer>
 
@@ -670,15 +739,19 @@ import spellsPreview from '../assets/spells-card.png'
       }
 
       .vines {
+        display: none;
+      }
+      .circuit-garden {
         position: absolute;
         inset: 0;
-        z-index: 0;
-        pointer-events: none;
-      }
-      .vines svg {
+        z-index: 1;
         width: 100%;
         height: 100%;
         display: block;
+        pointer-events: none;
+        opacity: 0.96;
+        mix-blend-mode: normal;
+        mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.96), #000 82%, rgba(0, 0, 0, 0.28) 100%);
       }
 
       .grid {
@@ -1017,6 +1090,10 @@ import spellsPreview from '../assets/spells-card.png'
         object-position: center top;
         filter: none;
       }
+      .card-preview.hydro-preview img {
+        object-position: center top;
+        filter: saturate(0.9) brightness(0.9);
+      }
 
       .card-body {
         padding: 1.1rem 1.1rem 1.2rem;
@@ -1131,16 +1208,29 @@ import spellsPreview from '../assets/spells-card.png'
         letter-spacing: 0.06em;
         color: var(--ink-faint);
         display: flex;
-        justify-content: space-between;
         flex-wrap: wrap;
         gap: 1rem;
       }
+      .social-links {
+        display: flex;
+        align-items: center;
+        gap: 1.4rem;
+      }
       footer a {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
         color: var(--ink-soft);
         text-decoration: none;
       }
       footer a:hover {
         color: var(--green);
+      }
+      footer svg {
+        width: 19px;
+        height: 19px;
+        flex: 0 0 auto;
+        color: var(--ink);
       }
 
       .vine-path {
@@ -1305,6 +1395,9 @@ import spellsPreview from '../assets/spells-card.png'
       }
 
       @media (prefers-reduced-motion: reduce) {
+        .circuit-garden {
+          opacity: 0.72;
+        }
         .packet-trail,
         .vine-node,
         .vine-blossom {
@@ -1327,5 +1420,8 @@ import spellsPreview from '../assets/spells-card.png'
         }
       }
     </style>
+    <script>
+      import '../components/circuit-garden.ts'
+    </script>
   </body>
 </html>

@@ -50,10 +50,13 @@ type Succulent = {
 type Blossom = {
   x: number
   y: number
+  angle: number
   birth: number
   size: number
   phase: number
   color: string
+  accent: string
+  shadow: string
 }
 
 type Speck = {
@@ -395,15 +398,24 @@ if (canvas && canvas.dataset.ready !== 'true') {
         phase: random(),
       })
       cactusPaths.push(cactusRight)
+      const flowerPalettes = [
+        { color: '#f08a8d', accent: '#ffd0b5', shadow: '#8f3f59' },
+        { color: '#eeb85f', accent: '#ffe6a6', shadow: '#9a5a32' },
+        { color: '#d889b5', accent: '#f8c9dc', shadow: '#783d70' },
+      ]
       ;[cactusMain, cactusLeft, cactusRight].forEach((path, index) => {
         const tip = pointAlong(path, path.length)
+        const flowerPalette = flowerPalettes[index]
         blossoms.push({
           x: tip.x,
-          y: tip.y - 2 * scale,
+          y: tip.y,
+          angle: Math.atan2(tip.ty, tip.tx),
           birth: leadEpoch + path.flowDelay + path.length / flowSpeed(path.kind) + 3200 + index * 450,
-          size: (index === 0 ? 7.5 : 6.2) * scale,
+          size: (index === 0 ? 15 : 12.8) * scale,
           phase: random() * Math.PI * 2,
-          color: index === 2 ? '#e6f0d7' : '#cde7c6',
+          color: flowerPalette.color,
+          accent: flowerPalette.accent,
+          shadow: flowerPalette.shadow,
         })
       })
 
@@ -584,12 +596,7 @@ if (canvas && canvas.dataset.ready !== 'true') {
         [palette.ember, createGlowSprite(palette.ember)],
       ])
 
-      const leadPaths = [
-        ...circuitPaths.filter((path) => path.id === 'root-main' || path.id.endsWith('-tap') || path.id.startsWith('succulent-feed-')),
-        ...cactusPaths,
-        ...treePaths,
-        ...vinePaths,
-      ]
+      const leadPaths = [...circuitPaths.filter((path) => path.id === 'root-main' || path.id.endsWith('-tap') || path.id.startsWith('succulent-feed-')), ...cactusPaths, ...treePaths, ...vinePaths]
       const finalLeadArrival = leadPaths.reduce((latest, path) => Math.max(latest, path.flowDelay + path.length / flowSpeed(path.kind)), 0)
       maintenanceEpoch = leadEpoch + finalLeadArrival + 4200
     }
@@ -750,23 +757,9 @@ if (canvas && canvas.dataset.ready !== 'true') {
       context.globalAlpha = 0.94 * bodyScale
       context.beginPath()
       context.moveTo(baseA.x, baseA.y)
-      context.bezierCurveTo(
-        start.x + shoulder.tx * collarDistance * 0.26 - shoulder.ty * baseSpan * 0.38,
-        start.y + shoulder.ty * collarDistance * 0.26 + shoulder.tx * baseSpan * 0.38,
-        edgeA.x - neck.tx * collarDistance * 0.22,
-        edgeA.y - neck.ty * collarDistance * 0.22,
-        edgeA.x,
-        edgeA.y
-      )
+      context.bezierCurveTo(start.x + shoulder.tx * collarDistance * 0.26 - shoulder.ty * baseSpan * 0.38, start.y + shoulder.ty * collarDistance * 0.26 + shoulder.tx * baseSpan * 0.38, edgeA.x - neck.tx * collarDistance * 0.22, edgeA.y - neck.ty * collarDistance * 0.22, edgeA.x, edgeA.y)
       context.lineTo(edgeB.x, edgeB.y)
-      context.bezierCurveTo(
-        edgeB.x - neck.tx * collarDistance * 0.22,
-        edgeB.y - neck.ty * collarDistance * 0.22,
-        start.x + shoulder.tx * collarDistance * 0.26 + shoulder.ty * baseSpan * 0.38,
-        start.y + shoulder.ty * collarDistance * 0.26 - shoulder.tx * baseSpan * 0.38,
-        baseB.x,
-        baseB.y
-      )
+      context.bezierCurveTo(edgeB.x - neck.tx * collarDistance * 0.22, edgeB.y - neck.ty * collarDistance * 0.22, start.x + shoulder.tx * collarDistance * 0.26 + shoulder.ty * baseSpan * 0.38, start.y + shoulder.ty * collarDistance * 0.26 - shoulder.tx * baseSpan * 0.38, baseB.x, baseB.y)
       context.closePath()
       context.fill()
 
@@ -775,12 +768,7 @@ if (canvas && canvas.dataset.ready !== 'true') {
       context.globalAlpha = 0.16 * bodyScale
       context.beginPath()
       context.moveTo(start.x + shoulder.tx * 1.5, start.y + shoulder.ty * 1.5)
-      context.quadraticCurveTo(
-        lerp(start.x, neck.x, 0.52) - neck.ty * neckWidth * 0.18,
-        lerp(start.y, neck.y, 0.52) + neck.tx * neckWidth * 0.18,
-        neck.x,
-        neck.y
-      )
+      context.quadraticCurveTo(lerp(start.x, neck.x, 0.52) - neck.ty * neckWidth * 0.18, lerp(start.y, neck.y, 0.52) + neck.tx * neckWidth * 0.18, neck.x, neck.y)
       context.stroke()
       context.restore()
     }
@@ -882,12 +870,7 @@ if (canvas && canvas.dataset.ready !== 'true') {
       context.globalAlpha = 0.62 * state.growth
       context.beginPath()
       context.moveTo(leaf.stemX, leaf.stemY)
-      context.quadraticCurveTo(
-        lerp(leaf.stemX, state.baseX, 0.58) + Math.sin(leaf.phase) * 1.5,
-        lerp(leaf.stemY, state.baseY, 0.58) + Math.cos(leaf.phase) * 1.5,
-        state.baseX,
-        state.baseY
-      )
+      context.quadraticCurveTo(lerp(leaf.stemX, state.baseX, 0.58) + Math.sin(leaf.phase) * 1.5, lerp(leaf.stemY, state.baseY, 0.58) + Math.cos(leaf.phase) * 1.5, state.baseX, state.baseY)
       context.stroke()
       context.restore()
     }
@@ -1064,28 +1047,97 @@ if (canvas && canvas.dataset.ready !== 'true') {
     }
 
     function drawBlossom(blossom: Blossom, elapsed: number) {
-      const growth = smoothstep((elapsed - blossom.birth) / 6000)
-      if (growth <= 0) return
-      const breathe = 0.94 + Math.sin(elapsed * 0.0007 + blossom.phase) * 0.06
+      const age = elapsed - blossom.birth
+      const budGrowth = smoothstep(age / 1800)
+      if (budGrowth <= 0) return
+      const open = smoothstep((age - 1250) / 3900)
+      const sway = Math.sin(elapsed * 0.00055 + blossom.phase) * 0.025
+
       context.save()
       context.translate(blossom.x, blossom.y)
-      context.rotate(blossom.phase + Math.sin(elapsed * 0.0002) * 0.08)
-      context.scale(growth * breathe, growth * breathe)
+      context.rotate(blossom.angle + sway)
+      context.translate(blossom.size * (0.12 + open * 1.1) * budGrowth, 0)
+      context.scale(1, 0.88)
+
+      // A compact bud sits directly on the cactus crown before the petals unfold.
+      context.save()
+      context.scale(budGrowth, 0.52 + budGrowth * 0.48)
       context.fillStyle = blossom.color
-      context.strokeStyle = palette.cream
+      context.strokeStyle = blossom.accent
+      context.globalAlpha = 0.9 * (1 - open * 0.8)
       context.lineWidth = 0.55
-      context.globalAlpha = 0.74
-      for (let index = 0; index < 5; index++) {
-        context.rotate((Math.PI * 2) / 5)
-        context.beginPath()
-        context.ellipse(blossom.size * 0.7, 0, blossom.size * 0.72, blossom.size * 0.3, 0, 0, Math.PI * 2)
-        context.fill()
-        context.stroke()
-      }
-      context.fillStyle = palette.cream
       context.beginPath()
-      context.arc(0, 0, blossom.size * 0.24, 0, Math.PI * 2)
+      context.ellipse(blossom.size * 0.18, 0, blossom.size * 0.42, blossom.size * 0.28, 0, 0, Math.PI * 2)
       context.fill()
+      context.stroke()
+      context.restore()
+
+      const drawPetalLayer = (count: number, spread: number, lengthScale: number, widthScale: number, baseColor: string, tipColor: string, shift: number, alpha: number) => {
+        context.save()
+        context.translate(-blossom.size * 0.06, shift * open)
+        for (let index = 0; index < count; index++) {
+          const centered = count === 1 ? 0 : index / (count - 1) - 0.5
+          const angle = centered * spread * (0.18 + open * 0.82)
+          const length = blossom.size * lengthScale * (0.3 + open * 0.7)
+          const petalWidth = blossom.size * widthScale * (0.24 + open * 0.76)
+          context.save()
+          context.rotate(angle)
+          const petalGradient = context.createLinearGradient(0, -petalWidth * 0.5, length, petalWidth * 0.35)
+          petalGradient.addColorStop(0, blossom.shadow)
+          petalGradient.addColorStop(0.42, baseColor)
+          petalGradient.addColorStop(1, tipColor)
+          context.fillStyle = petalGradient
+          context.strokeStyle = tipColor
+          context.lineWidth = 0.42
+          context.globalAlpha = (0.22 + open * 0.76) * alpha
+          context.beginPath()
+          context.moveTo(-blossom.size * 0.08, 0)
+          context.bezierCurveTo(length * 0.16, -petalWidth * 0.9, length * 0.68, -petalWidth * 0.78, length, 0)
+          context.bezierCurveTo(length * 0.74, petalWidth * 0.58, length * 0.2, petalWidth * 0.96, -blossom.size * 0.08, 0)
+          context.closePath()
+          context.fill()
+          context.stroke()
+          context.strokeStyle = blossom.accent
+          context.lineWidth = 0.38
+          context.globalAlpha *= 0.32
+          context.beginPath()
+          context.moveTo(length * 0.08, 0)
+          context.quadraticCurveTo(length * 0.48, -petalWidth * 0.12, length * 0.84, 0)
+          context.stroke()
+          context.restore()
+        }
+        context.restore()
+      }
+
+      // Rear petals establish the silhouette; inner petals and a shadowed bowl add depth.
+      drawPetalLayer(9, 2.35, 1.28, 0.36, blossom.shadow, blossom.color, -blossom.size * 0.05, 0.82)
+      drawPetalLayer(7, 1.72, 1.04, 0.32, blossom.color, blossom.accent, 0, 0.94)
+
+      context.fillStyle = blossom.shadow
+      context.globalAlpha = 0.58 * open
+      context.beginPath()
+      context.ellipse(0, blossom.size * 0.02, blossom.size * 0.3 * open, blossom.size * 0.17 * open, 0, 0, Math.PI * 2)
+      context.fill()
+
+      const stamenGrowth = smoothstep((open - 0.48) / 0.52)
+      context.strokeStyle = '#ffd978'
+      context.fillStyle = '#ffe8a8'
+      context.lineWidth = 0.45
+      context.globalAlpha = 0.78 * stamenGrowth
+      for (let index = 0; index < 5; index++) {
+        const angle = -0.48 + index * 0.24
+        const length = blossom.size * (0.42 + (index % 2) * 0.08) * stamenGrowth
+        context.beginPath()
+        context.moveTo(0, 0)
+        context.lineTo(Math.cos(angle) * length, Math.sin(angle) * length)
+        context.stroke()
+        context.beginPath()
+        context.arc(Math.cos(angle) * length, Math.sin(angle) * length, 0.75, 0, Math.PI * 2)
+        context.fill()
+      }
+
+      // A brighter foreground lip overlaps the center, giving the bloom a cupped profile.
+      drawPetalLayer(5, 1.08, 0.8, 0.3, blossom.color, blossom.accent, blossom.size * 0.08, 1)
       context.restore()
     }
 
@@ -1157,7 +1209,7 @@ if (canvas && canvas.dataset.ready !== 'true') {
       if (parent?.kind === 'branch' && !branchCarriesWave(parent, cycle, mobile)) return false
       const siblings = treePaths.filter((candidate) => candidate.kind === 'branch' && candidate.parent === path.parent && candidate.depth === path.depth)
       if (siblings.length <= 1) return true
-      const selected = ((pathHash(`${path.parent}:${path.depth}`) + cycle) % siblings.length + siblings.length) % siblings.length
+      const selected = (((pathHash(`${path.parent}:${path.depth}`) + cycle) % siblings.length) + siblings.length) % siblings.length
       return siblings[selected]?.id === path.id
     }
 

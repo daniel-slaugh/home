@@ -1,19 +1,28 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Byte Garden">
   <defs>
-    <radialGradient id="bg" cx="50%" cy="38%" r="70%">
-      <stop offset="0%" stop-color="#16241c"/>
-      <stop offset="100%" stop-color="#0b1410"/>
+    <linearGradient id="tile" x1="8" y1="3" x2="56" y2="61" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1b2b21"/>
+      <stop offset=".48" stop-color="#0e1913"/>
+      <stop offset="1" stop-color="#07100c"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="32" cy="27" r="29" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#7ce39a" stop-opacity=".16"/>
+      <stop offset="1" stop-color="#7ce39a" stop-opacity="0"/>
     </radialGradient>
+    <filter id="mark-shadow" x="8" y="4" width="48" height="56" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="1" stdDeviation="1.1" flood-color="#000" flood-opacity=".62"/>
+      <feDropShadow dx="0" dy="0" stdDeviation="1.8" flood-color="#7ce39a" flood-opacity=".18"/>
+    </filter>
   </defs>
-  <rect width="64" height="64" rx="12" fill="url(#bg)"/>
-  <g transform="translate(18 14) scale(1.4)" fill="none" stroke="#7ce39a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M 10 26 L 10 10"/>
-    <path d="M 10 18 L 4 18 L 4 13"/>
-    <path d="M 10 14 L 16 14 L 16 8"/>
-  </g>
-  <g transform="translate(18 14) scale(1.4)">
-    <circle cx="4" cy="13" r="2.1" fill="#7ce39a"/>
-    <circle cx="16" cy="8" r="2.1" fill="#e8a06b"/>
-    <circle cx="10" cy="6" r="2.6" fill="#7ce39a"/>
+  <rect width="64" height="64" rx="14" fill="url(#tile)"/>
+  <rect x=".75" y=".75" width="62.5" height="62.5" rx="13.25" fill="none" stroke="#dfffe8" stroke-opacity=".11" stroke-width="1.5"/>
+  <circle cx="32" cy="27" r="29" fill="url(#glow)"/>
+  <g transform="translate(9 -2.5) scale(2.3)" fill="none" stroke="#7ce39a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" filter="url(#mark-shadow)">
+    <path d="M10 26V10"/>
+    <path d="M10 18H4v-5"/>
+    <path d="M10 14h6V8"/>
+    <circle cx="4" cy="13" r="1.6" fill="#7ce39a" stroke="none"/>
+    <circle cx="16" cy="8" r="1.6" fill="#7ce39a" stroke="none"/>
+    <circle cx="10" cy="6" r="2" fill="#7ce39a" stroke="none"/>
   </g>
 </svg>

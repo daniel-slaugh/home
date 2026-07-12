@@ -1,12 +1,19 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Byte Garden">
-  <g transform="translate(18 14) scale(1.4)" fill="none" stroke="#7ce39a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M 10 26 L 10 10"/>
-    <path d="M 10 18 L 4 18 L 4 13"/>
-    <path d="M 10 14 L 16 14 L 16 8"/>
-  </g>
-  <g transform="translate(18 14) scale(1.4)">
-    <circle cx="4" cy="13" r="2.1" fill="#7ce39a"/>
-    <circle cx="16" cy="8" r="2.1" fill="#e8a06b"/>
-    <circle cx="10" cy="6" r="2.6" fill="#7ce39a"/>
+  <defs>
+    <linearGradient id="tile" x1="8" y1="3" x2="56" y2="61" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1b2b21"/>
+      <stop offset=".48" stop-color="#0e1913"/>
+      <stop offset="1" stop-color="#07100c"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="url(#tile)"/>
+  <rect x="1" y="1" width="62" height="62" rx="13" fill="none" stroke="#dfffe8" stroke-opacity=".14" stroke-width="2"/>
+  <g transform="translate(12 4.5) scale(2)" fill="none" stroke="#7ce39a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M10 26V10"/>
+    <path d="M10 18H4v-5"/>
+    <path d="M10 14h6V8"/>
+    <circle cx="4" cy="13" r="1.6" fill="#7ce39a" stroke="none"/>
+    <circle cx="16" cy="8" r="1.6" fill="#7ce39a" stroke="none"/>
+    <circle cx="10" cy="6" r="2" fill="#7ce39a" stroke="none"/>
   </g>
 </svg>

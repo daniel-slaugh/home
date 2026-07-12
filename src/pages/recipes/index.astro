@@ -1,8 +1,8 @@
 ---
 import BaseHead from '../../components/BaseHead.astro'
 import Header from '../../components/Header.astro'
+import SucculentIcon from '../../components/SucculentIcon.astro'
 import { getCollection } from 'astro:content'
-import FormattedDate from '../../components/FormattedDate.astro'
 import { Image } from 'astro:assets'
 
 const recipes = (await getCollection('recipes')).sort((a, b) => a.data.title.localeCompare(b.data.title))
@@ -28,6 +28,257 @@ const timeRangeMax = Math.max(timeRangeStep, Math.ceil(maxRecipeMinutes / timeRa
   <head>
     <BaseHead title="Recipes" />
     <style>
+      .recipe-app {
+        background: var(--paper);
+        color: var(--cocoa);
+      }
+
+      /* ---------- Hero ---------- */
+      .recipe-hero {
+        position: relative;
+        padding: 2.5rem 1.5rem 2rem;
+        text-align: center;
+        overflow: hidden;
+      }
+      :global(.recipe-hero-plant) {
+        width: 36px;
+        height: 36px;
+        margin: 0 auto 0.75rem;
+      }
+      .recipe-h1 {
+        font-family: var(--serif);
+        font-weight: 700;
+        font-size: clamp(2rem, 4vw, 2.75rem);
+        letter-spacing: -0.02em;
+        color: var(--forest);
+        line-height: 1.05;
+      }
+
+      /* ---------- Shell / layout ---------- */
+      .recipe-shell {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 0 1.5rem 5rem;
+      }
+      .recipe-grid-layout {
+        display: grid;
+        gap: 2rem;
+      }
+      @media (min-width: 1024px) {
+        .recipe-grid-layout {
+          grid-template-columns: 280px 1fr;
+          align-items: start;
+        }
+      }
+
+      /* ---------- Filters panel ---------- */
+      .filters-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+      }
+      .filters-panel-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+      }
+      .filters-title {
+        font-family: var(--serif);
+        font-weight: 700;
+        font-size: 1.15rem;
+        color: var(--forest);
+      }
+      .filters-head-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+      .pill-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        border-radius: 999px;
+        border: 1px solid var(--paper-line);
+        background: var(--paper-card);
+        padding: 0.4rem 0.85rem;
+        font-family: var(--mono);
+        font-size: 0.68rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--cocoa-soft);
+        cursor: pointer;
+        transition:
+          border-color 0.15s ease,
+          color 0.15s ease,
+          background 0.15s ease;
+      }
+      .pill-btn:hover {
+        border-color: var(--paper-line-hot);
+        color: var(--forest);
+        background: #fff;
+      }
+
+      .filter-group {
+        border-radius: 16px;
+        border: 1px solid var(--paper-line);
+        background: var(--paper-card);
+        padding: 0.9rem 1rem;
+      }
+      .filter-group summary {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        cursor: pointer;
+        list-style: none;
+        font-family: var(--mono);
+        font-size: 0.7rem;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--forest);
+        font-weight: 600;
+      }
+      .filter-group summary::-webkit-details-marker {
+        display: none;
+      }
+      .filter-group summary svg {
+        color: var(--cocoa-faint);
+        transition: transform 0.2s ease;
+      }
+      .filter-group[open] summary svg {
+        transform: rotate(180deg);
+      }
+      .filter-group-body {
+        margin-top: 0.85rem;
+      }
+
+      .field {
+        display: flex;
+        align-items: center;
+        gap: 0.55rem;
+        border-radius: 999px;
+        border: 1px solid var(--paper-line);
+        background: var(--paper);
+        padding: 0.55rem 0.9rem;
+      }
+      .field:focus-within {
+        border-color: var(--herb);
+      }
+      .field svg {
+        color: var(--herb);
+        flex-shrink: 0;
+      }
+      .field input {
+        width: 100%;
+        background: transparent;
+        border: none;
+        outline: none;
+        font-size: 0.88rem;
+        color: var(--cocoa);
+        font-family: var(--sans);
+      }
+      .field input::placeholder {
+        color: var(--cocoa-faint);
+      }
+      .field-hint {
+        margin-top: 0.5rem;
+        font-size: 0.72rem;
+        color: var(--cocoa-faint);
+      }
+      .field + .field {
+        margin-top: 0.6rem;
+      }
+
+      .chip-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.45rem;
+      }
+      .filter-chip {
+        cursor: pointer;
+      }
+      .chip-face {
+        display: inline-flex;
+        align-items: center;
+        border-radius: 999px;
+        border: 1px solid var(--paper-line);
+        background: var(--paper);
+        padding: 0.4rem 0.8rem;
+        font-size: 0.82rem;
+        color: var(--cocoa-soft);
+        transition: all 0.15s ease;
+        user-select: none;
+      }
+      .filter-chip:hover .chip-face {
+        border-color: var(--paper-line-hot);
+        color: var(--cocoa);
+      }
+      .filter-chip input:checked + .chip-face {
+        background: var(--herb);
+        border-color: var(--herb);
+        color: #fff;
+      }
+      .filter-chip.accent-clay input:checked + .chip-face {
+        background: var(--clay);
+        border-color: var(--clay);
+        color: #fff;
+      }
+      .filter-chip input:focus-visible + .chip-face {
+        outline: 2px solid var(--herb);
+        outline-offset: 2px;
+      }
+
+      .toggle-row {
+        display: flex;
+        align-items: center;
+        gap: 0.55rem;
+        font-size: 0.85rem;
+        color: var(--cocoa-soft);
+        cursor: pointer;
+      }
+      .toggle-row input {
+        accent-color: var(--herb);
+        width: 16px;
+        height: 16px;
+      }
+
+      .time-minutes-label {
+        font-family: var(--mono);
+        font-size: 0.68rem;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--cocoa-faint);
+        margin-bottom: 0.5rem;
+      }
+      .time-track-wrap {
+        position: relative;
+        height: 2.5rem;
+      }
+      .time-track-bg {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 50%;
+        height: 4px;
+        transform: translateY(-50%);
+        border-radius: 999px;
+        background: var(--paper-line);
+      }
+      #time-range-fill {
+        position: absolute;
+        top: 50%;
+        height: 4px;
+        transform: translateY(-50%);
+        border-radius: 999px;
+        background: var(--herb);
+      }
+      .time-range-labels {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.75rem;
+        color: var(--cocoa-faint);
+      }
+
       .range-input {
         -webkit-appearance: none;
         appearance: none;
@@ -44,13 +295,15 @@ const timeRangeMax = Math.max(timeRangeStep, Math.ceil(maxRecipeMinutes / timeRa
       }
       .range-input::-webkit-slider-thumb {
         -webkit-appearance: none;
-        height: 16px;
-        width: 16px;
+        height: 18px;
+        width: 18px;
         border-radius: 999px;
-        background: #22d3ee;
-        border: 2px solid #a5f3fc;
-        box-shadow: 0 0 0 4px rgba(34, 211, 238, 0.35);
-        margin-top: -7px;
+        background: var(--herb);
+        border: 2px solid #fff;
+        box-shadow:
+          0 0 0 1px var(--herb),
+          0 2px 6px var(--paper-shadow);
+        margin-top: -8px;
         cursor: pointer;
       }
       .range-input:active::-webkit-slider-thumb {
@@ -61,12 +314,14 @@ const timeRangeMax = Math.max(timeRangeStep, Math.ceil(maxRecipeMinutes / timeRa
         background: transparent;
       }
       .range-input::-moz-range-thumb {
-        height: 16px;
-        width: 16px;
+        height: 18px;
+        width: 18px;
         border-radius: 999px;
-        background: #22d3ee;
-        border: 2px solid #a5f3fc;
-        box-shadow: 0 0 0 4px rgba(34, 211, 238, 0.35);
+        background: var(--herb);
+        border: 2px solid #fff;
+        box-shadow:
+          0 0 0 1px var(--herb),
+          0 2px 6px var(--paper-shadow);
         cursor: pointer;
       }
       .range-input:active::-moz-range-thumb {
@@ -78,41 +333,218 @@ const timeRangeMax = Math.max(timeRangeStep, Math.ceil(maxRecipeMinutes / timeRa
         border-color: transparent;
         color: transparent;
       }
+
       #filters-panel {
         overscroll-behavior: contain;
       }
       #recipes-list {
         overflow-anchor: none;
       }
+
+      /* ---------- Mobile drawer ---------- */
+      .filters-scrim {
+        display: none;
+      }
+      @media (max-width: 1023px) {
+        .filters-scrim {
+          position: fixed;
+          inset: 0;
+          z-index: 40;
+          display: none;
+          background: rgba(35, 26, 12, 0.45);
+        }
+        #filters-toggle:checked ~ .filters-scrim {
+          display: block;
+        }
+        #filters-panel {
+          position: fixed;
+          inset-block: 0;
+          left: 0;
+          z-index: 50;
+          width: 88vw;
+          max-width: 22rem;
+          transform: translateX(-100%);
+          overflow-y: auto;
+          background: var(--paper);
+          padding: 1.25rem;
+          box-shadow: 0 20px 60px var(--paper-shadow);
+          transition: transform 0.3s ease-out;
+        }
+        #filters-toggle:checked ~ #filters-panel {
+          transform: translateX(0);
+        }
+      }
+      .mobile-close {
+        display: none;
+      }
+      @media (max-width: 1023px) {
+        .mobile-close {
+          display: inline-flex;
+        }
+      }
+
+      /* ---------- Results ---------- */
+      .results-bar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+      }
+      #summary {
+        font-family: var(--mono);
+        font-size: 0.78rem;
+        letter-spacing: 0.04em;
+        color: var(--cocoa-faint);
+      }
+      .mobile-filters-btn {
+        display: inline-flex;
+      }
+      @media (min-width: 1024px) {
+        .mobile-filters-btn {
+          display: none;
+        }
+      }
+
+      #no-results {
+        display: none;
+        align-items: center;
+        gap: 0.9rem;
+        border: 1px dashed var(--paper-line-hot);
+        border-radius: 18px;
+        background: var(--paper-card);
+        padding: 1.25rem 1.5rem;
+        color: var(--cocoa-soft);
+      }
+      #no-results:not(.hidden) {
+        display: flex;
+      }
+      :global(.no-results-plant) {
+        width: 2.25rem;
+        height: 2.25rem;
+        flex-shrink: 0;
+        opacity: 0.75;
+      }
+
+      .recipe-grid {
+        display: grid;
+        gap: 1.75rem;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      }
+
+      .recipe-card-link {
+        display: block;
+        text-decoration: none;
+        color: inherit;
+        border-radius: 20px;
+        background: var(--paper-card);
+        border: 1px solid var(--paper-line);
+        overflow: hidden;
+        transition:
+          transform 0.25s ease,
+          border-color 0.25s ease,
+          box-shadow 0.25s ease;
+      }
+      .recipe-card-link:hover {
+        transform: translateY(-4px);
+        border-color: var(--paper-line-hot);
+        box-shadow: 0 20px 40px -20px var(--paper-shadow);
+      }
+      .recipe-card-photo-wrap {
+        aspect-ratio: 4 / 3;
+        overflow: hidden;
+        background: var(--paper-line);
+      }
+      .recipe-card-photo-wrap :global(img) {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        transition: transform 0.5s ease;
+      }
+      .recipe-card-link:hover .recipe-card-photo-wrap :global(img) {
+        transform: scale(1.05);
+      }
+      .recipe-card-body {
+        padding: 1.1rem 1.15rem 1.25rem;
+      }
+      .recipe-card-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+        margin-bottom: 0.6rem;
+      }
+      .tag-badge {
+        font-family: var(--mono);
+        font-size: 0.62rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 0.2rem 0.55rem;
+        border-radius: 999px;
+      }
+      .tag-badge.herb {
+        color: var(--herb);
+        background: var(--herb-dim);
+      }
+      .tag-badge.clay {
+        color: var(--clay);
+        background: var(--clay-dim);
+      }
+      .recipe-card-title {
+        font-family: var(--serif);
+        font-size: 1.3rem;
+        font-weight: 700;
+        line-height: 1.2;
+        color: var(--forest);
+        transition: color 0.15s ease;
+      }
+      .recipe-card-link:hover .recipe-card-title {
+        color: var(--clay);
+      }
+      .recipe-card-meta {
+        margin-top: 0.5rem;
+        font-size: 0.82rem;
+        color: var(--cocoa-faint);
+      }
+      .recipe-card-meta strong {
+        color: var(--cocoa-soft);
+        font-weight: 600;
+      }
     </style>
   </head>
 
-  <body class="min-h-screen bg-gray-900 font-sans text-gray-100">
+  <body class="recipe-app">
     <Header title="Recipes" />
 
-    <main class="w-full px-4 py-10">
-      <div class="grid gap-8 lg:grid-cols-[280px_1fr]">
+    <div class="recipe-hero">
+      <SucculentIcon class="recipe-hero-plant" />
+      <h1 class="recipe-h1">Recipes</h1>
+    </div>
+
+    <main class="recipe-shell">
+      <div class="recipe-grid-layout">
         <input
           id="filters-toggle"
           type="checkbox"
-          class="peer sr-only"
+          class="sr-only"
         />
         <label
           for="filters-toggle"
-          class="fixed inset-0 z-40 hidden bg-black/60 peer-checked:block lg:hidden"
+          class="filters-scrim"
           aria-hidden="true"
         ></label>
 
         <aside
           id="filters-panel"
-          class="fixed inset-y-0 left-0 z-50 w-[88vw] max-w-xs translate-x-[-100%] space-y-4 overflow-y-auto border-r border-white/10 bg-gray-950/95 p-4 shadow-2xl shadow-black/40 transition-transform duration-300 ease-out peer-checked:translate-x-0 lg:static lg:z-auto lg:w-auto lg:max-w-none lg:translate-x-0 lg:rounded-2xl lg:border lg:border-white/10 lg:bg-gray-900/70 lg:shadow-lg lg:shadow-black/20 lg:sticky lg:top-6 lg:overflow-visible"
+          class="filters-panel"
         >
-          <div class="flex items-center justify-between gap-2">
-            <h2 class="text-base font-semibold text-gray-100">Filters</h2>
-            <div class="flex items-center gap-2">
+          <div class="filters-panel-head">
+            <h2 class="filters-title">Filters</h2>
+            <div class="filters-head-actions">
               <label
                 for="filters-toggle"
-                class="rounded-lg border border-white/10 bg-white/5 px-2.5 py-1 text-xs font-semibold uppercase tracking-widest text-gray-200 hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400/40 lg:hidden"
+                class="pill-btn mobile-close"
                 role="button"
               >
                 Close
@@ -120,7 +552,7 @@ const timeRangeMax = Math.max(timeRangeStep, Math.ceil(maxRecipeMinutes / timeRa
               <button
                 id="clear"
                 type="button"
-                class="rounded-lg border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-gray-200 hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400/40"
+                class="pill-btn"
               >
                 Clear
               </button>
@@ -129,12 +561,13 @@ const timeRangeMax = Math.max(timeRangeStep, Math.ceil(maxRecipeMinutes / timeRa
 
           <details
             open
-            class="group rounded-xl border border-white/10 bg-white/5 px-3 py-2"
+            class="filter-group"
           >
-            <summary class="flex cursor-pointer list-none items-center justify-between text-sm font-semibold text-gray-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400/40">
+            <summary>
               Search
               <svg
-                class="h-4 w-4 text-gray-400 transition-transform group-open:rotate-180"
+                width="16"
+                height="16"
                 viewBox="0 0 20 20"
                 aria-hidden="true"
               >
@@ -148,11 +581,11 @@ const timeRangeMax = Math.max(timeRangeStep, Math.ceil(maxRecipeMinutes / timeRa
                 ></path>
               </svg>
             </summary>
-            <div class="mt-3 grid gap-3">
-              <div class="flex items-center gap-2 rounded-lg border border-white/10 bg-gray-900/40 px-2.5 py-1.5">
+            <div class="filter-group-body">
+              <div class="field">
                 <svg
-                  width="16"
-                  height="16"
+                  width="15"
+                  height="15"
                   viewBox="0 0 24 24"
                   aria-hidden="true"
                 >
@@ -162,7 +595,6 @@ const timeRangeMax = Math.max(timeRangeStep, Math.ceil(maxRecipeMinutes / timeRa
                     stroke="currentColor"
                     stroke-width="1.5"
                     stroke-linecap="round"
-                    class="text-emerald-200/80"
                   ></path>
                 </svg>
                 <label
@@ -174,14 +606,12 @@ const timeRangeMax = Math.max(timeRangeStep, Math.ceil(maxRecipeMinutes / timeRa
                   id="q"
                   type="search"
                   placeholder="Title..."
-                  class="w-full bg-transparent text-sm text-gray-100 placeholder:text-gray-500 outline-none"
                 />
               </div>
-
-              <div class="flex items-center gap-2 rounded-lg border border-white/10 bg-gray-900/40 px-2.5 py-1.5">
+              <div class="field">
                 <svg
-                  width="16"
-                  height="16"
+                  width="15"
+                  height="15"
                   viewBox="0 0 24 24"
                   aria-hidden="true"
                 >
@@ -191,7 +621,6 @@ const timeRangeMax = Math.max(timeRangeStep, Math.ceil(maxRecipeMinutes / timeRa
                     stroke="currentColor"
                     stroke-width="1.5"
                     stroke-linecap="round"
-                    class="text-fuchsia-200/80"
                   ></path>
                 </svg>
                 <label
@@ -203,21 +632,21 @@ const timeRangeMax = Math.max(timeRangeStep, Math.ceil(maxRecipeMinutes / timeRa
                   id="ingredients"
                   type="text"
                   placeholder="Ingredients…"
-                  class="w-full bg-transparent text-sm text-gray-100 placeholder:text-gray-500 outline-none"
                 />
               </div>
-              <p class="text-xs text-gray-500">Separate ingredients with commas.</p>
+              <p class="field-hint">Separate ingredients with commas.</p>
             </div>
           </details>
 
           <details
             open
-            class="group rounded-xl border border-white/10 bg-white/5 px-3 py-2"
+            class="filter-group"
           >
-            <summary class="flex cursor-pointer list-none items-center justify-between text-sm font-semibold text-gray-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400/40">
+            <summary>
               Meal Type
               <svg
-                class="h-4 w-4 text-gray-400 transition-transform group-open:rotate-180"
+                width="16"
+                height="16"
                 viewBox="0 0 20 20"
                 aria-hidden="true"
               >
@@ -231,17 +660,17 @@ const timeRangeMax = Math.max(timeRangeStep, Math.ceil(maxRecipeMinutes / timeRa
                 ></path>
               </svg>
             </summary>
-            <div class="mt-3 grid gap-2">
+            <div class="filter-group-body chip-row">
               {
                 mealTypes.map((course) => (
-                  <label class="flex items-start gap-3 rounded-lg border border-white/10 bg-gray-900/40 px-3 py-2 text-sm text-gray-200 transition hover:border-white/20">
+                  <label class="filter-chip">
                     <input
                       type="checkbox"
-                      class="mt-0.5 h-4 w-4 rounded border-white/20 bg-white/5 text-indigo-400 focus:ring-indigo-400/40 focus:ring-offset-0"
+                      class="sr-only"
                       data-filter="course"
                       value={toKey(course)}
                     />
-                    <span class="leading-tight">{course}</span>
+                    <span class="chip-face">{course}</span>
                   </label>
                 ))
               }
@@ -250,12 +679,13 @@ const timeRangeMax = Math.max(timeRangeStep, Math.ceil(maxRecipeMinutes / timeRa
 
           <details
             open
-            class="group rounded-xl border border-white/10 bg-white/5 px-3 py-2"
+            class="filter-group"
           >
-            <summary class="flex cursor-pointer list-none items-center justify-between text-sm font-semibold text-gray-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400/40">
+            <summary>
               Cuisine
               <svg
-                class="h-4 w-4 text-gray-400 transition-transform group-open:rotate-180"
+                width="16"
+                height="16"
                 viewBox="0 0 20 20"
                 aria-hidden="true"
               >
@@ -269,17 +699,17 @@ const timeRangeMax = Math.max(timeRangeStep, Math.ceil(maxRecipeMinutes / timeRa
                 ></path>
               </svg>
             </summary>
-            <div class="mt-3 grid gap-2">
+            <div class="filter-group-body chip-row">
               {
                 cuisines.map((cuisine) => (
-                  <label class="flex items-start gap-3 rounded-lg border border-white/10 bg-gray-900/40 px-3 py-2 text-sm text-gray-200 transition hover:border-white/20">
+                  <label class="filter-chip">
                     <input
                       type="checkbox"
-                      class="mt-0.5 h-4 w-4 rounded border-white/20 bg-white/5 text-emerald-400 focus:ring-emerald-400/40 focus:ring-offset-0"
+                      class="sr-only"
                       data-filter="cuisine"
                       value={toKey(cuisine)}
                     />
-                    <span class="leading-tight">{cuisine}</span>
+                    <span class="chip-face">{cuisine}</span>
                   </label>
                 ))
               }
@@ -288,12 +718,13 @@ const timeRangeMax = Math.max(timeRangeStep, Math.ceil(maxRecipeMinutes / timeRa
 
           <details
             open
-            class="group rounded-xl border border-white/10 bg-white/5 px-3 py-2"
+            class="filter-group"
           >
-            <summary class="flex cursor-pointer list-none items-center justify-between text-sm font-semibold text-gray-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400/40">
+            <summary>
               Cooking Method
               <svg
-                class="h-4 w-4 text-gray-400 transition-transform group-open:rotate-180"
+                width="16"
+                height="16"
                 viewBox="0 0 20 20"
                 aria-hidden="true"
               >
@@ -307,17 +738,17 @@ const timeRangeMax = Math.max(timeRangeStep, Math.ceil(maxRecipeMinutes / timeRa
                 ></path>
               </svg>
             </summary>
-            <div class="mt-3 grid gap-2">
+            <div class="filter-group-body chip-row">
               {
                 cookingMethods.map((method) => (
-                  <label class="flex items-start gap-3 rounded-lg border border-white/10 bg-gray-900/40 px-3 py-2 text-sm text-gray-200 transition hover:border-white/20">
+                  <label class="filter-chip accent-clay">
                     <input
                       type="checkbox"
-                      class="mt-0.5 h-4 w-4 rounded border-white/20 bg-white/5 text-amber-300 focus:ring-amber-300/40 focus:ring-offset-0"
+                      class="sr-only"
                       data-filter="method"
                       value={toKey(method)}
                     />
-                    <span class="leading-tight">{method}</span>
+                    <span class="chip-face">{method}</span>
                   </label>
                 ))
               }
@@ -326,12 +757,13 @@ const timeRangeMax = Math.max(timeRangeStep, Math.ceil(maxRecipeMinutes / timeRa
 
           <details
             open
-            class="group rounded-xl border border-white/10 bg-white/5 px-3 py-2"
+            class="filter-group"
           >
-            <summary class="flex cursor-pointer list-none items-center justify-between text-sm font-semibold text-gray-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400/40">
+            <summary>
               Time
               <svg
-                class="h-4 w-4 text-gray-400 transition-transform group-open:rotate-180"
+                width="16"
+                height="16"
                 viewBox="0 0 20 20"
                 aria-hidden="true"
               >
@@ -345,25 +777,20 @@ const timeRangeMax = Math.max(timeRangeStep, Math.ceil(maxRecipeMinutes / timeRa
                 ></path>
               </svg>
             </summary>
-            <div class="mt-3 space-y-4">
-              <label class="flex items-center gap-3 rounded-lg border border-white/10 bg-gray-900/40 px-3 py-2 text-sm text-gray-200 transition hover:border-white/20">
+            <div class="filter-group-body">
+              <label class="toggle-row">
                 <input
                   id="timeIncludeInactive"
                   type="checkbox"
-                  class="h-4 w-4 rounded border-white/20 bg-white/5 text-cyan-300 focus:ring-cyan-300/40 focus:ring-offset-0"
                 />
-                <span>Include chill/marinate time</span>
+                Include chill/marinate time
               </label>
 
-              <div class="grid gap-2">
-                <p class="text-xs font-semibold uppercase tracking-widest text-gray-400">Minutes</p>
-                <div class="relative mt-1 h-12">
-                  <div class="absolute left-0 right-0 top-1/2 h-1 -translate-y-1/2 rounded-full bg-slate-700/80"></div>
-                  <div
-                    id="time-range-fill"
-                    class="absolute top-1/2 h-1 -translate-y-1/2 rounded-full bg-cyan-400/45"
-                  >
-                  </div>
+              <div style="margin-top: 0.9rem;">
+                <p class="time-minutes-label">Minutes</p>
+                <div class="time-track-wrap">
+                  <div class="time-track-bg"></div>
+                  <div id="time-range-fill"></div>
                   <input
                     id="maxTime"
                     type="range"
@@ -374,8 +801,8 @@ const timeRangeMax = Math.max(timeRangeStep, Math.ceil(maxRecipeMinutes / timeRa
                     class="range-input absolute left-0 top-1/2 z-10 h-8 w-full -translate-y-1/2"
                   />
                 </div>
-                <div class="flex items-center justify-between text-xs text-gray-400">
-                  <span class="text-gray-500">0 min</span>
+                <div class="time-range-labels">
+                  <span>0 min</span>
                   <span id="maxTimeLabel">{timeRangeMax} min</span>
                 </div>
               </div>
@@ -384,12 +811,13 @@ const timeRangeMax = Math.max(timeRangeStep, Math.ceil(maxRecipeMinutes / timeRa
 
           <details
             open
-            class="group rounded-xl border border-white/10 bg-white/5 px-3 py-2"
+            class="filter-group"
           >
-            <summary class="flex cursor-pointer list-none items-center justify-between text-sm font-semibold text-gray-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400/40">
+            <summary>
               Tags
               <svg
-                class="h-4 w-4 text-gray-400 transition-transform group-open:rotate-180"
+                width="16"
+                height="16"
                 viewBox="0 0 20 20"
                 aria-hidden="true"
               >
@@ -403,26 +831,28 @@ const timeRangeMax = Math.max(timeRangeStep, Math.ceil(maxRecipeMinutes / timeRa
                 ></path>
               </svg>
             </summary>
-            <div class="mt-3 space-y-3">
-              <label class="flex items-center gap-2 text-xs text-gray-400">
+            <div class="filter-group-body">
+              <label
+                class="toggle-row"
+                style="margin-bottom: 0.75rem;"
+              >
                 <input
                   id="tagsMatchAll"
                   type="checkbox"
-                  class="h-4 w-4 rounded border-white/20 bg-white/5 text-indigo-400 focus:ring-indigo-400/40 focus:ring-offset-0"
                 />
                 Match all selected tags
               </label>
-              <div class="grid gap-2">
+              <div class="chip-row">
                 {
                   tags.map((tag) => (
-                    <label class="flex items-start gap-3 rounded-lg border border-white/10 bg-gray-900/40 px-3 py-2 text-sm text-gray-200 transition hover:border-white/20">
+                    <label class="filter-chip">
                       <input
                         type="checkbox"
-                        class="mt-0.5 h-4 w-4 rounded border-white/20 bg-white/5 text-fuchsia-400 focus:ring-fuchsia-400/40 focus:ring-offset-0"
+                        class="sr-only"
                         data-filter="tag"
                         value={toKey(tag)}
                       />
-                      <span class="leading-tight">{tag}</span>
+                      <span class="chip-face">{tag}</span>
                     </label>
                   ))
                 }
@@ -431,32 +861,27 @@ const timeRangeMax = Math.max(timeRangeStep, Math.ceil(maxRecipeMinutes / timeRa
           </details>
         </aside>
 
-        <section
-          id="recipes-list"
-          class="space-y-6"
-        >
-          <div class="flex flex-wrap items-center justify-between gap-3">
-            <p
-              id="summary"
-              class="text-sm text-gray-400"
-            >
-            </p>
+        <section id="recipes-list">
+          <div class="results-bar">
+            <p id="summary"></p>
             <label
               for="filters-toggle"
-              class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-gray-200 hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400/40 lg:hidden"
+              class="pill-btn mobile-filters-btn"
               role="button"
             >
               Filters
             </label>
           </div>
+
           <p
             id="no-results"
-            class="hidden text-sm text-gray-400"
+            class="hidden"
           >
-            No recipes match these filters.
+            <SucculentIcon class="no-results-plant" />
+            No recipes match these filters — this patch came up dry.
           </p>
 
-          <ul class="grid gap-8 sm:grid-cols-[repeat(auto-fill,minmax(240px,1fr))]">
+          <ul class="recipe-grid">
             {
               recipes.map((recipe) => (
                 <li
@@ -477,19 +902,11 @@ const timeRangeMax = Math.max(timeRangeStep, Math.ceil(maxRecipeMinutes / timeRa
                 >
                   <a
                     href={`/recipes/${recipe.id}/`}
-                    class="group block focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400/40"
+                    class="recipe-card-link"
                   >
-                    <div
-                      class="
-                        aspect-[2/1] overflow-hidden rounded-xl bg-gray-800/40
-                        shadow-md
-                        transition-all duration-300 ease-out
-                        group-hover:shadow-[0_0_0_1px_rgba(156,163,175,0.15),_0_12px_40px_-12px_rgba(156,163,175,0.35)]
-                      "
-                    >
+                    <div class="recipe-card-photo-wrap">
                       {recipe.data.heroImage && (
                         <Image
-                          class="h-full w-full object-cover object-center"
                           src={recipe.data.heroImage}
                           alt={recipe.data.title}
                           widths={[360, 720]}
@@ -499,14 +916,17 @@ const timeRangeMax = Math.max(timeRangeStep, Math.ceil(maxRecipeMinutes / timeRa
                         />
                       )}
                     </div>
-
-                    <h2 class="mt-3 text-2xl font-semibold leading-tight">{recipe.data.title}</h2>
-
-                    <p class="mt-2 text-sm text-gray-400">
-                      <span class="font-medium text-gray-200">{`Prep: ${recipe.data.prepTime}`}</span>
-                      <span>{` • Cook: ${recipe.data.cookTime}`}</span>
-                      {recipe.data.inactiveTime && <span>{` • + ${recipe.data.inactiveTime}`}</span>}
-                    </p>
+                    <div class="recipe-card-body">
+                      <div class="recipe-card-tags">
+                        <span class="tag-badge herb">{recipe.data.course.join(' · ')}</span>
+                        <span class="tag-badge clay">{recipe.data.cuisine.join(' · ')}</span>
+                      </div>
+                      <h2 class="recipe-card-title">{recipe.data.title}</h2>
+                      <p class="recipe-card-meta">
+                        <strong>Prep</strong> {recipe.data.prepTime} <strong>· Cook</strong> {recipe.data.cookTime}
+                        {recipe.data.inactiveTime && <span> · +{recipe.data.inactiveTime}</span>}
+                      </p>
+                    </div>
                   </a>
                 </li>
               ))

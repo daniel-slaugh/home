@@ -1,0 +1,35 @@
+---
+interface Props {
+  class?: string
+}
+const { class: className = '' } = Astro.props
+---
+
+<svg
+  class={className}
+  viewBox="0 0 100 100"
+  fill="none"
+  xmlns="http://www.w3.org/2000/svg"
+  aria-hidden="true"
+>
+  <path
+    d="M30 78 L70 78 L64 94 L36 94 Z"
+    fill="var(--bg-raised)"
+    stroke="var(--border-hot)"
+    stroke-width="1.5"
+  ></path>
+  <g transform="translate(50 76)">
+    <g transform="rotate(0)"><path d="M0 0 C-8 -14 -8 -32 0 -40 C8 -32 8 -14 0 0 Z" fill="var(--green-deep)"></path></g>
+    <g transform="rotate(90)"><path d="M0 0 C-8 -14 -8 -32 0 -40 C8 -32 8 -14 0 0 Z" fill="var(--green-deep)"></path></g>
+    <g transform="rotate(180)"><path d="M0 0 C-8 -14 -8 -32 0 -40 C8 -32 8 -14 0 0 Z" fill="var(--green-deep)"></path></g>
+    <g transform="rotate(270)"><path d="M0 0 C-8 -14 -8 -32 0 -40 C8 -32 8 -14 0 0 Z" fill="var(--green-deep)"></path></g>
+    <g transform="rotate(45)"><path d="M0 0 C-6 -11 -6 -26 0 -32 C6 -26 6 -11 0 0 Z" fill="var(--green-soft)"></path></g>
+    <g transform="rotate(135)"><path d="M0 0 C-6 -11 -6 -26 0 -32 C6 -26 6 -11 0 0 Z" fill="var(--green-soft)"></path></g>
+    <g transform="rotate(225)"><path d="M0 0 C-6 -11 -6 -26 0 -32 C6 -26 6 -11 0 0 Z" fill="var(--green-soft)"></path></g>
+    <g transform="rotate(315)"><path d="M0 0 C-6 -11 -6 -26 0 -32 C6 -26 6 -11 0 0 Z" fill="var(--green-soft)"></path></g>
+    <circle
+      r="6"
+      fill="var(--ember)"
+    ></circle>
+  </g>
+</svg>

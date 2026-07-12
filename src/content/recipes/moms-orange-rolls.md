@@ -108,4 +108,4 @@ Adding the whole wheat at this step lets it sponge so the finished rolls are mor
 
 Adjust the consistency if needed (more powdered sugar for thicker, more milk thinner). You'll want it a little on the thick side since the warm rolls will warm it up and thin it a bit.
 
-12. Frost the rolls while warm.
+10. Frost the rolls while warm.

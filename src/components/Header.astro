@@ -1,5 +1,6 @@
 ---
 import HeaderLink from './HeaderLink.astro'
+import SucculentIcon from './SucculentIcon.astro'
 const { title } = Astro.props
 ---
 
@@ -47,40 +48,85 @@ const { title } = Astro.props
   }
 </script>
 
-<header class="grid grid-cols-[1fr_auto_1fr] items-center border-b border-white/10 bg-gray-800">
-  <div></div>
-  <p class="justify-self-center">{title}</p>
-  <button
-    class="text-3xl p-4 justify-self-end hover:bg-gray-600"
-    onclick="openNav()"
-    type="button"
+<header class="site-header">
+  <a
+    href="/"
+    class="brand"
   >
-    ☰
-  </button>
-</header>
+    <SucculentIcon class="brand-icon" />
+    <span class="brand-text">Byte<span class="brand-accent">Garden</span></span>
+  </a>
 
-<dialog
-  id="nav"
-  class="fixed inset-0 m-0 p-0 w-screen h-screen max-w-none max-h-none bg-transparent backdrop:bg-black/50"
-  onclick="if (event.target === this) closeNav()"
->
-  <div class="nav-panel fixed top-0 right-0 h-full w-80 bg-gray-800 border-l border-white/10">
-    <button
-      class="text-3xl p-4 hover:bg-gray-600"
-      onclick="closeNav()"
-      type="button"
-    >
-      ☰
-    </button>
-    <nav class="mt-2">
+  {title && <p class="page-title">{title}</p>}
+
+  <div class="header-actions">
+    <nav class="nav-links">
       <HeaderLink
-        href="/"
+        href="/#projects"
         class="nav-link"
-        >Home</HeaderLink
+        >~/projects</HeaderLink
       >
       <HeaderLink
         href="/recipes"
         class="nav-link"
+        >~/recipes</HeaderLink
+      >
+    </nav>
+
+    <button
+      class="menu-btn"
+      onclick="openNav()"
+      type="button"
+      aria-label="Open menu"
+    >
+      <svg
+        viewBox="0 0 24 24"
+        width="19"
+        height="19"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.8"
+        stroke-linecap="round"
+      >
+        <path d="M3 6h18M3 12h18M3 18h18"></path>
+      </svg>
+    </button>
+  </div>
+</header>
+
+<dialog
+  id="nav"
+  class="fixed inset-0 m-0 p-0 w-screen h-screen max-w-none max-h-none bg-transparent backdrop:bg-black/60"
+  onclick="if (event.target === this) closeNav()"
+>
+  <div class="nav-panel fixed top-0 right-0 h-full w-80">
+    <button
+      class="close-btn"
+      onclick="closeNav()"
+      type="button"
+      aria-label="Close menu"
+    >
+      <svg
+        viewBox="0 0 24 24"
+        width="17"
+        height="17"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.8"
+        stroke-linecap="round"
+      >
+        <path d="M6 6l12 12M18 6L6 18"></path>
+      </svg>
+    </button>
+    <nav class="mt-2">
+      <HeaderLink
+        href="/#projects"
+        class="nav-link-mobile"
+        >Projects</HeaderLink
+      >
+      <HeaderLink
+        href="/recipes"
+        class="nav-link-mobile"
         >Recipes</HeaderLink
       >
     </nav>
@@ -88,8 +134,111 @@ const { title } = Astro.props
 </dialog>
 
 <style>
+  .site-header {
+    position: relative;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.85rem 1.25rem;
+    background: var(--bg-mid);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    color: var(--ink);
+    flex-shrink: 0;
+  }
+  .brand-icon {
+    width: 30px;
+    height: 30px;
+  }
+  .brand-text {
+    font-family: var(--serif);
+    font-weight: 700;
+    font-size: 1.05rem;
+    letter-spacing: -0.01em;
+  }
+  .brand-accent {
+    color: var(--green);
+  }
+
+  .page-title {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    pointer-events: none;
+    white-space: nowrap;
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .nav-links {
+    display: none;
+    align-items: center;
+    gap: 1.5rem;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.04em;
+  }
+  .nav-links :global(.nav-link) {
+    color: var(--ink-soft);
+    transition: color 0.15s ease;
+  }
+  .nav-links :global(.nav-link:hover),
+  .nav-links :global(.nav-link.active) {
+    color: var(--green);
+  }
+
+  .menu-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
+    color: var(--ink-soft);
+    background: transparent;
+    border: 1px solid var(--border);
+    transition:
+      color 0.15s ease,
+      border-color 0.15s ease,
+      background 0.15s ease;
+  }
+  .menu-btn:hover {
+    color: var(--green);
+    border-color: var(--border-hot);
+    background: rgba(124, 227, 154, 0.06);
+  }
+
+  @media (min-width: 768px) {
+    .nav-links {
+      display: flex;
+    }
+    .menu-btn {
+      display: none;
+    }
+  }
+
   /* Closed: offscreen to the RIGHT */
   #nav .nav-panel {
+    background: var(--bg-mid);
+    border-left: 1px solid var(--border);
     transform: translateX(100%);
     transition: transform 220ms ease-out;
     will-change: transform;
@@ -105,17 +254,42 @@ const { title } = Astro.props
     transform: translateX(100%);
   }
 
-  #nav .nav-panel .nav-link {
+  .close-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    margin: 0.5rem;
+    border-radius: 8px;
+    color: var(--ink-soft);
+    transition:
+      color 0.15s ease,
+      background 0.15s ease;
+  }
+  .close-btn:hover {
+    color: var(--green);
+    background: rgba(124, 227, 154, 0.06);
+  }
+
+  #nav .nav-panel :global(.nav-link-mobile) {
     display: block;
     width: 100%;
-    padding: 12px 16px;
+    padding: 12px 20px;
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    color: var(--ink-soft);
+    transition:
+      color 0.15s ease,
+      background 0.15s ease;
   }
 
-  #nav .nav-panel .nav-link:hover {
-    background: rgba(255, 255, 255, 0.06);
+  #nav .nav-panel :global(.nav-link-mobile:hover) {
+    background: rgba(124, 227, 154, 0.06);
+    color: var(--green);
   }
 
-  #nav .nav-panel .nav-link.active {
-    color: #bfdbfe;
+  #nav .nav-panel :global(.nav-link-mobile.active) {
+    color: var(--green);
   }
 </style>

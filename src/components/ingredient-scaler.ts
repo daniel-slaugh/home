@@ -127,7 +127,7 @@ export class IngredientScaler extends HTMLElement {
   }
 
   private wrapColored(text: string) {
-    return `<span class="text-blue-300">${text}</span>`
+    return `<span class="text-[var(--herb)] font-semibold">${text}</span>`
   }
 
   private upSteps: Record<

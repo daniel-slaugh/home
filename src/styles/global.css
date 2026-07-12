@@ -3,7 +3,7 @@
 @layer base {
   html,
   body {
-    @apply text-white bg-gray-800;
+    @apply text-[var(--ink)] bg-[var(--bg)];
   }
   dialog {
     color: inherit;
@@ -14,40 +14,63 @@
 }
 
 :root {
-  --bg-dark: hsl(0 0% 5%);
-  --bg: hsl(0 0% 10%);
-  --bg-light: hsl(0 0% 15%);
+  --bg: #0b1410;
+  --bg-mid: #0f1a14;
+  --bg-card: #121d17;
+  --bg-raised: #16241c;
+  --border: #1f3328;
+  --border-hot: #2a4a37;
 
-  --text-dark: hsl(0 0% 90%);
-  --text: hsl(0 0% 95%);
-  --text-light: hsl(0 0% 98%);
+  --green: #7ce39a;
+  --green-soft: #4fa872;
+  --green-deep: #2e6a4a;
+  --green-glow: rgba(124, 227, 154, 0.15);
 
-  --accent: #26e365;
-  --accent-dark: #082e08;
-  --black: 15, 18, 25;
-  --gray: 96, 115, 159;
-  --gray-light: 229, 233, 240;
-  --gray-dark: 34, 41, 57;
-  --gray-gradient: rgba(var(--gray-light), 50%), #fff;
-  --box-shadow: 0 2px 6px rgba(var(--gray), 25%), 0 8px 24px rgba(var(--gray), 33%), 0 16px 32px rgba(var(--gray), 33%);
+  --ember: #e8a06b;
+  --ember-dim: rgba(232, 160, 107, 0.1);
+
+  --ink: #e8e0d0;
+  --ink-soft: #98a89e;
+  --ink-faint: #5a6e62;
+  --ink-ghost: #38483e;
+
+  /* Recipes: warm "recipe box" palette — light paper, forest + clay accents */
+  --paper: #faf6ec;
+  --paper-card: #fffdf8;
+  --paper-line: #e6ddc4;
+  --paper-line-hot: #d3c49c;
+  --paper-shadow: rgba(60, 45, 20, 0.14);
+
+  --forest: #2f4a34;
+  --forest-soft: #4f7a56;
+
+  --clay: #b5602f;
+  --clay-soft: #e0a06c;
+  --clay-dim: rgba(181, 96, 47, 0.1);
+
+  --herb: #4b6b3d;
+  --herb-dim: rgba(75, 107, 61, 0.1);
+
+  --cocoa: #3a352b;
+  --cocoa-soft: #7d735c;
+  --cocoa-faint: #a89b7c;
+
+  --serif: 'Lora', Georgia, serif;
+  --sans: 'DM Sans', system-ui, sans-serif;
+  --mono: 'DM Mono', ui-monospace, monospace;
+
+  --box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.25),
+    0 8px 24px rgba(0, 0, 0, 0.33),
+    0 16px 32px rgba(0, 0, 0, 0.33);
 }
 
-@font-face {
-  font-family: 'Atkinson';
-  src: url('/fonts/atkinson-regular.woff') format('woff');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
+html {
+  color-scheme: dark;
 }
-@font-face {
-  font-family: 'Atkinson';
-  src: url('/fonts/atkinson-bold.woff') format('woff');
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
+
 body {
-  font-family: 'Atkinson', sans-serif;
+  font-family: var(--sans);
   margin: 0;
   padding: 0;
   text-align: left;
@@ -56,4 +79,10 @@ body {
   overflow-x: hidden;
   font-size: 20px;
   line-height: 1.7;
+  color: var(--ink);
+  background:
+    radial-gradient(ellipse 60% 50% at 15% 0%, rgba(124, 227, 154, 0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 70% 55% at 90% 100%, rgba(232, 160, 107, 0.06) 0%, transparent 55%),
+    var(--bg);
+  background-attachment: fixed;
 }

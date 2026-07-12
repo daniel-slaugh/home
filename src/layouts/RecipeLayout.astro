@@ -17,85 +17,489 @@ const { title, prepTime, cookTime, inactiveTime, pubDate, heroImage, ingredients
     customElements.define('ingredient-scaler', IngredientScaler)
   </script>
 </head>
-<main class="w-full bg-gray-900">
+<main class="recipe-page">
   <Header />
-  <article class="pb-16">
-    <ingredient-scaler
-      class="block"
-      data-ingredients={JSON.stringify(ingredients)}
-      data-serves={serves}
+
+  <div class="recipe-page-shell">
+    <a
+      href="/recipes"
+      class="recipe-back-link"
     >
-      <div class="mx-auto w-full max-w-3xl px-4 py-6 text-[var(--text)] sm:px-6">
-        <div class="w-full aspect-[2/1] overflow-hidden rounded-xl shadow-xl shadow-black/30">
+      &larr; Recipes
+    </a>
+
+    <article class="recipe-sheet">
+      <ingredient-scaler
+        class="block"
+        data-ingredients={JSON.stringify(ingredients)}
+        data-serves={serves}
+      >
+        <div class="recipe-sheet-photo">
           {
             heroImage && (
               <Image
-                class="block h-full w-full object-cover object-center"
                 src={heroImage}
                 alt={title}
                 widths={[480, 768, 1024, 1536]}
-                sizes="(min-width: 768px) 768px, 100vw"
+                sizes="(min-width: 1040px) 1040px, 100vw"
                 priority
               />
             )
           }
         </div>
 
-        <div class="py-6 text-center leading-none">
-          <div class="text-sm text-white/70">
-            <FormattedDate date={pubDate} />
+        <div class="recipe-sheet-body">
+          <p class="recipe-date"><FormattedDate date={pubDate} /></p>
+          <h1 class="recipe-title">{title}</h1>
+
+          <div class="recipe-badges">
+            <span class="badge badge-clay">Prep {prepTime}</span>
+            <span class="badge badge-herb">Cook {cookTime}</span>
+            {inactiveTime && <span class="badge badge-muted">+ {inactiveTime}</span>}
           </div>
-          <h1 class="mt-3 text-4xl font-bold tracking-tight text-[var(--text-light)] sm:text-5xl">
-            {title}
-          </h1>
-          <hr class="mx-auto mt-5 w-2/3 border-white/10" />
-          <p class="mt-5 text-base leading-relaxed text-white/80">
-            <strong class="font-semibold text-white">Prep:</strong>
-            {prepTime} | <strong class="font-semibold text-white">Cook:</strong>
-            {cookTime}
-            {inactiveTime && (
-              <>
-                {' '}
-                | <strong class="font-semibold text-white">Inactive:</strong> {inactiveTime}
-              </>
-            )}
-          </p>
-        </div>
 
-        <div
-          id="mult-controls"
-          class="mt-2 flex items-center justify-start gap-3"
-        >
-          <label
-            for="multiplier-input"
-            class="text-sm font-semibold text-white"
-          >
-            Serves:
-          </label>
-          <input
-            class="w-20 rounded-md border border-white/10 bg-white/5 px-2 py-1 text-base text-white outline-none ring-0 focus:border-white/20"
-            type="number"
-            id="multiplier-input"
-            value={serves}
-            step="1"
-          />
-        </div>
+          <div class="serves-control">
+            <label
+              for="multiplier-input"
+              class="serves-label"
+            >
+              Serves
+            </label>
+            <div class="stepper">
+              <button
+                type="button"
+                class="stepper-btn"
+                data-step="-1"
+                aria-label="Decrease servings"
+              >
+                &minus;
+              </button>
+              <input
+                class="stepper-input"
+                type="number"
+                id="multiplier-input"
+                value={serves}
+                step="1"
+              />
+              <button
+                type="button"
+                class="stepper-btn"
+                data-step="1"
+                aria-label="Increase servings"
+              >
+                +
+              </button>
+            </div>
+          </div>
 
-        <h3 class="mt-10 text-2xl font-semibold text-[var(--text-light)]">Ingredients:</h3>
-        <div
-          id="ingredient-root"
-          class="mt-3 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6 [&_li]:my-1"
-        >
-        </div>
+          <div class="recipe-body-grid">
+            <section class="ingredients-col">
+              <h3 class="section-heading">Ingredients</h3>
+              <div
+                id="ingredient-root"
+                class="ingredient-list-wrap"
+              >
+              </div>
+            </section>
 
-        <h3 class="mt-10 text-2xl font-semibold text-[var(--text-light)]">Instructions:</h3>
-        <div
-          id="instructions-container"
-          class="mt-3 [&_p]:mb-6 [&_ul]:my-4 [&_ol]:my-4 [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_li]:my-1 [&_a:hover]:underline [&_img]:max-w-full [&_img]:h-auto [&_img]:rounded-lg [&_code]:rounded [&_code]:bg-white/10 [&_code]:px-1.5 [&_code]:py-0.5 [&_pre]:my-6 [&_pre]:overflow-x-auto [&_pre]:rounded-lg [&_pre]:bg-black/40 [&_pre]:p-6 [&_pre_code]:bg-transparent [&_pre_code]:p-0 [&_blockquote]:my-6 [&_blockquote]:border-l-4 [&_blockquote]:pl-5 [&_blockquote]:text-lg [&_hr]:my-6 [&_hr]:border-white/10"
-        >
-          <slot />
+            <section class="instructions-col">
+              <h3 class="section-heading">Instructions</h3>
+              <div
+                id="instructions-container"
+                class="instructions-wrap"
+              >
+                <slot />
+              </div>
+            </section>
+          </div>
         </div>
-      </div>
-    </ingredient-scaler>
-  </article>
+      </ingredient-scaler>
+    </article>
+  </div>
+
+  <footer class="recipe-footer">
+    <p><a href="/recipes">&larr; Back to Recipes</a></p>
+  </footer>
 </main>
+
+<script>
+  document.addEventListener('click', (e) => {
+    const target = e.target
+    if (!(target instanceof Element)) return
+    const btn = target.closest('[data-step]')
+    if (!btn) return
+    const input = document.getElementById('multiplier-input')
+    if (!(input instanceof HTMLInputElement)) return
+    const step = Number(btn.getAttribute('data-step')) || 0
+    const current = parseFloat(input.value) || 0
+    const next = Math.max(1, current + step)
+    input.value = String(next)
+    input.dispatchEvent(new Event('input', { bubbles: true }))
+  })
+</script>
+
+<style>
+  .recipe-page {
+    display: block;
+    background: var(--paper);
+    color: var(--cocoa);
+    min-height: 100vh;
+  }
+
+  .recipe-page-shell {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 4rem;
+  }
+
+  .recipe-back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--forest-soft);
+    text-decoration: none;
+    margin-bottom: 1.25rem;
+    transition: color 0.15s ease;
+  }
+  .recipe-back-link:hover {
+    color: var(--clay);
+  }
+
+  .recipe-sheet {
+    background: var(--paper-card);
+    border: 1px solid var(--paper-line);
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 30px 70px -35px var(--paper-shadow);
+  }
+
+  .recipe-sheet-photo {
+    width: 100%;
+    aspect-ratio: 16 / 8;
+    overflow: hidden;
+    background: var(--paper-line);
+  }
+  .recipe-sheet-photo :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .recipe-sheet-body {
+    padding: 2rem 1.5rem 2.75rem;
+  }
+  @media (min-width: 640px) {
+    .recipe-sheet-body {
+      padding: 2.5rem 3rem 3.5rem;
+    }
+  }
+
+  .recipe-date {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--cocoa-faint);
+    margin-bottom: 0.6rem;
+  }
+  .recipe-title {
+    font-family: var(--serif);
+    font-weight: 700;
+    font-size: clamp(2rem, 4vw, 2.85rem);
+    line-height: 1.08;
+    letter-spacing: -0.02em;
+    color: var(--forest);
+    margin-bottom: 1.1rem;
+  }
+
+  .recipe-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1.75rem;
+  }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    padding: 0.35rem 0.85rem;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+  }
+  .badge-clay {
+    background: var(--clay-dim);
+    color: var(--clay);
+  }
+  .badge-herb {
+    background: var(--herb-dim);
+    color: var(--herb);
+  }
+  .badge-muted {
+    background: var(--paper);
+    border: 1px solid var(--paper-line);
+    color: var(--cocoa-soft);
+  }
+
+  .serves-control {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding-bottom: 1.75rem;
+    margin-bottom: 1.75rem;
+    border-bottom: 1px solid var(--paper-line);
+  }
+  .serves-label {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--cocoa-soft);
+  }
+  .stepper {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid var(--paper-line);
+    border-radius: 999px;
+    background: var(--paper);
+    overflow: hidden;
+  }
+  .stepper-btn {
+    width: 2.1rem;
+    height: 2.1rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    color: var(--forest);
+    background: transparent;
+    transition: background 0.15s ease;
+  }
+  .stepper-btn:hover {
+    background: var(--herb-dim);
+  }
+  .stepper-input {
+    width: 3rem;
+    text-align: center;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--cocoa);
+    -moz-appearance: textfield;
+  }
+  .stepper-input::-webkit-outer-spin-button,
+  .stepper-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  .recipe-body-grid {
+    display: grid;
+    gap: 2.5rem;
+  }
+  @media (min-width: 860px) {
+    .recipe-body-grid {
+      grid-template-columns: 300px 1fr;
+      align-items: start;
+    }
+    .ingredients-col {
+      position: sticky;
+      top: 1.5rem;
+    }
+  }
+
+  .section-heading {
+    font-family: var(--serif);
+    font-weight: 700;
+    font-size: 1.35rem;
+    color: var(--forest);
+    padding-bottom: 0.65rem;
+    margin-bottom: 1rem;
+    border-bottom: 2px solid var(--paper-line);
+  }
+
+  /* Ingredients (rendered by ingredient-scaler.ts) */
+  .ingredient-list-wrap :global(h5) {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--clay);
+    margin: 1.5rem 0 0.65rem;
+  }
+  .ingredient-list-wrap :global(h5:first-child) {
+    margin-top: 0;
+  }
+  .ingredient-list-wrap :global(ul) {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+  .ingredient-list-wrap :global(li) {
+    position: relative;
+    padding-left: 1.35rem;
+    font-size: 0.98rem;
+    line-height: 1.5;
+    color: var(--cocoa);
+  }
+  .ingredient-list-wrap :global(li::before) {
+    content: '';
+    position: absolute;
+    left: 1px;
+    top: 0.55em;
+    width: 7px;
+    height: 7px;
+    border-radius: 2px;
+    background: var(--herb);
+    transform: rotate(45deg);
+  }
+
+  /* Instructions (rendered markdown) */
+  .instructions-wrap {
+    font-size: 1.02rem;
+    line-height: 1.75;
+    color: var(--cocoa);
+    /* Reset once for the whole set of instructions: markdown can split one
+       numbered list into several sibling <ol> elements (e.g. when a step
+       contains a nested bullet list), and each of those keeps counting the
+       same "step" sequence rather than restarting at 1. */
+    counter-reset: step;
+  }
+  .instructions-wrap :global(> p) {
+    margin-bottom: 1.1rem;
+  }
+  .instructions-wrap :global(> ol) {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.4rem;
+  }
+  .instructions-wrap :global(> ol > li) {
+    counter-increment: step;
+    position: relative;
+    padding-left: 3.1rem;
+    min-height: 2.3rem;
+  }
+  .instructions-wrap :global(> ol > li > p) {
+    margin: 0;
+  }
+  .instructions-wrap :global(> ol > li::before) {
+    content: counter(step);
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 2.2rem;
+    height: 2.2rem;
+    border-radius: 50%;
+    background: var(--clay);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+  .instructions-wrap :global(> ul) {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .instructions-wrap :global(> ul > li) {
+    position: relative;
+    padding-left: 1.35rem;
+  }
+  .instructions-wrap :global(> ul > li::before) {
+    content: '';
+    position: absolute;
+    left: 1px;
+    top: 0.55em;
+    width: 7px;
+    height: 7px;
+    border-radius: 2px;
+    background: var(--herb);
+    transform: rotate(45deg);
+  }
+  .instructions-wrap :global(a) {
+    color: var(--clay);
+    text-underline-offset: 2px;
+  }
+  .instructions-wrap :global(a:hover) {
+    color: var(--forest);
+    text-decoration: underline;
+  }
+  .instructions-wrap :global(img) {
+    max-width: 100%;
+    height: auto;
+    border-radius: 14px;
+    border: 1px solid var(--paper-line);
+    margin: 1.25rem 0;
+  }
+  .instructions-wrap :global(code) {
+    border-radius: 5px;
+    background: var(--paper);
+    border: 1px solid var(--paper-line);
+    padding: 0.1rem 0.4rem;
+    font-family: var(--mono);
+    font-size: 0.9em;
+  }
+  .instructions-wrap :global(pre) {
+    margin: 1.5rem 0;
+    overflow-x: auto;
+    border-radius: 14px;
+    border: 1px solid var(--paper-line);
+    background: var(--paper);
+    padding: 1.25rem;
+  }
+  .instructions-wrap :global(pre code) {
+    background: transparent;
+    border: none;
+    padding: 0;
+  }
+  .instructions-wrap :global(blockquote) {
+    margin: 1.5rem 0;
+    border-left: 3px solid var(--clay);
+    padding-left: 1.1rem;
+    font-size: 1.05rem;
+    font-style: italic;
+    color: var(--cocoa-soft);
+  }
+  .instructions-wrap :global(hr) {
+    margin: 1.5rem 0;
+    border: none;
+    border-top: 1px solid var(--paper-line);
+  }
+
+  .recipe-footer {
+    border-top: 1px solid var(--paper-line);
+    padding: 2rem 1.5rem 3rem;
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    color: var(--cocoa-faint);
+  }
+  .recipe-footer a {
+    color: var(--forest-soft);
+    text-decoration: none;
+  }
+  .recipe-footer a:hover {
+    color: var(--clay);
+  }
+</style>

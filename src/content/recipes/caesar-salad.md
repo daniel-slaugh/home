@@ -43,20 +43,56 @@ pubDate: 'Jul 26 2025'
 heroImage: './caesar-salad.jpg'
 ---
 
-1. In a small bowl, mix all seasoning blend ingredients until well combined.
+<div class="step">
 
-2. Butterfly the chicken and pat it dry with a paper towel.
+In a small bowl, mix all seasoning blend ingredients until well combined.
 
-3. Rub the seasoning blend evenly over both sides of the chicken.
+</div>
 
-4. Heat a skillet over medium‑high heat with a little olive oil. Add the chicken, cover, and pan‑fry for 4–6 minutes.
+<div class="step">
 
-5. Flip the chicken, reduce the heat to medium‑low, and cook for an additional 6 minutes.
+Butterfly the chicken and pat it dry with a paper towel.
 
-6. Add 1 Tbsp of butter to the pan. For the last minute of cooking, spoon the melted butter over the chicken.
+</div>
 
-7. Transfer the chicken to a plate and let it rest for a few minutes before slicing.
+<div class="step">
 
-8. Assemble the Caesar salad kit
+Rub the seasoning blend evenly over both sides of the chicken.
 
-9. Top the assembled salad with the sliced chicken and serve immediately.
+</div>
+
+<div class="step">
+
+Heat a skillet over medium‑high heat with a little olive oil. Add the chicken, cover, and pan‑fry for 4–6 minutes.
+
+</div>
+
+<div class="step">
+
+Flip the chicken, reduce the heat to medium‑low, and cook for an additional 6 minutes.
+
+</div>
+
+<div class="step">
+
+Add 1 Tbsp of butter to the pan. For the last minute of cooking, spoon the melted butter over the chicken.
+
+</div>
+
+<div class="step">
+
+Transfer the chicken to a plate and let it rest for a few minutes before slicing.
+
+</div>
+
+<div class="step">
+
+Assemble the Caesar salad kit
+
+</div>
+
+<div class="step">
+
+Top the assembled salad with the sliced chicken and serve immediately.
+
+</div>

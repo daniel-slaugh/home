@@ -57,14 +57,38 @@ pubDate: 'Dec 26 2025'
 heroImage: './creamy-tortellini-soup.png'
 ---
 
-1. In a large pot over medium heat, cook [[Italian sausage]] with [[medium onion, diced]] until browned. Drain excess fat if needed.
+<div class="step">
 
-2. Stir in [[garlic, minced]] and [[Italian seasoning]] and cook for 1 minute.
+In a large pot over medium heat, cook [[Italian sausage]] with [[medium onion, diced]] until browned. Drain excess fat if needed.
 
-3. Whisk [[all-purpose flour]] into [[heavy cream (or 1/2 cup milk + 2 Tbsp butter)]] until smooth. Add [[chicken stock]] and [[tomato sauce (or tomato paste + water)]], bring to a boil, and stir in the cream mixture.
+</div>
 
-4. Add [[frozen cheese tortellini]] and cook at a gentle boil for about 15 minutes, or until tender.
+<div class="step">
 
-5. Stir in [[spinach]] and [[fresh basil, chopped]] and cook until wilted.
+Stir in [[garlic, minced]] and [[Italian seasoning]] and cook for 1 minute.
 
-6. Serve hot with [[Parmesan cheese, for serving]].
+</div>
+
+<div class="step">
+
+Whisk [[all-purpose flour]] into [[heavy cream (or 1/2 cup milk + 2 Tbsp butter)]] until smooth. Add [[chicken stock]] and [[tomato sauce (or tomato paste + water)]], bring to a boil, and stir in the cream mixture.
+
+</div>
+
+<div class="step">
+
+Add [[frozen cheese tortellini]] and cook at a gentle boil for about 15 minutes, or until tender.
+
+</div>
+
+<div class="step">
+
+Stir in [[spinach]] and [[fresh basil, chopped]] and cook until wilted.
+
+</div>
+
+<div class="step">
+
+Serve hot with [[Parmesan cheese, for serving]].
+
+</div>

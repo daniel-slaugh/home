@@ -78,7 +78,9 @@ pubDate: 'Jun 17 2025'
 heroImage: './lime-coconut-chicken.jpg'
 ---
 
-1. **For the marinade,** in a medium bowl, whisk together:
+<div class="step">
+
+**For the marinade,** in a medium bowl, whisk together:
 
 - [[Oil]]
 - [[Lime (zest and juice of 1 lime)]]
@@ -91,13 +93,17 @@ heroImage: './lime-coconut-chicken.jpg'
 - [[Salt (for marinade)]]
 - [[Cayenne pepper]]
 
-2. Place the chicken in a shallow dish, pour the marinade over the chicken, seal or cover, and refrigerate for at least 2 hours and up to 12 hours.
+</div>
 
-<ol start="3">
-  <li>
-    <strong>For the rice,</strong> in a medium saucepan mix:
-  </li>
-</ol>
+<div class="step">
+
+Place the chicken in a shallow dish, pour the marinade over the chicken, seal or cover, and refrigerate for at least 2 hours and up to 12 hours.
+
+</div>
+
+<div class="step">
+
+**For the rice,** in a medium saucepan mix:
 <ul>
   <li>[[Jasmine rice]]</li>
   <li>[[Canned coconut milk]]</li>
@@ -107,9 +113,34 @@ heroImage: './lime-coconut-chicken.jpg'
   and bring to a simmer over medium heat. Cover, reduce heat to low, and simmer for 16 minutes without lifting the lid. Remove from heat, let stand for 5–10 minutes, then fluff lightly before serving.
 </ul>
 
-4. **For the chicken,** preheat a saucepan to medium-high.
+</div>
 
-5. Cook the marinated chicken with the sauce in a pan for 6–7 minutes per side until a thermometer inserted at the thickest part registers 165 °F.
-6. Move the chicken to a cutting board, let it rest, then chop it into bite-size pieces.
-7. Plate rice, chicken, and sauce.
-8. Sprinkle [[[chopped fresh cilantro]]] over the dish and serve with fresh lime wedges.
+<div class="step">
+
+**For the chicken,** preheat a saucepan to medium-high.
+
+</div>
+
+<div class="step">
+
+Cook the marinated chicken with the sauce in a pan for 6–7 minutes per side until a thermometer inserted at the thickest part registers 165 °F.
+
+</div>
+
+<div class="step">
+
+Move the chicken to a cutting board, let it rest, then chop it into bite-size pieces.
+
+</div>
+
+<div class="step">
+
+Plate rice, chicken, and sauce.
+
+</div>
+
+<div class="step">
+
+Sprinkle [[[chopped fresh cilantro]]] over the dish and serve with fresh lime wedges.
+
+</div>

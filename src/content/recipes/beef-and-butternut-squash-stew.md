@@ -67,11 +67,21 @@ pubDate: 'Dec 26 2025'
 heroImage: './beef-and-butternut-squash-stew.png'
 ---
 
-1. Heat [[olive oil]] in a 4-quart saucepan over medium-high heat. Add [[stew beef, cut into cubes]] and cook until browned on all sides, about 5 minutes. Transfer to a plate, leaving the juices in the pan.
+<div class="step">
 
-2. Add [[large onion, chopped]] and cook, stirring, until translucent, about 6 minutes. Stir in [[garlic, minced]] and [[fresh ginger, peeled and minced]] and cook for 1 minute more.
+Heat [[olive oil]] in a 4-quart saucepan over medium-high heat. Add [[stew beef, cut into cubes]] and cook until browned on all sides, about 5 minutes. Transfer to a plate, leaving the juices in the pan.
 
-3. Stir in:
+</div>
+
+<div class="step">
+
+Add [[large onion, chopped]] and cook, stirring, until translucent, about 6 minutes. Stir in [[garlic, minced]] and [[fresh ginger, peeled and minced]] and cook for 1 minute more.
+
+</div>
+
+<div class="step">
+
+Stir in:
 
 - [[butternut squash, peeled and cut into 1 1/2-inch cubes (about 2 1/2 cups)]]
 - [[no-salt-added diced tomatoes]]
@@ -83,4 +93,10 @@ heroImage: './beef-and-butternut-squash-stew.png'
 
 Bring to a boil, then reduce the heat to low, cover, and simmer until the beef and squash are tender, 30 to 35 minutes.
 
-4. Divide [[cooked whole-wheat couscous (or small pasta or rice)]] among 4 bowls. Ladle the stew over the top and finish with [[sliced almonds, toasted in a dry skillet until golden]] and [[fresh parsley, minced]].
+</div>
+
+<div class="step">
+
+Divide [[cooked whole-wheat couscous (or small pasta or rice)]] among 4 bowls. Ladle the stew over the top and finish with [[sliced almonds, toasted in a dry skillet until golden]] and [[fresh parsley, minced]].
+
+</div>

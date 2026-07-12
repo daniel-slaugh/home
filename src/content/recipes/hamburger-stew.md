@@ -67,16 +67,44 @@ pubDate: 'Dec 26 2025'
 heroImage: 'hamburger-stew.png'
 ---
 
-1. Add [[olive oil]], [[medium onion, chopped]], and [[celery, chopped]] to a soup pot and saute over medium-high heat for 5 to 7 minutes.
+<div class="step">
 
-2. Stir in [[garlic, minced]] and cook for 30 seconds.
+Add [[olive oil]], [[medium onion, chopped]], and [[celery, chopped]] to a soup pot and saute over medium-high heat for 5 to 7 minutes.
 
-3. Add [[lean ground beef]] and cook, breaking it up, until browned.
+</div>
 
-4. Sprinkle in [[all-purpose flour]] and cook for 1 to 2 minutes, stirring often.
+<div class="step">
 
-5. Stir in [[tomato paste]].
+Stir in [[garlic, minced]] and cook for 30 seconds.
 
-6. Add [[beef broth]], [[Worcestershire sauce]], [[Italian seasoning]], [[Russet potatoes, peeled and diced]], and [[carrots, peeled and sliced]]. Bring to a boil, then reduce to a rapid simmer and cook, covered with the lid slightly ajar, for about 30 minutes or until the potatoes and carrots are tender. Add more [[beef broth]] if the stew gets too thick.
+</div>
 
-7. Stir in [[frozen peas (optional)]]. Season with [[salt]] and [[black pepper]] to taste.
+<div class="step">
+
+Add [[lean ground beef]] and cook, breaking it up, until browned.
+
+</div>
+
+<div class="step">
+
+Sprinkle in [[all-purpose flour]] and cook for 1 to 2 minutes, stirring often.
+
+</div>
+
+<div class="step">
+
+Stir in [[tomato paste]].
+
+</div>
+
+<div class="step">
+
+Add [[beef broth]], [[Worcestershire sauce]], [[Italian seasoning]], [[Russet potatoes, peeled and diced]], and [[carrots, peeled and sliced]]. Bring to a boil, then reduce to a rapid simmer and cook, covered with the lid slightly ajar, for about 30 minutes or until the potatoes and carrots are tender. Add more [[beef broth]] if the stew gets too thick.
+
+</div>
+
+<div class="step">
+
+Stir in [[frozen peas (optional)]]. Season with [[salt]] and [[black pepper]] to taste.
+
+</div>

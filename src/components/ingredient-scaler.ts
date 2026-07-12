@@ -20,6 +20,15 @@ export class IngredientScaler extends HTMLElement {
   ingredientRoot: HTMLElement | null = null
   instructionsContainer: HTMLElement | null = null
 
+  zenToggleBtn: HTMLElement | null = null
+  zenNav: HTMLElement | null = null
+  zenPrevBtn: HTMLButtonElement | null = null
+  zenNextBtn: HTMLButtonElement | null = null
+  zenProgress: HTMLElement | null = null
+  zenMode = false
+  currentStepIndex = 0
+  steps: HTMLElement[] = []
+
   connectedCallback() {
     const raw = this.dataset.ingredients || '[]'
 
@@ -33,8 +42,23 @@ export class IngredientScaler extends HTMLElement {
     if (!this.ingredientRoot || !this.instructionsContainer) return
     this.originalInstructions = this.instructionsContainer.innerHTML
 
+    this.zenToggleBtn = this.querySelector('#zen-toggle')
+    this.zenNav = this.querySelector('#zen-nav')
+    this.zenPrevBtn = this.querySelector('#zen-prev')
+    this.zenNextBtn = this.querySelector('#zen-next')
+    this.zenProgress = this.querySelector('#zen-progress')
+
     this.servingsInput?.addEventListener('input', () => this.renderAll())
+    this.zenToggleBtn?.addEventListener('click', this.toggleZen)
+    this.zenPrevBtn?.addEventListener('click', () => this.goStep(-1))
+    this.zenNextBtn?.addEventListener('click', () => this.goStep(1))
+    document.addEventListener('keydown', this.handleKeydown)
+
     this.renderAll()
+  }
+
+  disconnectedCallback() {
+    document.removeEventListener('keydown', this.handleKeydown)
   }
 
   renderAll = () => {
@@ -43,6 +67,59 @@ export class IngredientScaler extends HTMLElement {
 
     this.renderIngredients()
     this.renderInstructions()
+  }
+
+  toggleZen = () => {
+    this.zenMode = !this.zenMode
+    this.zenToggleBtn?.classList.toggle('is-active', this.zenMode)
+    if (this.zenNav) this.zenNav.hidden = !this.zenMode
+    if (this.zenMode) this.currentStepIndex = 0
+    this.applyZenState()
+    if (this.zenMode) this.instructionsContainer?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
+  goStep = (delta: number) => {
+    if (!this.zenMode || !this.steps.length) return
+    this.currentStepIndex = Math.min(Math.max(this.currentStepIndex + delta, 0), this.steps.length - 1)
+    this.applyZenState()
+  }
+
+  handleKeydown = (e: KeyboardEvent) => {
+    if (!this.zenMode) return
+    const target = e.target
+    if (target instanceof HTMLElement && ['INPUT', 'TEXTAREA'].includes(target.tagName)) return
+    if (e.key === 'ArrowRight') {
+      e.preventDefault()
+      this.goStep(1)
+    } else if (e.key === 'ArrowLeft') {
+      e.preventDefault()
+      this.goStep(-1)
+    } else if (e.key === 'Escape') {
+      this.toggleZen()
+    }
+  }
+
+  refreshSteps = () => {
+    this.steps = Array.from(this.instructionsContainer?.querySelectorAll<HTMLElement>(':scope > .step') || [])
+    this.steps.forEach((step, i) => step.setAttribute('data-step-number', String(i + 1)))
+    if (this.currentStepIndex >= this.steps.length) {
+      this.currentStepIndex = Math.max(0, this.steps.length - 1)
+    }
+    this.applyZenState()
+  }
+
+  applyZenState = () => {
+    this.steps.forEach((step, i) => {
+      step.classList.toggle('zen-current', this.zenMode && i === this.currentStepIndex)
+    })
+    this.instructionsContainer?.classList.toggle('zen-active', this.zenMode)
+    if (!this.zenMode) return
+
+    if (this.zenProgress) {
+      this.zenProgress.textContent = this.steps.length ? `Step ${this.currentStepIndex + 1} of ${this.steps.length}` : ''
+    }
+    if (this.zenPrevBtn) this.zenPrevBtn.disabled = this.currentStepIndex <= 0
+    if (this.zenNextBtn) this.zenNextBtn.disabled = this.currentStepIndex >= this.steps.length - 1
   }
 
   renderIngredients = () => {
@@ -91,6 +168,7 @@ export class IngredientScaler extends HTMLElement {
     })
 
     this.instructionsContainer!.innerHTML = html
+    this.refreshSteps()
   }
 
   private formatWithMaxDenominator(value: number, maxDenominator = 8): string {

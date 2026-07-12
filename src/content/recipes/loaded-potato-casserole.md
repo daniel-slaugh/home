@@ -70,7 +70,9 @@ pubDate: 'Dec 25 2025'
 heroImage: './loaded-potato-casserole.png'
 ---
 
-1. **Roast the potatoes**
+<div class="step">
+
+**Roast the potatoes**
 
 Preheat the oven to 425°F.
 
@@ -80,9 +82,11 @@ Roast for 30–35 minutes, stirring once, until golden and tender.
 
 Roasting gives richer flavor than boiling and prevents watery potatoes.
 
-⸻
+</div>
 
-2. **Prepare the creamy base**
+<div class="step">
+
+**Prepare the creamy base**
 
 While the potatoes roast, add the following to a large heat-safe bowl:
 
@@ -93,9 +97,11 @@ While the potatoes roast, add the following to a large heat-safe bowl:
 
 Whisk until smooth and fully combined.
 
-⸻
+</div>
 
-3. **Combine the potatoes and cheese**
+<div class="step">
+
+**Combine the potatoes and cheese**
 
 Add the hot roasted [[Yukon Gold potatoes, cubed]] directly to the creamy base.
 
@@ -109,15 +115,19 @@ Fold in:
 
 Taste and adjust [[salt]] if needed.
 
-⸻
+</div>
 
-4. **Assemble the casserole**
+<div class="step">
+
+**Assemble the casserole**
 
 Lightly butter a 9×13-inch casserole dish. Spread the potato mixture evenly into the dish.
 
-⸻
+</div>
 
-5. **Add the topping**
+<div class="step">
+
+**Add the topping**
 
 Sprinkle evenly over the top:
 
@@ -127,16 +137,22 @@ Sprinkle evenly over the top:
 
 This creates a crisp, savory contrast to the creamy interior.
 
-⸻
+</div>
 
-6. **Bake**
+<div class="step">
+
+**Bake**
 
 Reduce oven temperature to 375°F. Bake uncovered for 20–25 minutes, until bubbling and golden.
 
-⸻
+</div>
 
-7. **Finish and serve**
+<div class="step">
+
+**Finish and serve**
 
 Right before serving, scatter remaining [[green onions, sliced]] over the top and finish with a light grind of [[black pepper]].
 
 The fresh green onions brighten the richness of the dish perfectly.
+
+</div>

@@ -48,7 +48,9 @@ pubDate: 'Dec 21 2025'
 heroImage: './parmesan-egg-in-the-hole.png'
 ---
 
-1. In a bowl that's wide enough to dip the flat side of the bread slices in, mix together all the butter mixture ingredients:
+<div class="step">
+
+In a bowl that's wide enough to dip the flat side of the bread slices in, mix together all the butter mixture ingredients:
 
 - [[melted butter]]
 - [[olive oil]]
@@ -56,16 +58,46 @@ heroImage: './parmesan-egg-in-the-hole.png'
 - [[salt]]
 - [[pepper]]
 
-2. Pour about a spoonful of the butter mixture into a pan and heat to medium, medium-low. (The perfect temperature will make the butter foamy but not boil).
+</div>
 
-3. Cut a wide hole in the center of [[thick-sliced homemade bread]].
+<div class="step">
 
-4. Dip both sides of the bread in the butter mixture french toast style and toast both sides until golden brown (about 30 seconds to a minute). This keeps the bread crisp and prevents sogginess.
+Pour about a spoonful of the butter mixture into a pan and heat to medium, medium-low. (The perfect temperature will make the butter foamy but not boil).
 
-5. To the side of the toasted piece of break, sprinkle the parmesan cheese directly onto the skillet so it makes a rectangle about the side of the toast. Let it melt for about 10 seconds, then place and gentle press the bread into the cheese to form a crisp parmesan crust.
+</div>
 
-6. Reduce heat slightly and crack the egg into the hole.
+<div class="step">
 
-7. Sprinkle remaining [[freshly grated parmesan cheese]] on the bread surface (avoid covering the yolk). Cover the skillet and cook 2–3 minutes, until the egg is set to your liking.
+Cut a wide hole in the center of [[thick-sliced homemade bread]].
 
-8. If it looks like the bread is a little light on seasonings, top off with another pinch of salt, black pepper, and or smoked paprika.
+</div>
+
+<div class="step">
+
+Dip both sides of the bread in the butter mixture french toast style and toast both sides until golden brown (about 30 seconds to a minute). This keeps the bread crisp and prevents sogginess.
+
+</div>
+
+<div class="step">
+
+To the side of the toasted piece of break, sprinkle the parmesan cheese directly onto the skillet so it makes a rectangle about the side of the toast. Let it melt for about 10 seconds, then place and gentle press the bread into the cheese to form a crisp parmesan crust.
+
+</div>
+
+<div class="step">
+
+Reduce heat slightly and crack the egg into the hole.
+
+</div>
+
+<div class="step">
+
+Sprinkle remaining [[freshly grated parmesan cheese]] on the bread surface (avoid covering the yolk). Cover the skillet and cook 2–3 minutes, until the egg is set to your liking.
+
+</div>
+
+<div class="step">
+
+If it looks like the bread is a little light on seasonings, top off with another pinch of salt, black pepper, and or smoked paprika.
+
+</div>

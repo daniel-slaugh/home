@@ -63,13 +63,27 @@ ingredients:
     unit: 'cup'
 ---
 
-1. Select the Sauté function on the Instant Pot. Heat the [[vegetable oil]].
+<div class="step">
 
-2. Add the [[onion, finely chopped]] and sauté for 3–4 minutes.
+Select the Sauté function on the Instant Pot. Heat the [[vegetable oil]].
 
-3. Pour in the [[chicken broth]] and scrape the bottom of the pot with a wooden spoon to release browned bits.
+</div>
 
-4. Stir in:
+<div class="step">
+
+Add the [[onion, finely chopped]] and sauté for 3–4 minutes.
+
+</div>
+
+<div class="step">
+
+Pour in the [[chicken broth]] and scrape the bottom of the pot with a wooden spoon to release browned bits.
+
+</div>
+
+<div class="step">
+
+Stir in:
 
 - [[Great Northern beans, drained and rinsed]]
 - [[corn, drained]]
@@ -79,18 +93,52 @@ ingredients:
 - [[black pepper]]
 - [[garlic powder]]
 
-5. Add the [[boneless, skinless chicken breasts, cut into thirds]]. Press Cancel to stop sautéing.
+</div>
 
-6. Close and lock the lid. Set the pressure/steam release to Sealing. Cook for 18 minutes on high pressure. Allow 14 minutes for the pot to come to pressure.
+<div class="step">
 
-7. Once cooking ends, let pressure release naturally for 10 minutes, then quick release the remaining pressure.
+Add the [[boneless, skinless chicken breasts, cut into thirds]]. Press Cancel to stop sautéing.
 
-8. While pressure releases, whisk together [[water]] and [[cornstarch]] to form a slurry.
+</div>
 
-9. Remove the chicken with tongs and shred using two forks. Set aside.
+<div class="step">
 
-10. Select the Sauté function again. Stir in the [[sour cream]] until melted and combined.
+Close and lock the lid. Set the pressure/steam release to Sealing. Cook for 18 minutes on high pressure. Allow 14 minutes for the pot to come to pressure.
 
-11. Stir in the cornstarch slurry. Return the shredded chicken to the pot and simmer until thickened, about 3 minutes. Press Cancel.
+</div>
 
-12. Serve in bowls and top with shredded Monterey Jack cheese.
+<div class="step">
+
+Once cooking ends, let pressure release naturally for 10 minutes, then quick release the remaining pressure.
+
+</div>
+
+<div class="step">
+
+While pressure releases, whisk together [[water]] and [[cornstarch]] to form a slurry.
+
+</div>
+
+<div class="step">
+
+Remove the chicken with tongs and shred using two forks. Set aside.
+
+</div>
+
+<div class="step">
+
+Select the Sauté function again. Stir in the [[sour cream]] until melted and combined.
+
+</div>
+
+<div class="step">
+
+Stir in the cornstarch slurry. Return the shredded chicken to the pot and simmer until thickened, about 3 minutes. Press Cancel.
+
+</div>
+
+<div class="step">
+
+Serve in bowls and top with shredded Monterey Jack cheese.
+
+</div>

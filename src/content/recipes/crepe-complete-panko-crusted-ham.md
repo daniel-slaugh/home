@@ -63,14 +63,38 @@ pubDate: 'May 11 2026'
 heroImage: './crepe-complete-panko-crusted-ham-v2.png'
 ---
 
-1. **Make the batter.** Whisk together half of the [[large eggs, divided]], [[all-purpose flour]], [[whole milk]], [[butter, melted]], [[salt]], and [[vanilla extract]] until completely smooth.
+<div class="step">
 
-2. **Rest the batter.** Let the batter rest in the fridge for at least 30 minutes. Use this time to prep everything else.
+**Make the batter.** Whisk together half of the [[large eggs, divided]], [[all-purpose flour]], [[whole milk]], [[butter, melted]], [[salt]], and [[vanilla extract]] until completely smooth.
 
-3. **Panko-crust the ham.** Press the [[thick-cut Black Forest ham slices]] firmly into [[panko breadcrumbs]] on both sides so the crumbs stick. Melt [[butter, for frying ham]] in a skillet over medium-high heat. Fry the ham slices for 1-2 minutes per side until golden and crispy. Set aside on a plate.
+</div>
 
-4. **Cook the crepes.** Heat a non-stick pan over medium or medium-low with a tiny bit of butter. Pour in about 3/4 cup batter and swirl immediately to coat the bottom thinly. Cook until the edges look dry, about 90 seconds.
+<div class="step">
 
-5. **Add cheese, egg, and ham.** Immediately after flipping, layer on [[Gruyère or Swiss cheese, shredded]], an egg, the ham slices. The tricky part is cooking the egg enough while not burning the second side of the crepe. For, this I like to remove the pan from heat and cover with a lid so the residual heat slowly finishes cooking the egg. If making a lot of these crepes, it helps to have two pans. While the egg of the first crepe finishes cooking from the residual heat, you can start on the second crepe in a new pan and rotate.
+**Rest the batter.** Let the batter rest in the fridge for at least 30 minutes. Use this time to prep everything else.
 
-6. **Assemble and serve.** Plate the crepe all fancy with [[Dijon mustard]] smeared it in a thin layer to the side of the crepe. Garnish with [[fresh thyme or chives]]. Serve immediately while the cheese is still melted and the ham is crispy.
+</div>
+
+<div class="step">
+
+**Panko-crust the ham.** Press the [[thick-cut Black Forest ham slices]] firmly into [[panko breadcrumbs]] on both sides so the crumbs stick. Melt [[butter, for frying ham]] in a skillet over medium-high heat. Fry the ham slices for 1-2 minutes per side until golden and crispy. Set aside on a plate.
+
+</div>
+
+<div class="step">
+
+**Cook the crepes.** Heat a non-stick pan over medium or medium-low with a tiny bit of butter. Pour in about 3/4 cup batter and swirl immediately to coat the bottom thinly. Cook until the edges look dry, about 90 seconds.
+
+</div>
+
+<div class="step">
+
+**Add cheese, egg, and ham.** Immediately after flipping, layer on [[Gruyère or Swiss cheese, shredded]], an egg, the ham slices. The tricky part is cooking the egg enough while not burning the second side of the crepe. For, this I like to remove the pan from heat and cover with a lid so the residual heat slowly finishes cooking the egg. If making a lot of these crepes, it helps to have two pans. While the egg of the first crepe finishes cooking from the residual heat, you can start on the second crepe in a new pan and rotate.
+
+</div>
+
+<div class="step">
+
+**Assemble and serve.** Plate the crepe all fancy with [[Dijon mustard]] smeared it in a thin layer to the side of the crepe. Garnish with [[fresh thyme or chives]]. Serve immediately while the cheese is still melted and the ham is crispy.
+
+</div>

@@ -51,13 +51,17 @@ pubDate: 'Dec 25 2025'
 heroImage: './greek-yogurt-banana-bread.png'
 ---
 
-1. **Prep**
+<div class="step">
+
+**Prep**
 
 Preheat the oven to 350°F. Grease a standard loaf pan or line it with parchment paper.
 
-⸻
+</div>
 
-2. **Mix the wet ingredients**
+<div class="step">
+
+**Mix the wet ingredients**
 
 In a large bowl, mash the [[ripe bananas, mashed]] until mostly smooth.
 
@@ -71,9 +75,11 @@ Whisk in:
 
 Mix until smooth and well combined.
 
-⸻
+</div>
 
-3. **Mix the dry ingredients**
+<div class="step">
+
+**Mix the dry ingredients**
 
 In a separate bowl, whisk together:
 
@@ -81,9 +87,11 @@ In a separate bowl, whisk together:
 - [[baking soda]]
 - [[salt]]
 
-⸻
+</div>
 
-4. **Make the batter**
+<div class="step">
+
+**Make the batter**
 
 Gradually add the dry ingredients to the wet ingredients, stirring gently until just combined.
 
@@ -91,16 +99,22 @@ Do not over mix — this keeps the bread tender.
 
 Pour the batter into the prepared loaf pan and smooth the top.
 
-⸻
+</div>
 
-5. **Bake**
+<div class="step">
+
+**Bake**
 
 Bake for 55 minutes, or until a toothpick inserted into the center comes out clean.
 
 If the top begins browning too quickly around the 40-minute mark, loosely cover with foil and continue baking.
 
-⸻
+</div>
 
-6. **Cool and serve**
+<div class="step">
+
+**Cool and serve**
 
 Remove from the oven and let cool in the pan for 15 minutes. Transfer to a wire rack, slice, and serve.
+
+</div>

@@ -58,11 +58,27 @@ pubDate: 'Jun 16 2025'
 heroImage: './chicken-orzo.jpg'
 ---
 
-1. Pat the chicken breasts dry with a paper towel and slice them into cubes. Set them aside while you prepare the skillet.
+<div class="step">
 
-2. Heat a skillet, on the stove, over medium heat, and add in the oil.
-3. Once the oil is hot, add in the chicken and cook for 2-3 minutes, until the edges start to cook.
-4. Add the seasonings:
+Pat the chicken breasts dry with a paper towel and slice them into cubes. Set them aside while you prepare the skillet.
+
+</div>
+
+<div class="step">
+
+Heat a skillet, on the stove, over medium heat, and add in the oil.
+
+</div>
+
+<div class="step">
+
+Once the oil is hot, add in the chicken and cook for 2-3 minutes, until the edges start to cook.
+
+</div>
+
+<div class="step">
+
+Add the seasonings:
 
 - [[Sun-Dried Tomatoes, packed in oil and drained]]
 - [[Garlic, mashed]]
@@ -71,9 +87,34 @@ heroImage: './chicken-orzo.jpg'
 - [[Kosher Salt]]
 - [[Ground Black Pepper]]
 
-5. cook 3–4 minutes until fragrant.
+</div>
 
-6. Add in the [[Chicken Broth]] and [[Orzo]] and stir well.
-7. Reduce the heat to medium, then cover the pan and allow it to cook for 12 minutes. Remove the cover every few minutes and stir, to ensure that the orzo doesn't stick to the bottom of the pan.
-8. Once the orzo is cooked through, add in the [[Full-Fat Coconut Milk]] and [[Spinach]] and stir until the spinach is wilted.
-9. Finally, add in the [[freshly-grated parmesan cheese]] and stir one last time. Once it's done, remove it from the heat, serve it immediately, and enjoy!
+<div class="step">
+
+cook 3–4 minutes until fragrant.
+
+</div>
+
+<div class="step">
+
+Add in the [[Chicken Broth]] and [[Orzo]] and stir well.
+
+</div>
+
+<div class="step">
+
+Reduce the heat to medium, then cover the pan and allow it to cook for 12 minutes. Remove the cover every few minutes and stir, to ensure that the orzo doesn't stick to the bottom of the pan.
+
+</div>
+
+<div class="step">
+
+Once the orzo is cooked through, add in the [[Full-Fat Coconut Milk]] and [[Spinach]] and stir until the spinach is wilted.
+
+</div>
+
+<div class="step">
+
+Finally, add in the [[freshly-grated parmesan cheese]] and stir one last time. Once it's done, remove it from the heat, serve it immediately, and enjoy!
+
+</div>

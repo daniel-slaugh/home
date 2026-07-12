@@ -103,7 +103,44 @@ const { title, prepTime, cookTime, inactiveTime, pubDate, heroImage, ingredients
             </section>
 
             <section class="instructions-col">
-              <h3 class="section-heading">Instructions</h3>
+              <div class="instructions-header">
+                <h3 class="section-heading">Instructions</h3>
+                <button
+                  type="button"
+                  id="zen-toggle"
+                  class="zen-toggle-btn"
+                >
+                  Zen Mode
+                </button>
+              </div>
+
+              <div
+                id="zen-nav"
+                class="zen-nav"
+                hidden
+              >
+                <button
+                  type="button"
+                  id="zen-prev"
+                  class="zen-nav-btn"
+                  aria-label="Previous step"
+                >
+                  &larr;
+                </button>
+                <span
+                  id="zen-progress"
+                  class="zen-progress"
+                ></span>
+                <button
+                  type="button"
+                  id="zen-next"
+                  class="zen-nav-btn"
+                  aria-label="Next step"
+                >
+                  &rarr;
+                </button>
+              </div>
+
               <div
                 id="instructions-container"
                 class="instructions-wrap"
@@ -367,37 +404,32 @@ const { title, prepTime, cookTime, inactiveTime, pubDate, heroImage, ingredients
 
   /* Instructions (rendered markdown) */
   .instructions-wrap {
-    font-size: 1.02rem;
-    line-height: 1.75;
-    color: var(--cocoa);
-    /* Reset once for the whole set of instructions: markdown can split one
-       numbered list into several sibling <ol> elements (e.g. when a step
-       contains a nested bullet list), and each of those keeps counting the
-       same "step" sequence rather than restarting at 1. */
-    counter-reset: step;
-  }
-  .instructions-wrap :global(> p) {
-    margin-bottom: 1.1rem;
-  }
-  .instructions-wrap :global(> ol) {
-    list-style: none;
-    padding: 0;
-    margin: 0 0 1.5rem;
     display: flex;
     flex-direction: column;
     gap: 1.4rem;
+    font-size: 1.02rem;
+    line-height: 1.75;
+    color: var(--cocoa);
   }
-  .instructions-wrap :global(> ol > li) {
-    counter-increment: step;
+
+  /* Each numbered step is a self-contained container so zen mode can show
+     exactly one at a time; freeform content (bullet lists, raw HTML, etc.)
+     inside a step is left untouched. Numbering comes from a data attribute
+     (set in ingredient-scaler.ts) rather than a CSS counter, since counters
+     don't increment across steps hidden by zen mode's display: none. */
+  .instructions-wrap :global(.step) {
     position: relative;
     padding-left: 3.1rem;
     min-height: 2.3rem;
   }
-  .instructions-wrap :global(> ol > li > p) {
+  .instructions-wrap :global(.step > *) {
     margin: 0;
   }
-  .instructions-wrap :global(> ol > li::before) {
-    content: counter(step);
+  .instructions-wrap :global(.step > * + *) {
+    margin-top: 0.75rem;
+  }
+  .instructions-wrap :global(.step::before) {
+    content: attr(data-step-number);
     position: absolute;
     left: 0;
     top: 0;
@@ -413,19 +445,19 @@ const { title, prepTime, cookTime, inactiveTime, pubDate, heroImage, ingredients
     font-size: 0.85rem;
     font-weight: 600;
   }
-  .instructions-wrap :global(> ul) {
+  .instructions-wrap :global(.step ul) {
     list-style: none;
     padding: 0;
-    margin: 0 0 1.5rem;
+    margin: 0;
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
   }
-  .instructions-wrap :global(> ul > li) {
+  .instructions-wrap :global(.step ul li) {
     position: relative;
     padding-left: 1.35rem;
   }
-  .instructions-wrap :global(> ul > li::before) {
+  .instructions-wrap :global(.step ul li::before) {
     content: '';
     position: absolute;
     left: 1px;
@@ -435,6 +467,95 @@ const { title, prepTime, cookTime, inactiveTime, pubDate, heroImage, ingredients
     border-radius: 2px;
     background: var(--herb);
     transform: rotate(45deg);
+  }
+
+  /* Zen mode: show one step at a time */
+  .instructions-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-bottom: 0.65rem;
+    margin-bottom: 1rem;
+    border-bottom: 2px solid var(--paper-line);
+  }
+  .instructions-header .section-heading {
+    padding-bottom: 0;
+    margin-bottom: 0;
+    border-bottom: none;
+  }
+  .zen-toggle-btn {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--forest-soft);
+    background: var(--paper);
+    border: 1px solid var(--paper-line);
+    border-radius: 999px;
+    padding: 0.4rem 0.9rem;
+    transition:
+      background 0.15s ease,
+      color 0.15s ease;
+  }
+  .zen-toggle-btn:hover {
+    background: var(--herb-dim);
+    color: var(--forest);
+  }
+  .zen-toggle-btn.is-active {
+    background: var(--herb);
+    border-color: var(--herb);
+    color: #fff;
+  }
+  .zen-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+  .zen-nav-btn {
+    width: 2.4rem;
+    height: 2.4rem;
+    border-radius: 50%;
+    border: 1px solid var(--paper-line);
+    background: var(--paper);
+    color: var(--forest);
+    font-size: 1.1rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s ease;
+  }
+  .zen-nav-btn:hover:not(:disabled) {
+    background: var(--herb-dim);
+  }
+  .zen-nav-btn:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+  .zen-progress {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--cocoa-soft);
+    min-width: 7rem;
+    text-align: center;
+  }
+  .instructions-wrap.zen-active :global(.step) {
+    display: none;
+  }
+  .instructions-wrap.zen-active :global(.step.zen-current) {
+    display: block;
+    padding-left: 3.6rem;
+    font-size: 1.12rem;
+    line-height: 1.85;
+  }
+  .instructions-wrap.zen-active :global(.step.zen-current::before) {
+    width: 2.6rem;
+    height: 2.6rem;
+    font-size: 1rem;
   }
   .instructions-wrap :global(a) {
     color: var(--clay);

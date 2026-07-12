@@ -64,9 +64,15 @@ pubDate: 'Jun 29 2025'
 heroImage: './beef-stroganoff.jpg'
 ---
 
-1. Whisk [[all-purpose flour]] with the [[beef broth]] until smooth. Set aside.
+<div class="step">
 
-2. Cook the following ingredients in a 10-inch cast iron skillet over medium heat for about 5-7 minutes,
+Whisk [[all-purpose flour]] with the [[beef broth]] until smooth. Set aside.
+
+</div>
+
+<div class="step">
+
+Cook the following ingredients in a 10-inch cast iron skillet over medium heat for about 5-7 minutes,
    until onions are clear.
 
 - [[butter]]
@@ -74,13 +80,35 @@ heroImage: './beef-stroganoff.jpg'
 - [[onion, chopped]]
 - [[garlic, minced]]
 
-3. Add [[lean ground beef]]
-4. Increase heat to medium high, stirring frequently, until ground beef is no longer pink and lightly browned.
-5. Drain excess fat.
+</div>
 
-6. Start cooking [[egg noodles]] in a large pot.
+<div class="step">
 
-7. Stir in:
+Add [[lean ground beef]]
+
+</div>
+
+<div class="step">
+
+Increase heat to medium high, stirring frequently, until ground beef is no longer pink and lightly browned.
+
+</div>
+
+<div class="step">
+
+Drain excess fat.
+
+</div>
+
+<div class="step">
+
+Start cooking [[egg noodles]] in a large pot.
+
+</div>
+
+<div class="step">
+
+Stir in:
 
 - The flour broth mixture you made in step 1.
 - [[Worcestershire sauce]]
@@ -88,12 +116,31 @@ heroImage: './beef-stroganoff.jpg'
 - [[salt]]
 - [[black pepper]]
 
-8. Bring to a boil.
+</div>
 
-9. Stir in:
+<div class="step">
+
+Bring to a boil.
+
+</div>
+
+<div class="step">
+
+Stir in:
 
 - [[cream of mushroom soup]]
 - [[cream cheese, cut into cubes and at room temperature]] and stir until melted and fully incorporated.
 
-10. Remove from heat and stir in [[sour cream]] until fully combined.
-11. Spoon over [[cooked egg noodles]] and garnish with chopped parsley, if desired.
+</div>
+
+<div class="step">
+
+Remove from heat and stir in [[sour cream]] until fully combined.
+
+</div>
+
+<div class="step">
+
+Spoon over [[cooked egg noodles]] and garnish with chopped parsley, if desired.
+
+</div>

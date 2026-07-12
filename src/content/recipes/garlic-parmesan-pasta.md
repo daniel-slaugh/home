@@ -44,21 +44,57 @@ pubDate: 'Nov 16 2025'
 heroImage: './garlic-parmesan-pasta.jpg'
 ---
 
-1. **Prep the ingredients.** Grate [[Parmesan cheese, finely grated]] and let it come to room temperature.
+<div class="step">
 
-2. In a large skillet over medium heat, melt **2 tablespoons** of [[Butter, divided]].
+**Prep the ingredients.** Grate [[Parmesan cheese, finely grated]] and let it come to room temperature.
 
-3. Add [[Fresh garlic, minced]] and cook for 1–2 minutes, stirring occasionally.
+</div>
 
-4. Pour in [[Chicken broth]] and [[Optional seasoning mix (onion powder, oregano, thyme, parsley, pepper)]]. Slowly add [[Milk]] while stirring. Bring to a boil.
+<div class="step">
 
-5. Add [[Angel hair pasta]]. Break in half if needed or use tongs to gently fold it in as it softens.
+In a large skillet over medium heat, melt **2 tablespoons** of [[Butter, divided]].
 
-6. Let simmer 4–5 minutes, stirring occasionally so noodles don’t stick. Reduce the heat to low.
+</div>
 
-7. Add the remaining **1 tablespoon** of [[Butter, divided]] and toss to coat.
+<div class="step">
 
-8. Gradually sprinkle in [[Parmesan cheese, finely grated]], stirring continuously until melted and smooth.  
+Add [[Fresh garlic, minced]] and cook for 1–2 minutes, stirring occasionally.
+
+</div>
+
+<div class="step">
+
+Pour in [[Chicken broth]] and [[Optional seasoning mix (onion powder, oregano, thyme, parsley, pepper)]]. Slowly add [[Milk]] while stirring. Bring to a boil.
+
+</div>
+
+<div class="step">
+
+Add [[Angel hair pasta]]. Break in half if needed or use tongs to gently fold it in as it softens.
+
+</div>
+
+<div class="step">
+
+Let simmer 4–5 minutes, stirring occasionally so noodles don’t stick. Reduce the heat to low.
+
+</div>
+
+<div class="step">
+
+Add the remaining **1 tablespoon** of [[Butter, divided]] and toss to coat.
+
+</div>
+
+<div class="step">
+
+Gradually sprinkle in [[Parmesan cheese, finely grated]], stirring continuously until melted and smooth.  
    _Sauce will thicken as it stands and pasta absorbs liquid._
 
-9. Sprinkle with [[Fresh parsley, chopped]] and serve warm.
+</div>
+
+<div class="step">
+
+Sprinkle with [[Fresh parsley, chopped]] and serve warm.
+
+</div>

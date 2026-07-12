@@ -46,27 +46,41 @@ pubDate: 'Jul 01 2025'
 heroImage: './buffalo-chicken-and-potatoes.jpg'
 ---
 
-1. **Prepare the dish:** heat oven to 350°F. Spray a 13×9-inch (3-quart) baking dish with cooking spray.
+<div class="step">
 
-2. **Season the chicken:** in a medium bowl, stir together:
+**Prepare the dish:** heat oven to 350°F. Spray a 13×9-inch (3-quart) baking dish with cooking spray.
+
+</div>
+
+<div class="step">
+
+**Season the chicken:** in a medium bowl, stir together:
 
 - [[boneless skinless chicken breasts, cut into 1-inch strips]]
 - [[buffalo wing sauce]]
 
-3. **Combine the base:** in a large bowl, stir together:
+</div>
+
+<div class="step">
+
+**Combine the base:** in a large bowl, stir together:
 
 - [[frozen (thawed) southern-style hash brown potatoes]]
 - [[ranch or blue cheese dressing]]
 - [[shredded Cheddar cheese]]
 - [[condensed cream of celery soup]]
 
-4. Spoon into the prepared baking dish. Layer the seasoned chicken strips on top.
+</div>
 
-<ol start="5">
-  <li>
-    <strong>Add the topping:</strong> in a small bowl, stir together:
-  </li>
-</ol>
+<div class="step">
+
+Spoon into the prepared baking dish. Layer the seasoned chicken strips on top.
+
+</div>
+
+<div class="step">
+
+**Add the topping:** in a small bowl, stir together:
 <ul>
   <li>[[corn flake crumbs]]</li>
   <li>[[butter or margarine, melted]]</li>
@@ -74,6 +88,16 @@ heroImage: './buffalo-chicken-and-potatoes.jpg'
   Sprinkle evenly over the casserole.
 </ul>
 
-6. **Bake:** cover with foil and bake 30 minutes. Uncover and bake 20–25 minutes longer, or until potatoes are tender and chicken is cooked through.
+</div>
 
-7. **Garnish and serve:** sprinkle with [[chopped green onions]] before serving.
+<div class="step">
+
+**Bake:** cover with foil and bake 30 minutes. Uncover and bake 20–25 minutes longer, or until potatoes are tender and chicken is cooked through.
+
+</div>
+
+<div class="step">
+
+**Garnish and serve:** sprinkle with [[chopped green onions]] before serving.
+
+</div>

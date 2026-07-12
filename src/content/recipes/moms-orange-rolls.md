@@ -75,7 +75,9 @@ pubDate: 'Dec 26 2025'
 heroImage: 'moms-orange-rolls.png'
 ---
 
-1. In a large bowl, combine:
+<div class="step">
+
+In a large bowl, combine:
 
 - [[active dry yeast]]
 - [[very warm water]]
@@ -84,21 +86,53 @@ heroImage: 'moms-orange-rolls.png'
 
 Adding the whole wheat at this step lets it sponge so the finished rolls are more moist. Freshly grinding the whole wheat flower makes a world of difference in the end taste. If you can't grind your own, use the newest bag you can find.
 
-2. Let sit for about 15 minutes until foamy. Then stir in [[all-purpose flour (10 to 12 cups, as needed)]] until the texture is just right. A good test is to touch it with you finger and it should still stick a little - but if you have oil on your finger, it doesn't stick.
+</div>
 
-3. Spread the dough out with your hands into a rectangle about 1/4-inch thick.
+<div class="step">
 
-4. Spread the [[butter, softened]] evenly across the dough rectangle. The butter should be very soft but not runny.
+Let sit for about 15 minutes until foamy. Then stir in [[all-purpose flour (10 to 12 cups, as needed)]] until the texture is just right. A good test is to touch it with you finger and it should still stick a little - but if you have oil on your finger, it doesn't stick.
 
-5. Mix [[orange zest]] and approximately [[granulated sugar]] in a bowl. Pour a generous layer of this sugar orange mix over the dough rectangle - you shouldn't be able to see the dough once you're done.
+</div>
 
-6. Roll up tightly and slice into 1-inch pieces. Kitchen shears work great for this.
+<div class="step">
 
-7. Place rolls on greased baking sheets, cover, and let rise for about 1 hour (or bake sooner if you prefer a shorter rise).
+Spread the dough out with your hands into a rectangle about 1/4-inch thick.
 
-8. Bake at 400°F for 12 to 15 minutes, until golden.
+</div>
 
-9. Mix all frosting ingredients together until smooth:
+<div class="step">
+
+Spread the [[butter, softened]] evenly across the dough rectangle. The butter should be very soft but not runny.
+
+</div>
+
+<div class="step">
+
+Mix [[orange zest]] and approximately [[granulated sugar]] in a bowl. Pour a generous layer of this sugar orange mix over the dough rectangle - you shouldn't be able to see the dough once you're done.
+
+</div>
+
+<div class="step">
+
+Roll up tightly and slice into 1-inch pieces. Kitchen shears work great for this.
+
+</div>
+
+<div class="step">
+
+Place rolls on greased baking sheets, cover, and let rise for about 1 hour (or bake sooner if you prefer a shorter rise).
+
+</div>
+
+<div class="step">
+
+Bake at 400°F for 12 to 15 minutes, until golden.
+
+</div>
+
+<div class="step">
+
+Mix all frosting ingredients together until smooth:
 
 - [[butter, softened]]
 - [[cream cheese, softened]]
@@ -108,4 +142,10 @@ Adding the whole wheat at this step lets it sponge so the finished rolls are mor
 
 Adjust the consistency if needed (more powdered sugar for thicker, more milk thinner). You'll want it a little on the thick side since the warm rolls will warm it up and thin it a bit.
 
-10. Frost the rolls while warm.
+</div>
+
+<div class="step">
+
+Frost the rolls while warm.
+
+</div>

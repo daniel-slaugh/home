@@ -40,15 +40,33 @@ pubDate: 'Jun 18 2025'
 heroImage: './turkey-burger.jpg'
 ---
 
-1. In a large bowl, mix all patty ingredients unit well distributed.
+<div class="step">
 
-2. Divide turkey mixture into portions equal to the serving size and shape into patties.
+In a large bowl, mix all patty ingredients unit well distributed.
 
-3. Cook in skillet on medium high heat for 5-7 minutes each side until internal temperature registers 165 degrees F. Optionally, cover and melt cheese on patties in the last couple minutes of grilling.
+</div>
 
-4. Spread mayonnaise on potato bread buns and toast in skillet.
+<div class="step">
 
-5. Assemble burgers in the following order (top to bottom):
+Divide turkey mixture into portions equal to the serving size and shape into patties.
+
+</div>
+
+<div class="step">
+
+Cook in skillet on medium high heat for 5-7 minutes each side until internal temperature registers 165 degrees F. Optionally, cover and melt cheese on patties in the last couple minutes of grilling.
+
+</div>
+
+<div class="step">
+
+Spread mayonnaise on potato bread buns and toast in skillet.
+
+</div>
+
+<div class="step">
+
+Assemble burgers in the following order (top to bottom):
 
 - top bun
 - lettuce
@@ -59,3 +77,5 @@ heroImage: './turkey-burger.jpg'
 - pickles
 - ketchup
 - bottom bun
+
+</div>

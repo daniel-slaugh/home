@@ -58,13 +58,15 @@ heroImage: './orange-chicken-and-potstickers.jpg'
 
 > **Why jasmine rice?** For a saucy, glaze-forward bowl like this, you want a fragrant long-grain rice that stays distinct and fluffy rather than gummy — jasmine has just enough cling to catch the orange sauce without turning into a paste the way short-grain sushi rice would, and it brings a soft floral aroma that complements the citrus. Brown rice is too tough and dry - the sauce won't soak into it.
 
-1. **Cook the rice** Measure [[Jasmine rice]] into a bowl and rinse under cold water, swirling and draining 3–4 times until the water runs nearly clear — this removes surface starch so the grains cook up separate and fluffy. Drain well.
+<div class="step">
 
-<ol start="2">
-  <li>
-    <strong>Steam the rice.</strong> Combine in a saucepan with a tight-fitting lid:
-  </li>
-</ol>
+**Cook the rice** Measure [[Jasmine rice]] into a bowl and rinse under cold water, swirling and draining 3–4 times until the water runs nearly clear — this removes surface starch so the grains cook up separate and fluffy. Drain well.
+
+</div>
+
+<div class="step">
+
+**Steam the rice.** Combine in a saucepan with a tight-fitting lid:
 <ul>
   <li>[[Jasmine rice]] (rinsed and drained)</li>
   <li>[[Water]]</li>
@@ -74,10 +76,28 @@ Bring to a boil uncovered over medium-high heat. The moment it boils, cover, dro
 
 </ul>
 
-3. **Bake the orange chicken.** Cook the [[Bagged frozen breaded orange chicken]] on a wire rack set over a sheet pan according to the package directions — the rack lets hot air circulate so every side stays crisp. Bake until deeply golden and crunchy; do not toss with sauce yet.
+</div>
 
-4. **Sear the potstickers.** Heat [[Olive oil]] in a nonstick skillet over medium-high. Add the [[Frozen potstickers]] flat-side down and sear undisturbed for 2–3 minutes until golden. Add [[Water, for steaming potstickers]], cover immediately, and steam 5–6 minutes until the water evaporates and the wrappers are translucent. Uncover and let the bottoms re-crisp for 1 minute. Set aside.
+<div class="step">
 
-5. **Glaze and assemble.** In a large bowl, toss the hot crispy chicken with just enough sauce to coat (glaze it right before serving so it stays crisp). Spoon rice into bowls, top with the glazed orange chicken and seared potstickers.
+**Bake the orange chicken.** Cook the [[Bagged frozen breaded orange chicken]] on a wire rack set over a sheet pan according to the package directions — the rack lets hot air circulate so every side stays crisp. Bake until deeply golden and crunchy; do not toss with sauce yet.
 
-6. **Garnish and serve.** Scatter with [[Toasted sesame seeds]] and [[Sliced green onion]], and serve with [[Orange, cut into wedges]] for squeezing over the top.
+</div>
+
+<div class="step">
+
+**Sear the potstickers.** Heat [[Olive oil]] in a nonstick skillet over medium-high. Add the [[Frozen potstickers]] flat-side down and sear undisturbed for 2–3 minutes until golden. Add [[Water, for steaming potstickers]], cover immediately, and steam 5–6 minutes until the water evaporates and the wrappers are translucent. Uncover and let the bottoms re-crisp for 1 minute. Set aside.
+
+</div>
+
+<div class="step">
+
+**Glaze and assemble.** In a large bowl, toss the hot crispy chicken with just enough sauce to coat (glaze it right before serving so it stays crisp). Spoon rice into bowls, top with the glazed orange chicken and seared potstickers.
+
+</div>
+
+<div class="step">
+
+**Garnish and serve.** Scatter with [[Toasted sesame seeds]] and [[Sliced green onion]], and serve with [[Orange, cut into wedges]] for squeezing over the top.
+
+</div>

@@ -59,13 +59,23 @@ pubDate: 'Jul 01 2025'
 heroImage: './pickle-pasta-salad.jpg'
 ---
 
-1. **Cook the pasta:**  
+<div class="step">
+
+**Cook the pasta:**  
    Boil [[dry shell pasta (about 3 cups)]] al dente according to package directions. Run under cold water to stop cooking.
 
-2. **Pickle juice soak:**  
+</div>
+
+<div class="step">
+
+**Pickle juice soak:**  
    Toss the cold [[dry shell pasta (about 3 cups)]] with about ½ [[pickle juice]] and set aside for 5 minutes. Drain and discard [[pickle juice]].
 
-3. **Make the dressing:** Combine in a small bowl:
+</div>
+
+<div class="step">
+
+**Make the dressing:** Combine in a small bowl:
 
 - [[mayonnaise]]
 - [[sour cream]]
@@ -73,7 +83,11 @@ heroImage: './pickle-pasta-salad.jpg'
 - [[pickle juice]]
 - [[salt & pepper to taste]]
 
-4. **Assemble the salad:** In a large bowl, toss:
+</div>
+
+<div class="step">
+
+**Assemble the salad:** In a large bowl, toss:
 
 - [[dry shell pasta (about 3 cups)]]
 - [[sliced pickles]]
@@ -82,5 +96,11 @@ heroImage: './pickle-pasta-salad.jpg'
 - [[fresh dill]]
 - the prepared dressing
 
-5. **Chill:**  
+</div>
+
+<div class="step">
+
+**Chill:**  
    Refrigerate at least 1 hour before serving.
+
+</div>

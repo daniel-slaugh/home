@@ -76,7 +76,9 @@ pubDate: 'Jun 29 2025'
 heroImage: './cheesy-spinach-stuffed-shells.jpg'
 ---
 
-1. **Make the sauce:** combine the following in a medium saucepan and simmer for 10-15 minutes:
+<div class="step">
+
+**Make the sauce:** combine the following in a medium saucepan and simmer for 10-15 minutes:
 
 - [[crushed tomatoes]]
 - [[dried oregano]]
@@ -85,9 +87,17 @@ heroImage: './cheesy-spinach-stuffed-shells.jpg'
 - [[pepper]]
 - [[sugar]]
 
-2. While the sauce simmers, bring a large pot of salted water to a boil. Cook [[large pasta shells]] al dente according to package directions. Drain and immediately place them in an even layer on paper towels or parchment.
+</div>
 
-3. **Prepare the filling:** in a medium bowl, stir together:
+<div class="step">
+
+While the sauce simmers, bring a large pot of salted water to a boil. Cook [[large pasta shells]] al dente according to package directions. Drain and immediately place them in an even layer on paper towels or parchment.
+
+</div>
+
+<div class="step">
+
+**Prepare the filling:** in a medium bowl, stir together:
 
 - [[cottage cheese]]
 - [[part skim ricotta cheese]]
@@ -100,8 +110,22 @@ heroImage: './cheesy-spinach-stuffed-shells.jpg'
 - [[dried basil]]
 - [[frozen chopped spinach, thawed and squeezed dry]]
 
-4. Preheat the oven to 350°F and lightly grease a 9×13-inch baking dish with cooking spray. Spread half of the sauce evenly in the dish. Fill each shell with about 1/4 cup of filling and arrange in three rows of eight.
+</div>
 
-5. Pour the remaining sauce evenly over the shells. Cover with foil and bake for 35–40 minutes. Remove the foil and bake an additional 5 minutes.
+<div class="step">
 
-6. Remove from the oven and let the shells rest for 5–10 minutes before serving.
+Preheat the oven to 350°F and lightly grease a 9×13-inch baking dish with cooking spray. Spread half of the sauce evenly in the dish. Fill each shell with about 1/4 cup of filling and arrange in three rows of eight.
+
+</div>
+
+<div class="step">
+
+Pour the remaining sauce evenly over the shells. Cover with foil and bake for 35–40 minutes. Remove the foil and bake an additional 5 minutes.
+
+</div>
+
+<div class="step">
+
+Remove from the oven and let the shells rest for 5–10 minutes before serving.
+
+</div>

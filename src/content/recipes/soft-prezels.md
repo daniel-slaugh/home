@@ -54,7 +54,9 @@ pubDate: 'Jun 18 2025'
 heroImage: './soft-pretzels.jpg'
 ---
 
-1. **Make the dough:** in a large bowl, whisk together:
+<div class="step">
+
+**Make the dough:** in a large bowl, whisk together:
 
 - [[Instant or active dry yeast]] into [[lukewarm water (~ 100°F)]], then let sit 1 minute.
 - [[Salt]]
@@ -62,14 +64,40 @@ heroImage: './soft-pretzels.jpg'
 - [[Unsalted butter, melted and slightly cool]]
 - Gradually stir in [[All-purpose flour]]: start with 3 cups, then add ¾ cup more until dough is no longer sticky (up to an additional ¼–½ cup if needed). Dough should bounce back when poked.
 
-2. Knead in a stand mixer with dough hook for 5 minutes (or by hand on a lightly floured surface for 5 minutes), adding flour tsp-by-tsp if it sticks. Dough should be soft and pass the windowpane test (thin stretch without tearing).
+</div>
 
-3. Shape dough into a ball, cover lightly with a towel, and let rest 10 minutes. Meanwhile, preheat oven to 400°F and line two baking sheets with silicone mats or greased parchment.
+<div class="step">
 
-4. **Shape pretzels:** Divide dough into 1/3-cup pieces. Roll each into a 20–22 inch rope, form a circle, twist the ends together, then press them down to create the classic pretzel shape.
+Knead in a stand mixer with dough hook for 5 minutes (or by hand on a lightly floured surface for 5 minutes), adding flour tsp-by-tsp if it sticks. Dough should be soft and pass the windowpane test (thin stretch without tearing).
 
-5. Bring the baking-soda bath to a boil. Drop 1–2 pretzels into boiling water for 20–30 seconds, then lift with a slotted spatula, letting excess water drip off. Transfer to prepared sheets and sprinkle with coarse salt. The pretzels dry really fast, so instead of salting them one at a time, you can egg wash them then salt.
+</div>
 
-6. Bake for 12–15 minutes, until golden brown.
+<div class="step">
 
-7. Serve warm with spicy nacho cheese.
+Shape dough into a ball, cover lightly with a towel, and let rest 10 minutes. Meanwhile, preheat oven to 400°F and line two baking sheets with silicone mats or greased parchment.
+
+</div>
+
+<div class="step">
+
+**Shape pretzels:** Divide dough into 1/3-cup pieces. Roll each into a 20–22 inch rope, form a circle, twist the ends together, then press them down to create the classic pretzel shape.
+
+</div>
+
+<div class="step">
+
+Bring the baking-soda bath to a boil. Drop 1–2 pretzels into boiling water for 20–30 seconds, then lift with a slotted spatula, letting excess water drip off. Transfer to prepared sheets and sprinkle with coarse salt. The pretzels dry really fast, so instead of salting them one at a time, you can egg wash them then salt.
+
+</div>
+
+<div class="step">
+
+Bake for 12–15 minutes, until golden brown.
+
+</div>
+
+<div class="step">
+
+Serve warm with spicy nacho cheese.
+
+</div>

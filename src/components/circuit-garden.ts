@@ -530,65 +530,6 @@ if (canvas && canvas.dataset.ready !== 'true') {
       makeBranch(crown, -2.15, width * 0.105, 1, 20500, trunk.id, 7)
       makeBranch(crown, -0.98, width * 0.11, 1, 21400, trunk.id, 8)
 
-      // Organic vines retain their underlying circuit paths but grow curls and thick leaves.
-      const vineDefinitions = [
-        [p(-0.02, 0.16), p(0.07, 0.15), p(0.12, 0.21), p(0.25, 0.19), p(0.36, 0.15)],
-        [p(1.02, 0.11), p(0.95, 0.13), p(0.91, 0.22), p(0.87, 0.27), p(0.89, 0.36)],
-        [p(0.28, 0.94), p(0.29, 0.8), p(0.34, 0.73), p(0.35, 0.62)],
-      ]
-
-      vineDefinitions.forEach((points, index) => {
-        if (index !== 1) return
-        addCircuit(
-          `vine-wire-${index}`,
-          points.map((point, pointIndex) => (pointIndex % 2 ? { x: point.x, y: points[pointIndex - 1].y } : point)),
-          'vine',
-          11500 + index * 1600,
-          15000,
-          index === 2 ? 'root-main' : undefined,
-          6200 + index * 900,
-          23300,
-          palette.circuitDim
-        )
-        const vine = addPath(botanicalPaths, sampleSmoothPath(points, 14), {
-          id: `vine-${index}`,
-          kind: 'vine',
-          birth: 15500 + index * 1700,
-          duration: 22000,
-          widthStart: 4.2 * scale,
-          widthEnd: 2.1 * scale,
-          depth: 0,
-          color: palette.leafMid,
-          parent: index === 2 ? 'root-main' : undefined,
-          flowDelay: 7000 + index * 1100,
-          flowPeriod: networkPeriod,
-          phase: random(),
-        })
-        vinePaths.push(vine)
-
-        const leafSpacing = width < 760 ? 34 : 24
-        for (let distance = 28; distance < vine.length - 12; distance += leafSpacing + random() * 9) {
-          const anchor = pointAlong(vine, distance)
-          const side = Math.floor(distance / leafSpacing) % 2 ? 1 : -1
-          leaves.push({
-            x: anchor.x - anchor.ty * side * 8,
-            y: anchor.y + anchor.tx * side * 8,
-            stemX: anchor.x,
-            stemY: anchor.y,
-            angle: Math.atan2(anchor.ty, anchor.tx) + side * 0.92,
-            size: (6.2 + random() * 4.2) * scale,
-            birth: leadEpoch + vine.flowDelay + distance / flowSpeed(vine.kind) + 850 + random() * 1500,
-            phase: random() * Math.PI * 2,
-            cluster: 20 + index,
-            tier: 1,
-            color: 2 + Math.floor(random() * 3),
-          })
-        }
-
-        const tip = pointAlong(vine, vine.length)
-        blossoms.push({ x: tip.x, y: tip.y, birth: leadEpoch + vine.flowDelay + vine.length / flowSpeed(vine.kind) + 3200, size: 6.5 * scale, phase: random() * Math.PI * 2, color: index === 1 ? palette.ember : palette.mint })
-      })
-
       // Leaf clusters at twig tips make the mature crown thick, layered, and readable.
       for (const branch of treePaths.filter((path) => path.kind === 'branch' && path.depth >= 2)) {
         const tip = pointAlong(branch, branch.length)
@@ -612,8 +553,8 @@ if (canvas && canvas.dataset.ready !== 'true') {
         }
       }
 
-      const succulentPositions = [0.41, 0.465, 0.555, 0.61]
-      const succulentSizes = [13, 19, 16, 11]
+      const succulentPositions = width < 760 ? [0.2, 0.32, 0.68, 0.8] : [0.33, 0.41, 0.59, 0.67]
+      const succulentSizes = [26, 38, 32, 22]
       succulentPositions.forEach((x, index) => {
         const base = p(x, rootY - 0.012)
         const rootDistance = nearestDistance(rootMain, base)

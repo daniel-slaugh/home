@@ -53,6 +53,7 @@ type Blossom = {
   angle: number
   birth: number
   size: number
+  lift: number
   phase: number
   color: string
   accent: string
@@ -361,16 +362,28 @@ if (canvas && canvas.dataset.ready !== 'true') {
       })
       cactusPaths.push(cactusMain)
 
-      const cactusLeftStart = p(cactusX - 0.002, 0.6)
+      // Arms should read as distinctly thinner limbs that emerge from the trunk's
+      // surface, not as equally-thick shapes dropped on top of it. Anchor each arm's
+      // base at the trunk's actual rendered edge (rather than near its centerline)
+      // and taper it down from a fraction of the trunk's width at that height.
+      const trunkWidthAt = (y: number) => {
+        const amount = clamp((rootY - y) / (rootY - cactusTop))
+        return lerp(cactusMain.widthStart, cactusMain.widthEnd, amount)
+      }
+
+      const cactusLeftY = 0.6
+      const cactusLeftTrunkWidth = trunkWidthAt(cactusLeftY)
+      const cactusLeftEdge = (cactusLeftTrunkWidth * 0.42) / width
+      const cactusLeftStart = p(cactusX - cactusLeftEdge, cactusLeftY)
       const cactusLeftDistance = nearestDistance(cactusMain, cactusLeftStart)
       const cactusLeftArrival = cactusMain.flowDelay + cactusLeftDistance / flowSpeed('cactus') + 120
-      const cactusLeft = addPath(botanicalPaths, sampleSmoothPath([cactusLeftStart, p(cactusX - 0.082, 0.6), p(cactusX - 0.102, 0.55), p(cactusX - 0.102, 0.41)], 12), {
+      const cactusLeft = addPath(botanicalPaths, sampleSmoothPath([cactusLeftStart, p(cactusX - 0.082, cactusLeftY), p(cactusX - 0.102, 0.55), p(cactusX - 0.102, 0.41)], 12), {
         id: 'cactus-left',
         kind: 'cactus',
         birth: 16000,
         duration: 13000,
-        widthStart: 39 * scale,
-        widthEnd: 29 * scale,
+        widthStart: cactusLeftTrunkWidth * 0.52,
+        widthEnd: cactusLeftTrunkWidth * 0.3,
         depth: 1,
         color: palette.cactusMid,
         parent: cactusMain.id,
@@ -380,16 +393,19 @@ if (canvas && canvas.dataset.ready !== 'true') {
       })
       cactusPaths.push(cactusLeft)
 
-      const cactusRightStart = p(cactusX + 0.005, 0.52)
+      const cactusRightY = 0.52
+      const cactusRightTrunkWidth = trunkWidthAt(cactusRightY)
+      const cactusRightEdge = (cactusRightTrunkWidth * 0.58) / width
+      const cactusRightStart = p(cactusX + cactusRightEdge, cactusRightY)
       const cactusRightDistance = nearestDistance(cactusMain, cactusRightStart)
       const cactusRightArrival = cactusMain.flowDelay + cactusRightDistance / flowSpeed('cactus') + 120
-      const cactusRight = addPath(botanicalPaths, sampleSmoothPath([cactusRightStart, p(cactusX + 0.084, 0.52), p(cactusX + 0.102, 0.47), p(cactusX + 0.102, 0.31)], 12), {
+      const cactusRight = addPath(botanicalPaths, sampleSmoothPath([cactusRightStart, p(cactusX + 0.084, cactusRightY), p(cactusX + 0.102, 0.47), p(cactusX + 0.102, 0.31)], 12), {
         id: 'cactus-right',
         kind: 'cactus',
         birth: 17500,
         duration: 14500,
-        widthStart: 41 * scale,
-        widthEnd: 28 * scale,
+        widthStart: cactusRightTrunkWidth * 0.5,
+        widthEnd: cactusRightTrunkWidth * 0.28,
         depth: 1,
         color: palette.cactusLight,
         parent: cactusMain.id,
@@ -406,12 +422,17 @@ if (canvas && canvas.dataset.ready !== 'true') {
       ;[cactusMain, cactusLeft, cactusRight].forEach((path, index) => {
         const tip = pointAlong(path, path.length)
         const flowerPalette = flowerPalettes[index]
+        const flowerSize = (index === 0 ? 15 : 12.8) * scale
+        const flowerLift = index === 0
+          ? 1.1
+          : Math.max(0.45, path.widthEnd * 0.5 / flowerSize + 0.04)
         blossoms.push({
           x: tip.x,
           y: tip.y,
           angle: Math.atan2(tip.ty, tip.tx),
           birth: leadEpoch + path.flowDelay + path.length / flowSpeed(path.kind) + 3200 + index * 450,
-          size: (index === 0 ? 15 : 12.8) * scale,
+          size: flowerSize,
+          lift: flowerLift,
           phase: random() * Math.PI * 2,
           color: flowerPalette.color,
           accent: flowerPalette.accent,
@@ -1056,7 +1077,7 @@ if (canvas && canvas.dataset.ready !== 'true') {
       context.save()
       context.translate(blossom.x, blossom.y)
       context.rotate(blossom.angle + sway)
-      context.translate(blossom.size * (0.12 + open * 1.1) * budGrowth, 0)
+      context.translate(blossom.size * (0.12 + open * blossom.lift) * budGrowth, 0)
       context.scale(1, 0.88)
 
       // A compact bud sits directly on the cactus crown before the petals unfold.

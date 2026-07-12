@@ -469,28 +469,6 @@ const timeRangeMax = Math.max(timeRangeStep, Math.ceil(maxRecipeMinutes / timeRa
       .recipe-card-body {
         padding: 1.1rem 1.15rem 1.25rem;
       }
-      .recipe-card-tags {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.4rem;
-        margin-bottom: 0.6rem;
-      }
-      .tag-badge {
-        font-family: var(--mono);
-        font-size: 0.62rem;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        padding: 0.2rem 0.55rem;
-        border-radius: 999px;
-      }
-      .tag-badge.herb {
-        color: var(--herb);
-        background: var(--herb-dim);
-      }
-      .tag-badge.clay {
-        color: var(--clay);
-        background: var(--clay-dim);
-      }
       .recipe-card-title {
         font-family: var(--serif);
         font-size: 1.3rem;
@@ -917,10 +895,6 @@ const timeRangeMax = Math.max(timeRangeStep, Math.ceil(maxRecipeMinutes / timeRa
                       )}
                     </div>
                     <div class="recipe-card-body">
-                      <div class="recipe-card-tags">
-                        <span class="tag-badge herb">{recipe.data.course.join(' · ')}</span>
-                        <span class="tag-badge clay">{recipe.data.cuisine.join(' · ')}</span>
-                      </div>
                       <h2 class="recipe-card-title">{recipe.data.title}</h2>
                       <p class="recipe-card-meta">
                         <strong>Prep</strong> {recipe.data.prepTime} <strong>· Cook</strong> {recipe.data.cookTime}

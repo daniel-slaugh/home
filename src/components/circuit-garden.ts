@@ -26,6 +26,8 @@ type GrowingPath = Geometry & {
 type Leaf = {
   x: number
   y: number
+  stemX: number
+  stemY: number
   angle: number
   size: number
   birth: number
@@ -33,6 +35,16 @@ type Leaf = {
   cluster: number
   tier: number
   color: number
+}
+
+type Succulent = {
+  x: number
+  y: number
+  size: number
+  birth: number
+  phase: number
+  color: number
+  variant: number
 }
 
 type Blossom = {
@@ -52,6 +64,12 @@ type Speck = {
   speed: number
 }
 
+type PulseState = {
+  cycle: number
+  cycleTime: number
+  lead: boolean
+}
+
 const canvas = document.querySelector<HTMLCanvasElement>('.circuit-garden')
 
 if (canvas && canvas.dataset.ready !== 'true') {
@@ -62,6 +80,7 @@ if (canvas && canvas.dataset.ready !== 'true') {
   const previewMature = new URLSearchParams(window.location.search).get('garden-preview') === 'mature'
 
   if (context) {
+    const hero = canvas.closest<HTMLElement>('.hero')
     const palette = {
       ink: '#071a10',
       cactusDark: '#123d28',
@@ -92,6 +111,7 @@ if (canvas && canvas.dataset.ready !== 'true') {
     let leaves: Leaf[] = []
     let blossoms: Blossom[] = []
     let specks: Speck[] = []
+    let succulents: Succulent[] = []
     let cactusPaths: GrowingPath[] = []
     let treePaths: GrowingPath[] = []
     let vinePaths: GrowingPath[] = []
@@ -102,6 +122,9 @@ if (canvas && canvas.dataset.ready !== 'true') {
     let frameBudgetTier = 0
     let lastFrame = 0
     let sceneSeed = 0
+    let maintenanceEpoch = 62000
+    const leadEpoch = 2400
+    const networkPeriod = 28000
 
     function seededRandom(seed: number) {
       let state = seed >>> 0
@@ -129,6 +152,10 @@ if (canvas && canvas.dataset.ready !== 'true') {
 
     function easeOutCubic(value: number) {
       return 1 - Math.pow(1 - clamp(value), 3)
+    }
+
+    function inverseEaseOutCubic(progress: number) {
+      return 1 - Math.cbrt(1 - clamp(progress))
     }
 
     function geometryFromPoints(points: Point[]): Geometry {
@@ -221,6 +248,32 @@ if (canvas && canvas.dataset.ready !== 'true') {
       }
     }
 
+    function nearestDistance(path: Geometry, target: Point) {
+      let closestDistance = 0
+      let closestSquared = Infinity
+      for (let index = 1; index < path.samples.length; index++) {
+        const start = path.samples[index - 1]
+        const end = path.samples[index]
+        const dx = end.x - start.x
+        const dy = end.y - start.y
+        const segmentSquared = dx * dx + dy * dy || 1
+        const amount = clamp(((target.x - start.x) * dx + (target.y - start.y) * dy) / segmentSquared)
+        const projectedX = start.x + dx * amount
+        const projectedY = start.y + dy * amount
+        const squared = (projectedX - target.x) ** 2 + (projectedY - target.y) ** 2
+        if (squared < closestSquared) {
+          closestSquared = squared
+          closestDistance = path.cumulative[index - 1] + Math.sqrt(segmentSquared) * amount
+        }
+      }
+      return closestDistance
+    }
+
+    function flowSpeed(kind: PlantKind) {
+      const speedScale = clamp(height / 900, 0.75, 1.2)
+      return (kind === 'root' ? 0.14 : kind === 'trunk' ? 0.078 : kind === 'cactus' ? 0.061 : kind === 'branch' ? 0.047 : kind === 'seedling' ? 0.05 : 0.04) * speedScale
+    }
+
     function createGlowSprite(color: string) {
       const sprite = document.createElement('canvas')
       sprite.width = 48
@@ -253,6 +306,7 @@ if (canvas && canvas.dataset.ready !== 'true') {
       leaves = []
       blossoms = []
       specks = []
+      succulents = []
 
       const rootY = 0.875
       const addCircuit = (id: string, points: Point[], kind: PlantKind, birth: number, duration: number, parent: string | undefined, flowDelay: number, flowPeriod: number, color = palette.circuit) =>
@@ -271,33 +325,43 @@ if (canvas && canvas.dataset.ready !== 'true') {
           phase: random(),
         })
 
-      addCircuit('root-main', [p(-0.02, rootY), p(0.12, rootY), p(0.12, rootY - 0.025), p(0.36, rootY - 0.025), p(0.36, rootY + 0.012), p(0.64, rootY + 0.012), p(0.64, rootY - 0.018), p(1.02, rootY - 0.018)], 'root', 0, 7000, undefined, 0, 7900, palette.circuitDim)
-      addCircuit('root-low', [p(0.02, 0.925), p(0.02, rootY + 0.03), p(0.48, rootY + 0.03), p(0.48, rootY)], 'root', 900, 6200, 'root-main', 650, 7900, palette.circuitDim)
-      addCircuit('root-high', [p(0.98, 0.91), p(0.98, rootY + 0.018), p(0.72, rootY + 0.018), p(0.72, rootY - 0.018)], 'root', 1200, 5900, 'root-main', 980, 7900, palette.circuitDim)
+      const rootMain = addCircuit('root-main', [p(-0.02, rootY), p(0.12, rootY), p(0.12, rootY - 0.025), p(0.36, rootY - 0.025), p(0.36, rootY + 0.012), p(0.64, rootY + 0.012), p(0.64, rootY - 0.018), p(1.02, rootY - 0.018)], 'root', 0, 7000, undefined, 0, networkPeriod, palette.circuitDim)
+      addCircuit('root-low', [p(0.02, 0.925), p(0.02, rootY + 0.03), p(0.48, rootY + 0.03), p(0.48, rootY)], 'root', 900, 6200, 'root-main', 0, networkPeriod, palette.circuitDim)
+      addCircuit('root-high', [p(0.98, 0.91), p(0.98, rootY + 0.018), p(0.72, rootY + 0.018), p(0.72, rootY - 0.018)], 'root', 1200, 5900, 'root-main', 0, networkPeriod, palette.circuitDim)
 
       const cactusX = 0.145 + jitter(0.012)
       const cactusTop = 0.235 + jitter(0.025)
-      const cactusCircuit = addCircuit('cactus-wire', [p(cactusX, rootY), p(cactusX, 0.66), p(cactusX + 0.008, 0.66), p(cactusX + 0.008, cactusTop)], 'cactus', 3200, 12500, 'root-main', 1250, 13700)
-      addCircuit('cactus-left-wire', [p(cactusX, 0.6), p(cactusX - 0.085, 0.6), p(cactusX - 0.085, 0.43)], 'cactus', 8200, 6500, cactusCircuit.id, 3650, 13700)
-      addCircuit('cactus-right-wire', [p(cactusX, 0.51), p(cactusX + 0.088, 0.51), p(cactusX + 0.088, 0.33)], 'cactus', 9200, 6900, cactusCircuit.id, 4050, 13700)
+      const cactusBase = p(cactusX, rootY)
+      const cactusRootDistance = nearestDistance(rootMain, cactusBase)
+      const cactusTapStart = pointAlong(rootMain, cactusRootDistance)
+      const cactusTapArrival = cactusRootDistance / flowSpeed('root') + 120
+      const cactusTap = addCircuit('cactus-tap', [cactusTapStart, cactusBase], 'root', 2200, 2400, rootMain.id, cactusTapArrival, networkPeriod, palette.circuitDim)
+      const cactusArrival = cactusTapArrival + cactusTap.length / flowSpeed('root') + 120
+      const cactusCircuit = addCircuit('cactus-wire', [cactusBase, p(cactusX, 0.66), p(cactusX + 0.008, 0.66), p(cactusX + 0.008, cactusTop)], 'cactus', 3200, 12500, cactusTap.id, cactusArrival, networkPeriod)
+      addCircuit('cactus-left-wire', [p(cactusX, 0.6), p(cactusX - 0.085, 0.6), p(cactusX - 0.085, 0.43)], 'cactus', 8200, 6500, cactusCircuit.id, cactusArrival, networkPeriod)
+      addCircuit('cactus-right-wire', [p(cactusX, 0.51), p(cactusX + 0.088, 0.51), p(cactusX + 0.088, 0.33)], 'cactus', 9200, 6900, cactusCircuit.id, cactusArrival, networkPeriod)
 
+      const cactusMainBirth = 10500
       const cactusMain = addPath(botanicalPaths, sampleCubic(p(cactusX, rootY), p(cactusX - 0.006, 0.7), p(cactusX + 0.014, 0.43), p(cactusX + 0.008, cactusTop), 42), {
         id: 'cactus-main',
         kind: 'cactus',
-        birth: 10500,
+        birth: cactusMainBirth,
         duration: 20500,
         widthStart: 56 * scale,
         widthEnd: 37 * scale,
         depth: 0,
         color: palette.cactusMid,
-        parent: 'root-main',
-        flowDelay: 1600,
-        flowPeriod: 13700,
+        parent: cactusTap.id,
+        flowDelay: cactusArrival,
+        flowPeriod: networkPeriod,
         phase: random(),
       })
       cactusPaths.push(cactusMain)
 
-      const cactusLeft = addPath(botanicalPaths, sampleSmoothPath([p(cactusX - 0.002, 0.6), p(cactusX - 0.082, 0.6), p(cactusX - 0.102, 0.55), p(cactusX - 0.102, 0.41)], 12), {
+      const cactusLeftStart = p(cactusX - 0.002, 0.6)
+      const cactusLeftDistance = nearestDistance(cactusMain, cactusLeftStart)
+      const cactusLeftArrival = cactusMain.flowDelay + cactusLeftDistance / flowSpeed('cactus') + 120
+      const cactusLeft = addPath(botanicalPaths, sampleSmoothPath([cactusLeftStart, p(cactusX - 0.082, 0.6), p(cactusX - 0.102, 0.55), p(cactusX - 0.102, 0.41)], 12), {
         id: 'cactus-left',
         kind: 'cactus',
         birth: 16000,
@@ -307,13 +371,16 @@ if (canvas && canvas.dataset.ready !== 'true') {
         depth: 1,
         color: palette.cactusMid,
         parent: cactusMain.id,
-        flowDelay: 4200,
-        flowPeriod: 13700,
+        flowDelay: cactusLeftArrival,
+        flowPeriod: networkPeriod,
         phase: random(),
       })
       cactusPaths.push(cactusLeft)
 
-      const cactusRight = addPath(botanicalPaths, sampleSmoothPath([p(cactusX + 0.005, 0.52), p(cactusX + 0.084, 0.52), p(cactusX + 0.102, 0.47), p(cactusX + 0.102, 0.31)], 12), {
+      const cactusRightStart = p(cactusX + 0.005, 0.52)
+      const cactusRightDistance = nearestDistance(cactusMain, cactusRightStart)
+      const cactusRightArrival = cactusMain.flowDelay + cactusRightDistance / flowSpeed('cactus') + 120
+      const cactusRight = addPath(botanicalPaths, sampleSmoothPath([cactusRightStart, p(cactusX + 0.084, 0.52), p(cactusX + 0.102, 0.47), p(cactusX + 0.102, 0.31)], 12), {
         id: 'cactus-right',
         kind: 'cactus',
         birth: 17500,
@@ -323,8 +390,8 @@ if (canvas && canvas.dataset.ready !== 'true') {
         depth: 1,
         color: palette.cactusLight,
         parent: cactusMain.id,
-        flowDelay: 4650,
-        flowPeriod: 13700,
+        flowDelay: cactusRightArrival,
+        flowPeriod: networkPeriod,
         phase: random(),
       })
       cactusPaths.push(cactusRight)
@@ -333,7 +400,7 @@ if (canvas && canvas.dataset.ready !== 'true') {
         blossoms.push({
           x: tip.x,
           y: tip.y - 2 * scale,
-          birth: 39500 + index * 2300,
+          birth: leadEpoch + path.flowDelay + path.length / flowSpeed(path.kind) + 3200 + index * 450,
           size: (index === 0 ? 7.5 : 6.2) * scale,
           phase: random() * Math.PI * 2,
           color: index === 2 ? '#e6f0d7' : '#cde7c6',
@@ -343,22 +410,29 @@ if (canvas && canvas.dataset.ready !== 'true') {
       // The final tree is built from a real tapered recursive branch system.
       const treeX = 0.815 + jitter(0.015)
       const treeTop = 0.155 + jitter(0.018)
-      addCircuit('tree-wire', [p(treeX, rootY), p(treeX, 0.69), p(treeX - 0.012, 0.69), p(treeX - 0.012, 0.45), p(treeX, 0.45), p(treeX, treeTop + 0.05)], 'trunk', 3600, 14500, 'root-main', 1750, 17900)
-      addCircuit('tree-left-wire', [p(treeX, 0.58), p(treeX - 0.12, 0.58), p(treeX - 0.12, 0.39), p(treeX - 0.2, 0.39)], 'branch', 9300, 9000, 'tree-wire', 4600, 17900)
-      addCircuit('tree-right-wire', [p(treeX, 0.48), p(treeX + 0.1, 0.48), p(treeX + 0.1, 0.29), p(treeX + 0.17, 0.29)], 'branch', 10500, 9200, 'tree-wire', 5050, 17900)
+      const treeBase = p(treeX, rootY)
+      const treeRootDistance = nearestDistance(rootMain, treeBase)
+      const treeTapStart = pointAlong(rootMain, treeRootDistance)
+      const treeTapArrival = treeRootDistance / flowSpeed('root') + 120
+      const treeTap = addCircuit('tree-tap', [treeTapStart, treeBase], 'root', 2600, 2600, rootMain.id, treeTapArrival, networkPeriod, palette.circuitDim)
+      const treeArrival = treeTapArrival + treeTap.length / flowSpeed('root') + 140
+      addCircuit('tree-wire', [treeBase, p(treeX, 0.69), p(treeX - 0.012, 0.69), p(treeX - 0.012, 0.45), p(treeX, 0.45), p(treeX, treeTop + 0.05)], 'trunk', 3600, 14500, treeTap.id, treeArrival, networkPeriod)
+      addCircuit('tree-left-wire', [p(treeX, 0.58), p(treeX - 0.12, 0.58), p(treeX - 0.12, 0.39), p(treeX - 0.2, 0.39)], 'branch', 9300, 9000, 'tree-wire', treeArrival, networkPeriod)
+      addCircuit('tree-right-wire', [p(treeX, 0.48), p(treeX + 0.1, 0.48), p(treeX + 0.1, 0.29), p(treeX + 0.17, 0.29)], 'branch', 10500, 9200, 'tree-wire', treeArrival, networkPeriod)
 
+      const trunkBirth = 10000
       const trunk = addPath(botanicalPaths, sampleCubic(p(treeX, rootY), p(treeX - 0.018, 0.66), p(treeX + 0.016, 0.39), p(treeX, treeTop), 48), {
         id: 'tree-trunk',
         kind: 'trunk',
-        birth: 10000,
+        birth: trunkBirth,
         duration: 22500,
         widthStart: 25 * scale,
         widthEnd: 5.2 * scale,
         depth: 0,
         color: palette.bark,
-        parent: 'root-main',
-        flowDelay: 2100,
-        flowPeriod: 17900,
+        parent: treeTap.id,
+        flowDelay: treeArrival,
+        flowPeriod: networkPeriod,
         phase: random(),
       })
       treePaths.push(trunk)
@@ -368,25 +442,42 @@ if (canvas && canvas.dataset.ready !== 'true') {
       const makeBranch = (start: Point, angle: number, length: number, depth: number, birth: number, parent: string, cluster: number) => {
         if (depth > 4 || length < 17) return
 
+        const parentPath = treePaths.find((path) => path.id === parent)
+        if (!parentPath) return
+        const junctionDistance = nearestDistance(parentPath, start)
+        const parentAnchor = pointAlong(parentPath, junctionDistance)
         const bend = jitter(0.22)
         const end = { x: start.x + Math.cos(angle) * length, y: start.y + Math.sin(angle) * length }
         if (end.x < branchLimitX || end.x > width * 1.06 || end.y < height * 0.025) return
-        const controlA = { x: start.x + Math.cos(angle + bend) * length * 0.34, y: start.y + Math.sin(angle + bend) * length * 0.34 }
+        const desiredX = Math.cos(angle + bend)
+        const desiredY = Math.sin(angle + bend)
+        const shoulderX = parentAnchor.tx * 0.66 + desiredX * 0.34
+        const shoulderY = parentAnchor.ty * 0.66 + desiredY * 0.34
+        const shoulderLength = Math.hypot(shoulderX, shoulderY) || 1
+        const controlA = { x: start.x + (shoulderX / shoulderLength) * length * 0.24, y: start.y + (shoulderY / shoulderLength) * length * 0.24 }
         const controlB = { x: end.x - Math.cos(angle - bend * 0.6) * length * 0.28, y: end.y - Math.sin(angle - bend * 0.6) * length * 0.28 }
         const duration = 6600 - depth * 650 + random() * 1500
         const id = `branch-${branchId++}`
+        const handoffHold = 125 + depth * 25
+        const branchArrival = parentPath.flowDelay + junctionDistance / flowSpeed(parentPath.kind) + handoffHold
+        const junctionFraction = junctionDistance / Math.max(1, parentPath.length)
+        const parentWidthAtJoin = lerp(parentPath.widthStart, parentPath.widthEnd, junctionFraction)
+        const naturalWidthStart = (9.4 - depth * 1.65) * scale
+        const widthStart = Math.max(0.38, Math.min(naturalWidthStart, parentWidthAtJoin * 0.7))
+        const naturalWidthEnd = (3.2 - depth * 0.48) * scale
+        const widthEnd = Math.max(0.3, Math.min(naturalWidthEnd, widthStart * (depth === 0 ? 0.56 : 0.52)))
         const branchPath = addPath(botanicalPaths, sampleCubic(start, controlA, controlB, end, 14 + Math.max(0, 8 - depth * 2)), {
           id,
           kind: 'branch',
           birth,
           duration,
-          widthStart: Math.max(1.1, (9.4 - depth * 1.65) * scale),
-          widthEnd: Math.max(0.55, (3.2 - depth * 0.48) * scale),
+          widthStart,
+          widthEnd,
           depth,
           color: depth > 2 ? palette.barkLight : palette.bark,
           parent,
-          flowDelay: 4200 + depth * 780,
-          flowPeriod: 17900,
+          flowDelay: branchArrival,
+          flowPeriod: networkPeriod,
           phase: random(),
         })
         treePaths.push(branchPath)
@@ -398,12 +489,16 @@ if (canvas && canvas.dataset.ready !== 'true') {
             const anchor = pointAlong(branchPath, distance)
             const side = random() > 0.5 ? 1 : -1
             const spread = 5 + random() * 14
+            const leafX = anchor.x - anchor.ty * spread * side + jitter(5)
+            const leafY = anchor.y + anchor.tx * spread * side + jitter(5)
             leaves.push({
-              x: anchor.x - anchor.ty * spread * side + jitter(5),
-              y: anchor.y + anchor.tx * spread * side + jitter(5),
+              x: leafX,
+              y: leafY,
+              stemX: anchor.x,
+              stemY: anchor.y,
               angle: Math.atan2(anchor.ty, anchor.tx) + side * (0.55 + random() * 0.72),
               size: (5.4 + random() * 6.7) * scale,
-              birth: birth + duration * (0.55 + random() * 0.48) + random() * 7000,
+              birth: leadEpoch + branchPath.flowDelay + distance / flowSpeed(branchPath.kind) + 650 + random() * 1250,
               phase: random() * Math.PI * 2,
               cluster,
               tier: depth >= 3 ? 2 : random() > 0.5 ? 1 : 0,
@@ -415,9 +510,9 @@ if (canvas && canvas.dataset.ready !== 'true') {
         if (depth < 4) {
           const spread = 0.33 + random() * 0.25
           const childLength = length * (0.62 + random() * 0.09)
-          const childBirth = birth + duration * (0.46 + random() * 0.15)
+          const childBirth = birth + duration * inverseEaseOutCubic(0.985) + 150 + random() * 360
           makeBranch(end, angle - spread, childLength, depth + 1, childBirth, id, cluster)
-          makeBranch(end, angle + spread * (0.8 + random() * 0.32), childLength * (0.88 + random() * 0.13), depth + 1, childBirth + 450 + random() * 800, id, cluster)
+          makeBranch(end, angle + spread * (0.8 + random() * 0.32), childLength * (0.88 + random() * 0.13), depth + 1, childBirth + 280 + random() * 520, id, cluster)
         }
       }
 
@@ -435,28 +530,6 @@ if (canvas && canvas.dataset.ready !== 'true') {
       makeBranch(crown, -2.15, width * 0.105, 1, 20500, trunk.id, 7)
       makeBranch(crown, -0.98, width * 0.11, 1, 21400, trunk.id, 8)
 
-      const canopyCenters = [p(treeX - 0.09, 0.22), p(treeX + 0.005, 0.17), p(treeX + 0.095, 0.23), p(treeX - 0.14, 0.32), p(treeX - 0.035, 0.31), p(treeX + 0.085, 0.34), p(treeX - 0.095, 0.42), p(treeX + 0.035, 0.43)]
-      canopyCenters.forEach((center, clusterIndex) => {
-        const count = width < 760 ? 14 : 29
-        const radiusX = width * (0.038 + random() * 0.014)
-        const radiusY = height * (0.046 + random() * 0.018)
-        for (let index = 0; index < count; index++) {
-          const radialAngle = random() * Math.PI * 2
-          const radius = Math.sqrt(random())
-          leaves.push({
-            x: center.x + Math.cos(radialAngle) * radiusX * radius,
-            y: center.y + Math.sin(radialAngle) * radiusY * radius,
-            angle: radialAngle + jitter(0.8),
-            size: (7.2 + random() * 7.8) * scale,
-            birth: 30500 + clusterIndex * 730 + random() * 10500,
-            phase: random() * Math.PI * 2,
-            cluster: 40 + clusterIndex,
-            tier: random() > 0.67 ? 2 : random() > 0.46 ? 1 : 0,
-            color: Math.floor(random() * leafColors.length),
-          })
-        }
-      })
-
       // Organic vines retain their underlying circuit paths but grow curls and thick leaves.
       const vineDefinitions = [
         [p(-0.02, 0.16), p(0.07, 0.15), p(0.12, 0.21), p(0.25, 0.19), p(0.36, 0.15)],
@@ -465,6 +538,7 @@ if (canvas && canvas.dataset.ready !== 'true') {
       ]
 
       vineDefinitions.forEach((points, index) => {
+        if (index !== 1) return
         addCircuit(
           `vine-wire-${index}`,
           points.map((point, pointIndex) => (pointIndex % 2 ? { x: point.x, y: points[pointIndex - 1].y } : point)),
@@ -487,7 +561,7 @@ if (canvas && canvas.dataset.ready !== 'true') {
           color: palette.leafMid,
           parent: index === 2 ? 'root-main' : undefined,
           flowDelay: 7000 + index * 1100,
-          flowPeriod: 23300,
+          flowPeriod: networkPeriod,
           phase: random(),
         })
         vinePaths.push(vine)
@@ -499,9 +573,11 @@ if (canvas && canvas.dataset.ready !== 'true') {
           leaves.push({
             x: anchor.x - anchor.ty * side * 8,
             y: anchor.y + anchor.tx * side * 8,
+            stemX: anchor.x,
+            stemY: anchor.y,
             angle: Math.atan2(anchor.ty, anchor.tx) + side * 0.92,
             size: (6.2 + random() * 4.2) * scale,
-            birth: vine.birth + (distance / vine.length) * vine.duration + 3800 + random() * 2800,
+            birth: leadEpoch + vine.flowDelay + distance / flowSpeed(vine.kind) + 850 + random() * 1500,
             phase: random() * Math.PI * 2,
             cluster: 20 + index,
             tier: 1,
@@ -510,22 +586,24 @@ if (canvas && canvas.dataset.ready !== 'true') {
         }
 
         const tip = pointAlong(vine, vine.length)
-        blossoms.push({ x: tip.x, y: tip.y, birth: vine.birth + vine.duration + 4500, size: 6.5 * scale, phase: random() * Math.PI * 2, color: index === 1 ? palette.ember : palette.mint })
+        blossoms.push({ x: tip.x, y: tip.y, birth: leadEpoch + vine.flowDelay + vine.length / flowSpeed(vine.kind) + 3200, size: 6.5 * scale, phase: random() * Math.PI * 2, color: index === 1 ? palette.ember : palette.mint })
       })
 
       // Leaf clusters at twig tips make the mature crown thick, layered, and readable.
       for (const branch of treePaths.filter((path) => path.kind === 'branch' && path.depth >= 2)) {
         const tip = pointAlong(branch, branch.length)
-        const clusterLeaves = width < 760 ? 3 : 6
+        const clusterLeaves = width < 760 ? 5 : 9
         for (let index = 0; index < clusterLeaves; index++) {
           const radialAngle = random() * Math.PI * 2
-          const radius = (5 + random() * 18) * scale
+          const radius = (4 + random() * 13) * scale
           leaves.push({
             x: tip.x + Math.cos(radialAngle) * radius,
             y: tip.y + Math.sin(radialAngle) * radius * 0.72,
+            stemX: tip.x,
+            stemY: tip.y,
             angle: radialAngle + jitter(0.5),
             size: (6.5 + random() * 7.5) * scale,
-            birth: branch.birth + branch.duration + random() * 9000,
+            birth: leadEpoch + branch.flowDelay + branch.length / flowSpeed(branch.kind) + 650 + random() * 3200,
             phase: random() * Math.PI * 2,
             cluster: branch.depth * 10 + Math.floor(branch.phase * 9),
             tier: random() > 0.6 ? 2 : random() > 0.5 ? 1 : 0,
@@ -533,6 +611,26 @@ if (canvas && canvas.dataset.ready !== 'true') {
           })
         }
       }
+
+      const succulentPositions = [0.41, 0.465, 0.555, 0.61]
+      const succulentSizes = [13, 19, 16, 11]
+      succulentPositions.forEach((x, index) => {
+        const base = p(x, rootY - 0.012)
+        const rootDistance = nearestDistance(rootMain, base)
+        const tapStart = pointAlong(rootMain, rootDistance)
+        const arrival = rootDistance / flowSpeed('root') + 110
+        const feedBirth = 8500 + index * 720
+        const feed = addCircuit(`succulent-feed-${index}`, [tapStart, { x: tapStart.x, y: base.y + 8 * scale }, base], 'seedling', feedBirth, 4200, rootMain.id, arrival, networkPeriod, palette.circuitDim)
+        succulents.push({
+          x: base.x,
+          y: base.y,
+          size: succulentSizes[index] * scale,
+          birth: leadEpoch + feed.flowDelay + feed.length / flowSpeed(feed.kind) + 1700 + index * 460,
+          phase: random() * Math.PI * 2,
+          color: index % 3,
+          variant: index,
+        })
+      })
       leaves.sort((a, b) => a.tier - b.tier || a.birth - b.birth)
 
       for (let index = 0; index < Math.max(15, Math.round(width / 68)); index++) {
@@ -544,10 +642,36 @@ if (canvas && canvas.dataset.ready !== 'true') {
         [palette.cyan, createGlowSprite(palette.cyan)],
         [palette.ember, createGlowSprite(palette.ember)],
       ])
+
+      const leadPaths = [
+        ...circuitPaths.filter((path) => path.id === 'root-main' || path.id.endsWith('-tap') || path.id.startsWith('succulent-feed-')),
+        ...cactusPaths,
+        ...treePaths,
+        ...vinePaths,
+      ]
+      const finalLeadArrival = leadPaths.reduce((latest, path) => Math.max(latest, path.flowDelay + path.length / flowSpeed(path.kind)), 0)
+      maintenanceEpoch = leadEpoch + finalLeadArrival + 4200
     }
 
     function pathProgress(path: GrowingPath, elapsed: number) {
       return easeOutCubic((elapsed - path.birth) / path.duration)
+    }
+
+    function scaffoldVisibility(elapsed: number) {
+      return 1 - smoothstep((elapsed - 6200) / 26000)
+    }
+
+    function botanicalProgress(path: GrowingPath, elapsed: number) {
+      const distance = Math.max(0, elapsed - leadEpoch - path.flowDelay) * flowSpeed(path.kind)
+      return clamp(distance / Math.max(1, path.length))
+    }
+
+    function passageAge(path: GrowingPath, distance: number, elapsed: number) {
+      return elapsed - (leadEpoch + path.flowDelay + distance / flowSpeed(path.kind))
+    }
+
+    function passageMaturity(path: GrowingPath, distance: number, elapsed: number) {
+      return smoothstep(passageAge(path, distance, elapsed) / 7200)
     }
 
     function drawPartialPolyline(path: GrowingPath, progress: number, color: string, lineWidth: number, alpha: number, glow = 0) {
@@ -577,12 +701,13 @@ if (canvas && canvas.dataset.ready !== 'true') {
       context.shadowBlur = 0
     }
 
-    function drawCircuitLayer(elapsed: number, maturity: number) {
-      const circuitAlpha = 0.22 + (1 - maturity) * 0.64
+    function drawCircuitLayer(elapsed: number) {
+      const circuitAlpha = 0.86 * scaffoldVisibility(elapsed)
+      if (circuitAlpha <= 0.004) return
       for (const path of circuitPaths) {
         const progress = pathProgress(path, elapsed)
         if (progress <= 0) continue
-        drawPartialPolyline(path, progress, path.color, path.widthStart, circuitAlpha, maturity < 0.4 ? 7 : 2)
+        drawPartialPolyline(path, progress, path.color, path.widthStart, circuitAlpha, circuitAlpha > 0.42 ? 7 : 2)
 
         for (let index = 1; index < path.samples.length; index++) {
           const nodeDistance = path.cumulative[index]
@@ -599,45 +724,124 @@ if (canvas && canvas.dataset.ready !== 'true') {
       }
     }
 
-    function drawTaperedPath(path: GrowingPath, progress: number, maturity: number, shadowColor: string, fillColor: string, detailColor: string) {
-      if (progress <= 0 || maturity <= 0) return
-      const visibleIndex = Math.max(1, Math.floor((path.samples.length - 1) * progress))
-      const bodyScale = smoothstep(maturity)
+    function drawTaperedPath(path: GrowingPath, progress: number, elapsed: number, shadowColor: string, fillColor: string, detailColor: string) {
+      if (progress <= 0) return
+      const visibleDistance = path.length * progress
+      const sketchWidth = path.kind === 'branch' || path.kind === 'vine' ? 0.82 : 1.15
 
       context.lineCap = 'round'
       context.lineJoin = 'round'
       for (let pass = 0; pass < 2; pass++) {
-        for (let index = 1; index <= visibleIndex; index++) {
-          const amount = index / (path.samples.length - 1)
-          const widthAtPoint = lerp(path.widthStart, path.widthEnd, amount) * bodyScale
+        for (let index = 1; index < path.samples.length; index++) {
+          const startDistance = path.cumulative[index - 1]
+          if (startDistance >= visibleDistance) break
+          const endDistance = Math.min(path.cumulative[index], visibleDistance)
+          const middleDistance = (startDistance + endDistance) * 0.5
+          const amount = middleDistance / path.length
+          const settled = passageMaturity(path, middleDistance, elapsed)
+          const fullWidth = lerp(path.widthStart, path.widthEnd, amount)
+          const widthAtPoint = lerp(Math.min(sketchWidth, fullWidth), fullWidth, settled)
           const start = path.samples[index - 1]
-          const end = path.samples[index]
+          const end = pointAlong(path, endDistance)
           context.beginPath()
           context.moveTo(start.x, start.y)
           context.lineTo(end.x, end.y)
           context.strokeStyle = pass === 0 ? shadowColor : fillColor
-          context.globalAlpha = pass === 0 ? 0.72 * bodyScale : 0.91 * bodyScale
-          context.lineWidth = Math.max(0.6, widthAtPoint + (pass === 0 ? 3.5 : 0))
+          context.globalAlpha = pass === 0 ? lerp(0.05, 0.72, settled) : lerp(0.24, 0.91, settled)
+          const outlinePadding = Math.min(3.5, Math.max(0.68, widthAtPoint * 0.38))
+          context.lineWidth = Math.max(0.45, widthAtPoint + (pass === 0 ? outlinePadding : 0))
           context.stroke()
         }
       }
 
-      if (maturity > 0.48 && (path.kind === 'trunk' || (path.kind === 'branch' && path.depth < 2))) {
-        const detail = smoothstep((maturity - 0.48) / 0.52)
+      if (path.kind === 'trunk' || (path.kind === 'branch' && path.depth < 2)) {
         context.strokeStyle = detailColor
         context.lineWidth = 0.7
-        context.globalAlpha = detail * 0.38
         for (let distance = 15; distance < path.length * progress; distance += 18 + path.depth * 5) {
+          const detail = smoothstep((passageAge(path, distance, elapsed) - 3600) / 4200)
+          if (detail <= 0) continue
           const point = pointAlong(path, distance)
           const normalX = -point.ty
           const normalY = point.tx
           const mark = Math.max(3, lerp(path.widthStart, path.widthEnd, distance / path.length) * 0.32)
+          context.globalAlpha = detail * 0.38
           context.beginPath()
           context.moveTo(point.x - normalX * mark, point.y - normalY * mark)
           context.lineTo(point.x + normalX * mark * 0.45 + point.tx * 3, point.y + normalY * mark * 0.45 + point.ty * 3)
           context.stroke()
         }
       }
+    }
+
+    function drawBranchCollar(path: GrowingPath, elapsed: number) {
+      if (path.kind !== 'branch' || !path.parent) return
+      const progress = botanicalProgress(path, elapsed)
+      if (progress <= 0.015) return
+
+      const parent = treePaths.find((candidate) => candidate.id === path.parent)
+      if (!parent) return
+      const start = path.samples[0]
+      const junctionDistance = nearestDistance(parent, start)
+      const parentVisible = parent.length * botanicalProgress(parent, elapsed)
+      if (parentVisible + 2 < Math.min(junctionDistance, parent.length * 0.985)) return
+
+      const bodyScale = passageMaturity(path, 0, elapsed)
+      if (bodyScale <= 0.02) return
+
+      const collarDistance = Math.min(path.length * progress, Math.max(7, path.widthStart * bodyScale * 1.9))
+      if (collarDistance < 1.5) return
+      const parentAnchor = pointAlong(parent, junctionDistance)
+      const shoulder = pointAlong(path, Math.min(path.length, Math.max(1.5, collarDistance * 0.18)))
+      const neck = pointAlong(path, collarDistance)
+      const neckWidth = lerp(path.widthStart, path.widthEnd, collarDistance / path.length) * bodyScale * 0.5
+      const baseSpan = Math.max(0.65, path.widthStart * bodyScale * 0.48)
+      const edgeA = { x: neck.x - neck.ty * neckWidth, y: neck.y + neck.tx * neckWidth }
+      const edgeB = { x: neck.x + neck.ty * neckWidth, y: neck.y - neck.tx * neckWidth }
+      const baseA = { x: start.x - parentAnchor.tx * baseSpan, y: start.y - parentAnchor.ty * baseSpan }
+      const baseB = { x: start.x + parentAnchor.tx * baseSpan, y: start.y + parentAnchor.ty * baseSpan }
+      const gradient = context.createLinearGradient(start.x, start.y, neck.x, neck.y)
+      gradient.addColorStop(0, parent.color)
+      gradient.addColorStop(0.5, path.color)
+      gradient.addColorStop(1, path.color)
+
+      context.save()
+      context.fillStyle = gradient
+      context.globalAlpha = 0.94 * bodyScale
+      context.beginPath()
+      context.moveTo(baseA.x, baseA.y)
+      context.bezierCurveTo(
+        start.x + shoulder.tx * collarDistance * 0.26 - shoulder.ty * baseSpan * 0.38,
+        start.y + shoulder.ty * collarDistance * 0.26 + shoulder.tx * baseSpan * 0.38,
+        edgeA.x - neck.tx * collarDistance * 0.22,
+        edgeA.y - neck.ty * collarDistance * 0.22,
+        edgeA.x,
+        edgeA.y
+      )
+      context.lineTo(edgeB.x, edgeB.y)
+      context.bezierCurveTo(
+        edgeB.x - neck.tx * collarDistance * 0.22,
+        edgeB.y - neck.ty * collarDistance * 0.22,
+        start.x + shoulder.tx * collarDistance * 0.26 + shoulder.ty * baseSpan * 0.38,
+        start.y + shoulder.ty * collarDistance * 0.26 - shoulder.tx * baseSpan * 0.38,
+        baseB.x,
+        baseB.y
+      )
+      context.closePath()
+      context.fill()
+
+      context.strokeStyle = palette.barkLight
+      context.lineWidth = Math.max(0.38, neckWidth * 0.12)
+      context.globalAlpha = 0.16 * bodyScale
+      context.beginPath()
+      context.moveTo(start.x + shoulder.tx * 1.5, start.y + shoulder.ty * 1.5)
+      context.quadraticCurveTo(
+        lerp(start.x, neck.x, 0.52) - neck.ty * neckWidth * 0.18,
+        lerp(start.y, neck.y, 0.52) + neck.tx * neckWidth * 0.18,
+        neck.x,
+        neck.y
+      )
+      context.stroke()
+      context.restore()
     }
 
     function drawCactusDetails(path: GrowingPath, progress: number, maturity: number) {
@@ -707,25 +911,62 @@ if (canvas && canvas.dataset.ready !== 'true') {
       }
     }
 
-    function drawLeaf(leaf: Leaf, elapsed: number) {
+    function leafVisualState(leaf: Leaf, elapsed: number) {
       const growth = smoothstep((elapsed - leaf.birth) / 5200)
-      if (growth <= 0) return
+      if (growth <= 0) return null
       const clusterSway = Math.sin(elapsed * 0.00038 + leaf.cluster * 0.87) * 0.045 + Math.sin(elapsed * 0.00013 + leaf.cluster * 1.91) * 0.025
       const localSway = Math.sin(elapsed * 0.00051 + leaf.phase) * 0.018
       const size = leaf.size * growth
+      const leafX = lerp(leaf.stemX, leaf.x, growth)
+      const leafY = lerp(leaf.stemY, leaf.y, growth)
+      const angle = leaf.angle + clusterSway + localSway
+      return {
+        growth,
+        size,
+        leafX,
+        leafY,
+        angle,
+        baseX: leafX - Math.cos(angle) * size * 0.12,
+        baseY: leafY - Math.sin(angle) * size * 0.12,
+      }
+    }
+
+    function drawLeafPetiole(leaf: Leaf, elapsed: number) {
+      const state = leafVisualState(leaf, elapsed)
+      if (!state) return
 
       context.save()
-      context.translate(leaf.x, leaf.y)
-      context.rotate(leaf.angle + clusterSway + localSway)
-      context.scale(growth, 0.88 + growth * 0.12)
+      context.strokeStyle = leaf.tier === 2 ? palette.leafMid : palette.barkLight
+      context.lineWidth = Math.max(0.62, leaf.size * 0.082)
+      context.globalAlpha = 0.62 * state.growth
+      context.beginPath()
+      context.moveTo(leaf.stemX, leaf.stemY)
+      context.quadraticCurveTo(
+        lerp(leaf.stemX, state.baseX, 0.58) + Math.sin(leaf.phase) * 1.5,
+        lerp(leaf.stemY, state.baseY, 0.58) + Math.cos(leaf.phase) * 1.5,
+        state.baseX,
+        state.baseY
+      )
+      context.stroke()
+      context.restore()
+    }
+
+    function drawLeafBlade(leaf: Leaf, elapsed: number) {
+      const state = leafVisualState(leaf, elapsed)
+      if (!state) return
+
+      context.save()
+      context.translate(state.leafX, state.leafY)
+      context.rotate(state.angle)
+      context.scale(1, 0.88 + state.growth * 0.12)
       context.globalAlpha = 0.76 + leaf.tier * 0.07
       context.fillStyle = leafColors[leaf.color]
       context.strokeStyle = leaf.tier === 2 ? palette.leafMid : palette.leafDark
       context.lineWidth = 0.72
       context.beginPath()
-      context.moveTo(-size * 0.12, 0)
-      context.bezierCurveTo(size * 0.18, -size * 0.52, size * 0.78, -size * 0.42, size, 0)
-      context.bezierCurveTo(size * 0.76, size * 0.43, size * 0.2, size * 0.5, -size * 0.12, 0)
+      context.moveTo(-state.size * 0.12, 0)
+      context.bezierCurveTo(state.size * 0.18, -state.size * 0.52, state.size * 0.78, -state.size * 0.42, state.size, 0)
+      context.bezierCurveTo(state.size * 0.76, state.size * 0.43, state.size * 0.2, state.size * 0.5, -state.size * 0.12, 0)
       context.closePath()
       context.fill()
       context.stroke()
@@ -735,8 +976,149 @@ if (canvas && canvas.dataset.ready !== 'true') {
       context.lineWidth = 0.48
       context.beginPath()
       context.moveTo(0, 0)
-      context.lineTo(size * 0.82, 0)
+      context.lineTo(state.size * 0.82, 0)
       context.stroke()
+      context.restore()
+    }
+
+    function drawSucculent(succulent: Succulent, elapsed: number) {
+      const paletteSets = [
+        ['#173c34', '#397a68', '#73b99a'],
+        ['#243d32', '#52795c', '#91b987'],
+        ['#203845', '#426b78', '#79aeb1'],
+      ]
+      const colors = paletteSets[succulent.color]
+      const breathe = 0.985 + Math.sin(elapsed * 0.00042 + succulent.phase) * 0.015
+      const baseGrowth = smoothstep((elapsed - succulent.birth) / 4300)
+      if (baseGrowth <= 0) return
+
+      context.save()
+      context.translate(succulent.x, succulent.y)
+      context.fillStyle = palette.ink
+      context.globalAlpha = 0.42 * baseGrowth
+      context.beginPath()
+      context.ellipse(0, 1.5, succulent.size * 0.48 * baseGrowth, succulent.size * 0.11 * baseGrowth, 0, 0, Math.PI * 2)
+      context.fill()
+
+      if (succulent.variant === 1) {
+        context.translate(0, -succulent.size * 0.06 * baseGrowth)
+        context.scale(breathe, breathe)
+        const leafCount = 9
+        for (let index = 0; index < leafCount; index++) {
+          const growth = smoothstep((elapsed - succulent.birth - index * 105) / 3600)
+          if (growth <= 0) continue
+          const fan = index / (leafCount - 1) - 0.5
+          const angle = -Math.PI / 2 + fan * 1.72 + Math.sin(index * 5.73 + succulent.phase) * 0.055
+          const length = succulent.size * (0.72 + (1 - Math.abs(fan)) * 0.5) * growth
+          const leafWidth = succulent.size * (0.12 + (1 - Math.abs(fan)) * 0.055) * growth
+          context.save()
+          context.rotate(angle)
+          context.fillStyle = colors[index % 3]
+          context.strokeStyle = palette.ink
+          context.lineWidth = 0.55
+          context.globalAlpha = 0.92
+          context.beginPath()
+          context.moveTo(0, 0)
+          context.bezierCurveTo(length * 0.22, -leafWidth, length * 0.72, -leafWidth * 0.5, length, 0)
+          context.bezierCurveTo(length * 0.69, leafWidth * 0.46, length * 0.2, leafWidth, 0, 0)
+          context.closePath()
+          context.fill()
+          context.stroke()
+          context.strokeStyle = palette.mint
+          context.globalAlpha = 0.32
+          context.lineWidth = 0.4
+          context.beginPath()
+          context.moveTo(length * 0.12, 0)
+          context.lineTo(length * 0.82, 0)
+          context.stroke()
+          context.restore()
+        }
+        context.restore()
+        return
+      }
+
+      if (succulent.variant === 3) {
+        context.scale(breathe, breathe)
+        const stemGrowth = smoothstep((elapsed - succulent.birth) / 3300)
+        context.strokeStyle = palette.leafMid
+        context.lineWidth = Math.max(1.2, succulent.size * 0.13)
+        context.lineCap = 'round'
+        context.globalAlpha = 0.86
+        context.beginPath()
+        context.moveTo(0, 0)
+        context.quadraticCurveTo(succulent.size * 0.08, -succulent.size * 0.56 * stemGrowth, -succulent.size * 0.04, -succulent.size * 1.15 * stemGrowth)
+        context.stroke()
+        for (let pair = 0; pair < 3; pair++) {
+          const growth = smoothstep((elapsed - succulent.birth - 700 - pair * 420) / 3000)
+          if (growth <= 0) continue
+          const y = -succulent.size * (0.35 + pair * 0.31) * stemGrowth
+          for (const side of [-1, 1]) {
+            const x = side * succulent.size * (0.16 + pair * 0.015)
+            context.save()
+            context.translate(x, y)
+            context.rotate(side * (-0.38 + pair * 0.08))
+            context.scale(growth, growth)
+            context.fillStyle = colors[Math.min(2, pair + 1)]
+            context.strokeStyle = palette.ink
+            context.lineWidth = 0.5
+            context.globalAlpha = 0.92
+            context.beginPath()
+            context.ellipse(side * succulent.size * 0.18, 0, succulent.size * 0.27, succulent.size * 0.15, 0, 0, Math.PI * 2)
+            context.fill()
+            context.stroke()
+            context.restore()
+          }
+        }
+        context.restore()
+        return
+      }
+
+      context.translate(0, -succulent.size * 0.2 * baseGrowth)
+      context.scale(breathe, breathe * 0.64)
+
+      const rings = [
+        { count: 9, length: 1, width: 0.36, offset: 0 },
+        { count: 7, length: 0.72, width: 0.33, offset: 0.24 },
+        { count: 5, length: 0.46, width: 0.27, offset: 0.51 },
+      ]
+
+      rings.forEach((ring, ringIndex) => {
+        const growth = smoothstep((elapsed - succulent.birth - ringIndex * 850) / 4300)
+        if (growth <= 0) return
+        for (let index = 0; index < ring.count; index++) {
+          const angleVariation = Math.sin((index + 1) * 7.31 + ringIndex * 3.17 + succulent.phase) * 0.09
+          const lengthVariation = 1 + Math.sin((index + 1) * 11.73 + ringIndex * 5.29 + succulent.phase) * 0.08
+          const angle = (index / ring.count) * Math.PI * 2 + ring.offset + succulent.phase * 0.08 + angleVariation
+          const length = succulent.size * ring.length * growth * lengthVariation
+          const petalWidth = succulent.size * ring.width * growth
+          context.save()
+          context.rotate(angle)
+          context.fillStyle = colors[Math.min(colors.length - 1, ringIndex)]
+          context.strokeStyle = palette.ink
+          context.lineWidth = 0.55
+          context.globalAlpha = 0.88
+          context.beginPath()
+          context.moveTo(0, 0)
+          context.bezierCurveTo(length * 0.22, -petalWidth, length * 0.76, -petalWidth * 0.72, length, 0)
+          context.bezierCurveTo(length * 0.76, petalWidth * 0.72, length * 0.22, petalWidth, 0, 0)
+          context.closePath()
+          context.fill()
+          context.stroke()
+          context.strokeStyle = palette.mint
+          context.globalAlpha = 0.34
+          context.lineWidth = 0.42
+          context.beginPath()
+          context.moveTo(length * 0.08, 0)
+          context.lineTo(length * 0.82, 0)
+          context.stroke()
+          context.restore()
+        }
+      })
+      context.fillStyle = colors[2]
+      context.globalAlpha = 0.95
+      context.beginPath()
+      context.arc(0, 0, succulent.size * 0.13 * baseGrowth, 0, Math.PI * 2)
+      context.fill()
       context.restore()
     }
 
@@ -766,31 +1148,76 @@ if (canvas && canvas.dataset.ready !== 'true') {
       context.restore()
     }
 
-    function drawBotanicalLayer(elapsed: number, maturity: number) {
-      for (const path of botanicalPaths) {
-        const progress = pathProgress(path, elapsed)
-        if (progress <= 0) continue
-        const localMaturity = maturity * smoothstep((elapsed - path.birth + 2200) / Math.max(6000, path.duration * 0.75))
+    function drawBotanicalLayer(elapsed: number) {
+      const drawPlantPath = (path: GrowingPath) => {
+        const progress = botanicalProgress(path, elapsed)
+        if (progress <= 0) return
+        const detailDistance = Math.min(path.length * progress, path.length * 0.35)
+        const localMaturity = passageMaturity(path, detailDistance, elapsed)
 
         if (path.kind === 'cactus') {
-          drawTaperedPath(path, progress, localMaturity, palette.ink, path.color, palette.cactusLight)
+          drawTaperedPath(path, progress, elapsed, palette.ink, path.color, palette.cactusLight)
           drawCactusDetails(path, progress, localMaturity)
         } else if (path.kind === 'trunk' || path.kind === 'branch') {
-          drawTaperedPath(path, progress, localMaturity, palette.ink, path.color, palette.barkLight)
+          drawTaperedPath(path, progress, elapsed, palette.ink, path.color, palette.barkLight)
         } else if (path.kind === 'vine') {
-          drawTaperedPath(path, progress, localMaturity, palette.ink, palette.leafMid, palette.leafLight)
+          drawTaperedPath(path, progress, elapsed, palette.ink, palette.leafMid, palette.leafLight)
         }
       }
 
-      for (const leaf of leaves) drawLeaf(leaf, elapsed)
+      for (const path of botanicalPaths.filter((path) => path.kind === 'cactus' || path.kind === 'vine')) drawPlantPath(path)
+      for (const path of [...treePaths].filter((path) => path.kind === 'branch').sort((a, b) => b.depth - a.depth)) drawPlantPath(path)
+      for (const path of treePaths.filter((path) => path.kind === 'trunk')) drawPlantPath(path)
+      for (const path of [...treePaths].filter((path) => path.kind === 'branch').sort((a, b) => a.depth - b.depth)) drawBranchCollar(path, elapsed)
+
+      for (const leaf of leaves) drawLeafPetiole(leaf, elapsed)
+      for (const leaf of leaves) drawLeafBlade(leaf, elapsed)
+      for (const succulent of succulents) drawSucculent(succulent, elapsed)
       for (const blossom of blossoms) drawBlossom(blossom, elapsed)
     }
 
-    function packetColor(path: GrowingPath, cycle: number) {
-      const hash = Math.abs(Math.sin((cycle + 1) * 12.9898 + path.phase * 78.233))
+    function packetColor(cycle: number) {
+      const hash = Math.abs(Math.sin((cycle + 1) * 12.9898))
       if (hash > 0.94) return palette.ember
-      if (path.kind === 'root' || path.kind === 'vine') return palette.cyan
-      return palette.mint
+      return Math.abs(cycle) % 2 === 0 ? palette.cyan : palette.mint
+    }
+
+    function pulseState(path: GrowingPath, elapsed: number, echo = false): PulseState | null {
+      const speed = flowSpeed(path.kind)
+      const transitTime = (path.length + 70) / speed
+
+      if (!echo) {
+        const leadTime = elapsed - leadEpoch - path.flowDelay
+        if (leadTime >= 0 && leadTime <= transitTime) return { cycle: 0, cycleTime: leadTime, lead: true }
+      }
+
+      const maintenanceTime = elapsed - maintenanceEpoch - path.flowDelay - (echo ? 280 : 0)
+      if (maintenanceTime < 0) return null
+      const cycle = 1 + Math.floor(maintenanceTime / path.flowPeriod)
+      const cycleTime = ((maintenanceTime % path.flowPeriod) + path.flowPeriod) % path.flowPeriod
+      if (cycleTime > transitTime) return null
+      return { cycle, cycleTime, lead: false }
+    }
+
+    function pathHash(value: string) {
+      let hash = 2166136261
+      for (let index = 0; index < value.length; index++) {
+        hash ^= value.charCodeAt(index)
+        hash = Math.imul(hash, 16777619)
+      }
+      return hash >>> 0
+    }
+
+    function branchCarriesWave(path: GrowingPath, cycle: number, mobile: boolean): boolean {
+      if (path.kind !== 'branch') return true
+      const selectionDepth = mobile ? 1 : 2
+      if (path.depth < selectionDepth) return true
+      const parent = treePaths.find((candidate) => candidate.id === path.parent)
+      if (parent?.kind === 'branch' && !branchCarriesWave(parent, cycle, mobile)) return false
+      const siblings = treePaths.filter((candidate) => candidate.kind === 'branch' && candidate.parent === path.parent && candidate.depth === path.depth)
+      if (siblings.length <= 1) return true
+      const selected = ((pathHash(`${path.parent}:${path.depth}`) + cycle) % siblings.length + siblings.length) % siblings.length
+      return siblings[selected]?.id === path.id
     }
 
     function drawJunctionRipple(point: Sample, color: string, age: number, energy: number) {
@@ -806,57 +1233,60 @@ if (canvas && canvas.dataset.ready !== 'true') {
       context.globalCompositeOperation = 'source-over'
     }
 
-    function drawPacket(path: GrowingPath, elapsed: number, maturity: number, echo = false) {
-      const period = path.flowPeriod
-      const launchOffset = path.flowDelay + (echo ? 280 : 0)
-      const local = elapsed - 2400 - launchOffset
-      if (local < 0 || pathProgress(path, elapsed) < 0.92) return
-      const cycle = Math.floor(local / period)
-      const cycleTime = ((local % period) + period) % period
-      const speedScale = clamp(height / 900, 0.75, 1.2)
-      const speed = (path.kind === 'root' ? 0.12 : path.kind === 'trunk' ? 0.076 : path.kind === 'cactus' ? 0.059 : path.kind === 'branch' ? 0.045 : 0.038) * speedScale
-      const distance = cycleTime * speed
+    function drawPacket(path: GrowingPath, elapsed: number, echo = false) {
+      const pulse = pulseState(path, elapsed, echo)
+      if (!pulse) return
+      const speed = flowSpeed(path.kind)
+      const distance = pulse.cycleTime * speed
       if (distance < 0 || distance > path.length + 70) return
+      const isBotanicalPath = botanicalPaths.includes(path)
+      const growthProgress = isBotanicalPath ? 1 : pathProgress(path, elapsed)
+      if (growthProgress <= 0) return
+      const visibleDistance = path.length * growthProgress
+      const renderedDistance = Math.min(distance, visibleDistance)
 
-      const energy = echo ? 0.3 : 0.92
-      const color = packetColor(path, cycle)
+      const energy = pulse.lead ? 0.96 : echo ? 0.08 : 0.22
+      const color = packetColor(pulse.cycle)
       const sprite = packetSprites.get(color)
       if (!sprite) return
-      const trailSamples = width < 760 || frameBudgetTier > 0 ? 6 : 10
-      const trailLength = path.kind === 'root' ? 58 : 42
+      const trailSamples = pulse.lead ? (width < 760 || frameBudgetTier > 0 ? 7 : 10) : width < 760 || frameBudgetTier > 0 ? 4 : 5
+      const trailLength = pulse.lead ? (path.kind === 'root' ? 58 : 42) : path.kind === 'root' ? 32 : 25
       context.save()
       context.globalCompositeOperation = 'lighter'
 
       for (let index = trailSamples - 1; index >= 0; index--) {
         const amount = index / Math.max(1, trailSamples - 1)
-        const sampleDistance = distance - amount * trailLength
+        const sampleDistance = renderedDistance - amount * trailLength
         if (sampleDistance < 0 || sampleDistance > path.length) continue
         const point = pointAlong(path, sampleDistance)
         const tailEnergy = (1 - amount) ** 2 * energy
-        const size = lerp(7, 20, tailEnergy)
-        context.globalAlpha = tailEnergy * (0.48 + maturity * 0.28)
+        const size = pulse.lead ? lerp(7, 20, tailEnergy) : lerp(4, 12, tailEnergy)
+        context.globalAlpha = tailEnergy * (pulse.lead ? 0.76 : 0.42)
         context.drawImage(sprite, point.x - size / 2, point.y - size / 2, size, size)
       }
 
-      if (distance <= path.length) {
-        const head = pointAlong(path, distance)
+      if (renderedDistance <= path.length) {
+        const head = pointAlong(path, renderedDistance)
         const angle = Math.atan2(head.ty, head.tx)
         context.translate(head.x, head.y)
         context.rotate(angle)
         context.globalAlpha = energy
         context.fillStyle = palette.cream
         context.beginPath()
-        context.ellipse(0, 0, 2.8, 1.45, 0, 0, Math.PI * 2)
+        context.ellipse(0, 0, pulse.lead ? 2.8 : 1.45, pulse.lead ? 1.45 : 0.8, 0, 0, Math.PI * 2)
         context.fill()
       }
       context.restore()
 
+      if (path.parent) drawJunctionRipple(path.samples[0], color, pulse.cycleTime, energy)
+
       for (let index = 1; index < path.samples.length - 1; index++) {
+        if (path.cumulative[index] > visibleDistance) continue
         const arrival = path.cumulative[index] / speed
-        drawJunctionRipple(path.samples[index], color, cycleTime - arrival, energy)
+        drawJunctionRipple(path.samples[index], color, pulse.cycleTime - arrival, energy)
       }
 
-      if (distance > path.length) {
+      if (pulse.lead && growthProgress >= 0.999 && distance > path.length) {
         const terminalAge = (distance - path.length) / speed
         const end = path.samples[path.samples.length - 1]
         if (terminalAge < 720) {
@@ -874,18 +1304,24 @@ if (canvas && canvas.dataset.ready !== 'true') {
       }
     }
 
-    function drawFlow(elapsed: number, maturity: number) {
-      const allFlowPaths = [...circuitPaths, ...cactusPaths, ...treePaths.filter((path) => path.depth < 4), ...vinePaths]
-      const maxPaths = width < 760 ? 18 : 34
-      let rendered = 0
+    function drawFlow(elapsed: number) {
+      const groundFlowPaths = circuitPaths.filter((path) => path.id === 'root-main' || path.id.endsWith('-tap') || path.id.startsWith('succulent-feed-'))
+      const mobile = width < 760
+      const treeFlowPaths = [...treePaths].sort((a, b) => a.depth - b.depth || a.flowDelay - b.flowDelay)
+      const allFlowPaths = [...groundFlowPaths, ...cactusPaths, ...vinePaths, ...treeFlowPaths]
+      const maxPaths = mobile ? 32 : 64
+      let maintenanceRendered = 0
 
       for (const path of allFlowPaths) {
-        if (rendered >= maxPaths) break
-        const deepBranchCycle = Math.floor((elapsed - path.flowDelay) / path.flowPeriod)
-        if (path.kind === 'branch' && path.depth > 2 && Math.abs(deepBranchCycle + Math.floor(path.phase * 7)) % 3 !== 0) continue
-        drawPacket(path, elapsed, maturity)
-        if (Math.abs(deepBranchCycle + Math.floor(path.phase * 11)) % 4 === 0) drawPacket(path, elapsed, maturity, true)
-        rendered++
+        const pulse = pulseState(path, elapsed)
+        if (!pulse) continue
+        if (!pulse.lead) {
+          if (maintenanceRendered >= maxPaths) continue
+          if (!branchCarriesWave(path, pulse.cycle, mobile)) continue
+        }
+        drawPacket(path, elapsed)
+        if (!pulse.lead && ((pulse.cycle % 5) + 5) % 5 === 2) drawPacket(path, elapsed, true)
+        if (!pulse.lead) maintenanceRendered++
       }
     }
 
@@ -902,11 +1338,12 @@ if (canvas && canvas.dataset.ready !== 'true') {
     function render(time: number, staticFrame = false) {
       const elapsed = staticFrame ? 70000 : Math.max(0, time - sceneStart) + (previewMature ? 70000 : 0)
       const maturity = staticFrame ? 1 : smoothstep((elapsed - 9000) / 44000)
+      hero?.style.setProperty('--scaffold-opacity', scaffoldVisibility(elapsed).toFixed(3))
       context.clearRect(0, 0, width, height)
       drawAtmosphere(elapsed, maturity)
-      drawCircuitLayer(elapsed, maturity)
-      drawBotanicalLayer(elapsed, maturity)
-      if (!staticFrame) drawFlow(elapsed, maturity)
+      drawCircuitLayer(elapsed)
+      drawBotanicalLayer(elapsed)
+      if (!staticFrame) drawFlow(elapsed)
       context.globalAlpha = 1
       context.globalCompositeOperation = 'source-over'
       context.shadowBlur = 0

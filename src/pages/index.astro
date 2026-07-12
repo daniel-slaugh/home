@@ -452,7 +452,7 @@ import hydroserverPreview from '../assets/hydroserver-preview.png'
             ></circle></svg
           ><span class="amp">Garden</span><span class="cursor"></span>
         </h1>
-        <p class="tagline">Tools, writing, and whatever else I feel like putting here.</p>
+        <p class="tagline">Tools, writing, and other projects</p>
         <p class="submeta">
           <span>est. 2025</span>
           <span class="sep">·</span>
@@ -759,6 +759,7 @@ import hydroserverPreview from '../assets/hydroserver-preview.png'
         inset: 0;
         z-index: 0;
         pointer-events: none;
+        opacity: var(--scaffold-opacity, 1);
         background-image: linear-gradient(to right, rgba(46, 106, 74, 0.1) 1px, transparent 1px), linear-gradient(to bottom, rgba(46, 106, 74, 0.1) 1px, transparent 1px);
         background-size: 56px 56px;
         background-position: -1px -1px;
@@ -876,6 +877,7 @@ import hydroserverPreview from '../assets/hydroserver-preview.png'
         background: var(--green);
         vertical-align: -0.08em;
         box-shadow: 0 0 12px var(--green-glow);
+        opacity: var(--scaffold-opacity, 1);
         animation: blink 1.05s steps(2, end) infinite;
       }
       @keyframes blink {

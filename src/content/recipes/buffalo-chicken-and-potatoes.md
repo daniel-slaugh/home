@@ -3,9 +3,9 @@ title: 'Buffalo Chicken and Potatoes'
 description: 'Ranch dressing and cream of celery soup offsets the spice from buffalo wing sauce in a satisfying, meat-and-potatoes casserole'
 serves: 6
 prepTime: '10 min'
-cookTime: '1 hr'
-activeTimeMinutes: 70
-totalTimeMinutes: 70
+cookTime: '50 min'
+activeTimeMinutes: 60
+totalTimeMinutes: 60
 course:
   - 'Main'
 cuisine:
@@ -15,7 +15,7 @@ cookingMethod:
 tags: []
 ingredients:
   - title: Ingredients
-  - name: 'boneless skinless chicken breasts, cut into 1-inch strips'
+  - name: 'boneless skinless chicken breasts, cut into 3/4-inch bite-size pieces'
     quantity: 1.25
     unit: 'lb'
   - name: 'buffalo wing sauce'
@@ -48,7 +48,7 @@ heroImage: './buffalo-chicken-and-potatoes.jpg'
 
 <div class="step">
 
-**Prepare the dish:** heat oven to 350°F. Spray a 13×9-inch (3-quart) baking dish with cooking spray.
+**Prepare the dish:** heat oven to 400°F. Spray a 13×9-inch (3-quart) baking dish with cooking spray.
 
 </div>
 
@@ -56,14 +56,16 @@ heroImage: './buffalo-chicken-and-potatoes.jpg'
 
 **Season the chicken:** in a medium bowl, stir together:
 
-- [[boneless skinless chicken breasts, cut into 1-inch strips]]
+- [[boneless skinless chicken breasts, cut into 3/4-inch bite-size pieces]]
 - [[buffalo wing sauce]]
+
+Refrigerate while the potatoes par-bake.
 
 </div>
 
 <div class="step">
 
-**Combine the base:** in a large bowl, stir together:
+**Combine the base:** the hash browns must be fully thawed — pat away any ice or excess water so the casserole isn't starting out cold and wet. In a large bowl, stir together:
 
 - [[frozen (thawed) southern-style hash brown potatoes]]
 - [[ranch or blue cheese dressing]]
@@ -74,25 +76,24 @@ heroImage: './buffalo-chicken-and-potatoes.jpg'
 
 <div class="step">
 
-Spoon into the prepared baking dish. Layer the seasoned chicken strips on top.
+**Par-bake the potatoes:** spread the mixture in the prepared baking dish, cover tightly with foil, and bake 25 minutes, until the edges bubble and the center is steaming hot.
 
 </div>
 
 <div class="step">
 
-**Add the topping:** in a small bowl, stir together:
-<ul>
-  <li>[[corn flake crumbs]]</li>
-  <li>[[butter or margarine, melted]]</li>
-  
-  Sprinkle evenly over the casserole.
-</ul>
+**Add the chicken and topping:** uncover and scatter the sauced chicken evenly over the hot potatoes, nestling the pieces into the surface in a single layer. In a small bowl, stir together:
+
+- [[corn flake crumbs]]
+- [[butter or margarine, melted]]
+
+Sprinkle evenly over the casserole.
 
 </div>
 
 <div class="step">
 
-**Bake:** cover with foil and bake 30 minutes. Uncover and bake 20–25 minutes longer, or until potatoes are tender and chicken is cooked through.
+**Finish uncovered:** bake 20–25 minutes longer, until the topping is golden and the chicken registers 165°F on an instant-read thermometer at the thickest piece. Let stand 5 minutes.
 
 </div>
 

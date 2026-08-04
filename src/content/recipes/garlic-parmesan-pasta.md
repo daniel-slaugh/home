@@ -1,7 +1,7 @@
 ---
 title: 'Garlic Parmesan Pasta'
 description: 'Creamy one-pot angel hair pasta cooked in a buttery garlic-Parmesan sauce'
-serves: 4
+serves: 2
 prepTime: '10 min'
 cookTime: '10 min'
 activeTimeMinutes: 20
@@ -89,7 +89,7 @@ Add the remaining **1 tablespoon** of [[Butter, divided]] and toss to coat.
 <div class="step">
 
 Gradually sprinkle in [[Parmesan cheese, finely grated]], stirring continuously until melted and smooth.  
-   _Sauce will thicken as it stands and pasta absorbs liquid._
+ _Sauce will thicken as it stands and pasta absorbs liquid._
 
 </div>
 

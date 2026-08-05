@@ -487,10 +487,52 @@
         font-weight: 600;
         color: var(--ivory);
         font-size: 14px;
+        margin-top: 5px;
+      }
+      .action-item .ai-source-row {
         display: flex;
         justify-content: space-between;
         gap: 8px;
-        align-items: baseline;
+        align-items: center;
+      }
+      .action-item .ai-source,
+      .source-legend .ai-source {
+        display: inline-block;
+        padding: 2px 7px;
+        border: 1px solid;
+        border-radius: 20px;
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 8.5px;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        line-height: 1.4;
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+      .ai-source.class-feature {
+        color: var(--brass-bright);
+        border-color: rgba(240, 200, 105, 0.55);
+        background: rgba(240, 200, 105, 0.09);
+      }
+      .ai-source.chosen-spell {
+        color: #8fb8e3;
+        border-color: rgba(92, 126, 163, 0.75);
+        background: rgba(92, 126, 163, 0.13);
+      }
+      .ai-source.oath-spell {
+        color: #e18b80;
+        border-color: rgba(179, 69, 58, 0.75);
+        background: rgba(179, 69, 58, 0.12);
+      }
+      .ai-source.weapon {
+        color: #b6beca;
+        border-color: rgba(139, 147, 161, 0.65);
+        background: rgba(139, 147, 161, 0.1);
+      }
+      .ai-source.feat {
+        color: var(--ivory-dim);
+        border-color: rgba(183, 178, 162, 0.6);
+        background: rgba(183, 178, 162, 0.08);
       }
       .action-item .ai-tag {
         font-family: 'IBM Plex Mono', monospace;
@@ -513,6 +555,12 @@
         font-size: 12.5px;
         color: var(--steel);
         font-style: italic;
+      }
+      .source-legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin: -4px 0 12px;
       }
 
       .pill {
@@ -815,7 +863,7 @@
           <div class="qlabel">Speed</div>
         </div>
         <div class="qstat">
-          <div class="qval">−1</div>
+          <div class="qval">+3</div>
           <div class="qlabel">Init</div>
         </div>
         <div class="qstat">
@@ -907,13 +955,13 @@
             />
           </div>
           <div>
-            <div class="eyebrow">Warforged (2025) · Paladin (Oath of Devotion) · Noble</div>
+            <div class="eyebrow">Warforged (2025) · Paladin (Oath of Devotion) · The Hearth-Ward Project</div>
             <h1>Evander Soteris</h1>
             <div class="idline">
               <span><b>Alignment</b> Lawful Neutral</span>
               <span><b>Size</b> Medium</span>
               <span><b>Languages</b> Common, Draconic, Giant</span>
-              <span><b>Weapon</b> Nostos (Longsword) + Shield, Javelins</span>
+              <span><b>Weapon</b> Nostos (Rapier) + Shield, 6 Daggers</span>
             </div>
           </div>
         </div>
@@ -927,7 +975,7 @@
             class="grid grid-6"
             id="ability-grid"
           ></div>
-          <div class="sec-note">27-point buy before background: Str 15 / Dex 8 / Con 15 / Int 8 / Wis 10 / Cha 14. Noble adds +1 Str and +2 Cha, producing 16 / 8 / 15 / 8 / 10 / 16 at level 1. The level 4 ASI adds +2 Cha for Charisma 18.</div>
+          <div class="sec-note">27-point buy before background: Str 8 / Dex 14 / Con 14 / Int 8 / Wis 12 / Cha 15. The Hearth-Ward Project adds +2 Dex and +1 Cha, producing 8 / 16 / 14 / 8 / 12 / 16 at level 1. The level 4 ASI adds +2 Cha for Charisma 18.</div>
         </section>
 
         <section id="skills">
@@ -963,10 +1011,10 @@
                 ></div>
               </div>
               <div class="skill-row">
-                <div class="sname">Tool: Gaming Set</div>
+                <div class="sname">Tool: Smith's Tools</div>
                 <div
                   class="sval mono"
-                  id="tool-gaming"
+                  id="tool-smith"
                 ></div>
               </div>
               <div class="skill-row">
@@ -975,28 +1023,7 @@
               </div>
             </div>
           </div>
-          <div class="sec-note">Proficient: History and Persuasion (Noble) · Athletics and Insight (Paladin) · Perception (Specialized Design) · Intimidation, Investigation, and Religion (Skilled).</div>
-        </section>
-
-        <section id="combat">
-          <div class="sec-head">
-            <h2>Combat</h2>
-            <div class="rule"></div>
-          </div>
-          <div class="two-col">
-            <div class="feature">
-              <h3>AC — 19</h3>
-              <p>Chain Mail (16, no Dex) + Shield (+2) + Warforged Integrated Protection (+1) = <b>19</b>. Constant at every level. Chain Mail imposes Disadvantage on Stealth checks.</p>
-            </div>
-            <div class="feature">
-              <h3>HP</h3>
-              <p>Maximum d10 each level: 10 + Con mod (+2) = 12 HP per Paladin level. Max at this level: <span id="hp-calc"></span>.</p>
-            </div>
-          </div>
-          <div
-            class="sec-note"
-            id="wpn-summary"
-          ></div>
+          <div class="sec-note">Proficient: Religion and Survival (The Hearth-Ward Project) · Insight and Persuasion (Paladin) · Athletics, Intimidation, and Medicine (Skilled) · Perception (Specialized Design). No duplicate proficiencies.</div>
         </section>
 
         <section id="resources">
@@ -1149,17 +1176,6 @@
           </div>
         </section>
 
-        <section id="class-features-section">
-          <div class="sec-head">
-            <h2>Level Features</h2>
-            <div class="rule"></div>
-          </div>
-          <div
-            class="two-col"
-            id="class-feature-list"
-          ></div>
-        </section>
-
         <section id="notes">
           <div class="sec-head">
             <h2>Notes</h2>
@@ -1175,6 +1191,13 @@
           <div class="sec-head">
             <h2>On Your Turn</h2>
             <div class="rule"></div>
+          </div>
+          <div class="source-legend" aria-label="Action source legend">
+            <span class="ai-source class-feature">Class Feature</span>
+            <span class="ai-source chosen-spell">Chosen Spell</span>
+            <span class="ai-source oath-spell">Oath Spell</span>
+            <span class="ai-source weapon">Weapon</span>
+            <span class="ai-source feat">Feat</span>
           </div>
           <div class="action-cols">
             <div class="action-col">
@@ -1211,24 +1234,51 @@
               </div>
               <div class="feature">
                 <h3>Weapon Mastery</h3>
-                <p><b>Longsword — Nostos (Sap)</b> — on a hit, target has Disadvantage on its next attack roll before the start of your next turn.</p>
-                <p><b>Javelin (Slow)</b> — on a hit that deals damage, target's Speed is reduced by 10ft until the start of your next turn.</p>
+                <p><b>Rapier — Nostos (Vex)</b> — on a hit that deals damage, you have Advantage on your next attack roll against that creature before the end of your next turn.</p>
+                <p><b>Dagger (Nick)</b> — make the Light property's extra attack as part of the Attack action instead of as a Bonus Action; only once per turn.</p>
               </div>
             </div>
             <div>
               <div class="feature">
-                <h3>Noble Background</h3>
-                <p><b>Ability Scores</b> — +1 Strength, +2 Charisma.</p>
-                <p><b>Skills</b> — History, Persuasion. <b>Tool</b> — Gaming Set.</p>
+                <h3>The Hearth-Ward Project</h3>
+                <p><b>Custom Background</b> — built from the 2024 background menus with DM approval.</p>
+                <p><b>Ability Scores</b> — Dexterity, Constitution, Charisma; assigned +2 Dexterity and +1 Charisma.</p>
+                <p><b>Skills</b> — Religion, Survival. <b>Tool</b> — Smith's Tools.</p>
               </div>
               <div class="feature">
                 <h3>Feats</h3>
-                <p><b>Level 1 — Skilled.</b> Proficiency in Intimidation, Investigation, and Religion.</p>
+                <p><b>Level 1 — Skilled.</b> Proficiency in Athletics, Intimidation, and Medicine.</p>
                 <p><b>Level 4 — Ability Score Improvement.</b> +2 Charisma.</p>
                 <p><b>Level 8 — Interception (Fighting Style feat).</b> Qualifies via the Fighting Style feature gained at level 2; picked directly as the level 8 feat.</p>
               </div>
+              <div class="feature">
+                <h3>Passive Paladin Features</h3>
+                <p><b>Level 6 — Aura of Protection.</b> You and allies within 10ft add your Charisma modifier to all saving throws while you aren't Incapacitated. The sheet's save totals include this bonus from level 6 onward.</p>
+                <p><b>Level 7 — Aura of Devotion.</b> You and allies within your Aura of Protection are immune to the Charmed condition.</p>
+              </div>
             </div>
           </div>
+        </section>
+
+        <section id="combat">
+          <div class="sec-head">
+            <h2>Combat</h2>
+            <div class="rule"></div>
+          </div>
+          <div class="two-col">
+            <div class="feature">
+              <h3>AC — 19</h3>
+              <p>Scale Mail (14 + Dex, maximum +2) + Shield (+2) + Warforged Integrated Protection (+1) = <b>19</b>. Constant at every level. Scale Mail imposes Disadvantage on Stealth checks.</p>
+            </div>
+            <div class="feature">
+              <h3>HP</h3>
+              <p>Maximum d10 each level: 10 + Con mod (+2) = 12 HP per Paladin level. Max at this level: <span id="hp-calc"></span>.</p>
+            </div>
+          </div>
+          <div
+            class="sec-note"
+            id="wpn-summary"
+          ></div>
         </section>
       </div>
 
@@ -1331,23 +1381,23 @@
         loh: [5, 10, 15, 20, 25, 30, 35, 40, 45],
         chDiv: [0, 0, 2, 2, 2, 2, 2, 2, 2],
         smiteMax: [2, 2, 2, 2, 3, 3, 3, 3, 4],
-        athletics: [5, 5, 5, 5, 6, 6, 6, 6, 7],
-        history: [1, 1, 1, 1, 2, 2, 2, 2, 3],
+        athletics: [1, 1, 1, 1, 2, 2, 2, 2, 3],
         intimidation: [5, 5, 5, 6, 7, 7, 7, 7, 8],
-        insight: [2, 2, 2, 2, 3, 3, 3, 3, 4],
-        investigation: [1, 1, 1, 1, 2, 2, 2, 2, 3],
+        insight: [3, 3, 3, 3, 4, 4, 4, 4, 5],
+        medicine: [3, 3, 3, 3, 4, 4, 4, 4, 5],
         persuasion: [5, 5, 5, 6, 7, 7, 7, 7, 8],
-        perception: [2, 2, 2, 2, 3, 3, 3, 3, 4],
-        religion: [1, 1, 1, 1, 2, 2, 2, 2, 3],
-        passivePerc: [12, 12, 12, 12, 13, 13, 13, 13, 14],
-        passiveInvestigation: [11, 11, 11, 11, 12, 12, 12, 12, 13],
-        tinker: [1, 1, 1, 1, 2, 2, 2, 2, 3],
-        gaming: [2, 2, 2, 2, 3, 3, 3, 3, 4],
-        saveStr: [3, 3, 3, 3, 3, 7, 7, 7, 7],
-        saveDex: [-1, -1, -1, -1, -1, 3, 3, 3, 3],
+        perception: [3, 3, 3, 3, 4, 4, 4, 4, 5],
+        religion: [3, 3, 3, 3, 4, 4, 4, 4, 5],
+        survival: [3, 3, 3, 3, 4, 4, 4, 4, 5],
+        passivePerc: [13, 13, 13, 13, 14, 14, 14, 14, 15],
+        passiveInvestigation: [9, 9, 9, 9, 9, 9, 9, 9, 9],
+        tinker: [5, 5, 5, 5, 6, 6, 6, 6, 7],
+        smith: [1, 1, 1, 1, 2, 2, 2, 2, 3],
+        saveStr: [-1, -1, -1, -1, -1, 3, 3, 3, 3],
+        saveDex: [3, 3, 3, 3, 3, 7, 7, 7, 7],
         saveCon: [2, 2, 2, 2, 2, 6, 6, 6, 6],
         saveInt: [-1, -1, -1, -1, -1, 3, 3, 3, 3],
-        saveWis: [2, 2, 2, 2, 3, 7, 7, 7, 8],
+        saveWis: [3, 3, 3, 3, 4, 8, 8, 8, 9],
         saveCha: [5, 5, 5, 6, 7, 11, 11, 11, 12],
       }
 
@@ -1364,42 +1414,38 @@
       }
 
       const ACTIONS = [
-        { name: 'Longsword Attack', unlock: 1, tier: 'Weapon', upcast: false, desc: (lv) => `Nostos, one-handed with Shield: +${L.atk[lv - 1]} to hit, 1d8+3 slashing. ${L.extraAtk[lv - 1]} attack${L.extraAtk[lv - 1] > 1 ? 's' : ''} with the Attack action. Javelin (thrown, 1d6+3 piercing) available as a backup.` },
-        { name: 'Sacred Weapon', unlock: 3, tier: 'Channel Divinity', upcast: false, desc: (lv) => `Folds into the Attack action. Imbued weapon: +${L.sacredAtk[lv - 1]} to hit for 10 min, damage type your choice (normal or radiant), sheds light.` },
-        { name: 'Bless', unlock: 1, tier: '1st', upcast: true, desc: () => `Up to 3 creatures add 1d4 to attack rolls and saving throws. Concentration, 1 min.` },
-        { name: 'Command', unlock: 1, tier: '1st', upcast: true, desc: () => `One creature obeys a one-word order (Approach/Drop/Flee/Grovel/Halt) on a failed Wis save.` },
-        { name: 'Heroism', unlock: 2, tier: '1st', upcast: true, desc: (lv) => `One willing creature is immune to Frightened and gains ${L.chaMod[lv - 1]} temp HP at the start of each of its turns. Concentration, 1 min.` },
-        { name: 'Protection from Evil and Good', unlock: 3, tier: '1st \u00b7 Oath', upcast: false, desc: () => `Touch one willing creature. Aberrations, Celestials, Elementals, Fey, Fiends, and Undead have Disadvantage on attacks against it; it can't be possessed, Charmed, or Frightened by them, and has Advantage on a new save against an existing effect. Concentration, 10 min; consumes Holy Water worth 25+ GP.` },
-        { name: 'Warding Bond', unlock: 5, tier: '2nd', upcast: false, desc: () => `Touch one willing creature: the target gains +1 AC and saves and resistance to all damage; whenever it takes damage, you take the same amount. Ends if you move over 60ft apart or cast it again. No concentration; requires two platinum rings worth 50+ GP each.` },
-        { name: 'Aid', unlock: 5, tier: '2nd \u00b7 Oath', upcast: true, desc: () => `Up to 3 creatures gain +5 current and max HP for 8 hours.` },
-        { name: 'Zone of Truth', unlock: 5, tier: '2nd \u00b7 Oath', upcast: false, desc: () => `Creatures in a 15ft radius who fail a Cha save can't speak a deliberate lie while inside it. 10 min.` },
-        { name: 'Aura of Vitality', unlock: 9, tier: '3rd', upcast: false, desc: () => `30ft emanation. Restore 2d6 HP to one creature in it now and at the start of each of your turns. Concentration, 1 min.` },
-        { name: "Crusader's Mantle", unlock: 9, tier: '3rd', upcast: false, desc: () => `30ft emanation. You and allies inside deal +1d4 radiant on weapon/unarmed hits. Concentration, 1 min.` },
-        { name: 'Beacon of Hope', unlock: 9, tier: '3rd \u00b7 Oath', upcast: false, desc: () => `Creatures of your choice in range get advantage on Wis/death saves and max healing from spells. Concentration, 1 min.` },
-        { name: 'Dispel Magic', unlock: 9, tier: '3rd \u00b7 Oath', upcast: true, desc: () => `End one spell on a target (auto-success if spell level \u2264 your slot level; otherwise Cha check vs DC 10+spell level).` },
-        { name: 'Abjure Foes', unlock: 9, tier: 'Channel Divinity', upcast: false, desc: (lv) => `Magic action. Target up to ${L.chaMod[lv - 1]} creatures within 60ft. Wis save (DC ${L.dc[lv - 1]}) or Frightened 1 min/until damaged; while Frightened they can only move, act, OR bonus act \u2014 not all three.` },
+        { name: 'Rapier Attack', source: 'Weapon', unlock: 1, tier: 'Finesse · Vex', upcast: false, desc: (lv) => `Nostos, one-handed with Shield: +${L.atk[lv - 1]} to hit using Dexterity, 1d8+3 piercing. ${L.extraAtk[lv - 1]} attack${L.extraAtk[lv - 1] > 1 ? 's' : ''} with the Attack action.` },
+        { name: 'Dagger Attack', source: 'Weapon', unlock: 1, tier: 'Finesse · Light · Nick', upcast: false, desc: (lv) => `One of six daggers, used in melee or thrown 20/60ft: +${L.atk[lv - 1]} to hit using Dexterity, 1d4+3 piercing. ${L.extraAtk[lv - 1]} attack${L.extraAtk[lv - 1] > 1 ? 's' : ''} with the Attack action. Nick can move the Light property's extra attack into this action when wielding another Light weapon instead of the Shield.` },
+        { name: 'Sacred Weapon', source: 'Class Feature', unlock: 3, tier: 'Channel Divinity', upcast: false, desc: (lv) => `Folds into the Attack action. Imbued weapon: +${L.sacredAtk[lv - 1]} to hit for 10 min, damage type your choice (normal or radiant), sheds light.` },
+        { name: 'Bless', source: 'Chosen Spell', unlock: 1, tier: '1st', upcast: true, desc: () => `Up to 3 creatures add 1d4 to attack rolls and saving throws. Concentration, 1 min. Upcast: target 1 additional creature per slot level above 1st (4 with a 2nd-level slot; 5 with a 3rd-level slot).` },
+        { name: 'Command', source: 'Chosen Spell', unlock: 1, tier: '1st', upcast: true, desc: () => `One creature obeys a one-word order (Approach/Drop/Flee/Grovel/Halt) on a failed Wis save. Upcast: affect 1 additional creature per slot level above 1st (2 with a 2nd-level slot; 3 with a 3rd-level slot).` },
+        { name: 'Protection from Evil and Good', source: 'Oath Spell', unlock: 3, tier: '1st', upcast: false, desc: () => `Touch one willing creature. Aberrations, Celestials, Elementals, Fey, Fiends, and Undead have Disadvantage on attacks against it; it can't be possessed, Charmed, or Frightened by them, and has Advantage on a new save against an existing effect. Concentration, 10 min; consumes Holy Water worth 25+ GP.` },
+        { name: 'Hold Person', source: 'Chosen Spell', unlock: 5, tier: '2nd', upcast: true, desc: () => `One Humanoid within 60ft makes a Wis save or becomes Paralyzed. It repeats the save at the end of each of its turns. Concentration, 1 min. Upcast: target 1 additional Humanoid per slot level above 2nd (2 targets with a 3rd-level slot).` },
+        { name: 'Faithful Steed — Find Steed', source: 'Class Feature', unlock: 5, tier: '2nd · 10-minute cast', upcast: true, desc: () => `Find Steed is always prepared. Cast it once at 2nd level without a spell slot per Long Rest; additional casts use spell slots. Upcast: use the slot level throughout the steed's stat block—each level adds +1 AC, +10 HP, 1 Hit Die, +1 Slam damage, and +1 Celestial Healing Touch; a 4th-level or higher slot also grants a 60ft Fly speed.` },
+        { name: 'Aid', source: 'Oath Spell', unlock: 5, tier: '2nd', upcast: true, desc: () => `Up to 3 creatures gain +5 current and max HP for 8 hours. Upcast: each target gains 5 additional current and max HP per slot level above 2nd (10 HP total with a 3rd-level slot).` },
+        { name: 'Zone of Truth', source: 'Oath Spell', unlock: 5, tier: '2nd', upcast: false, desc: () => `Creatures in a 15ft radius who fail a Cha save can't speak a deliberate lie while inside it. 10 min.` },
+        { name: 'Aura of Vitality', source: 'Chosen Spell', unlock: 9, tier: '3rd', upcast: false, desc: () => `30ft emanation. Restore 2d6 HP to one creature in it now and at the start of each of your turns. Concentration, 1 min.` },
+        { name: "Crusader's Mantle", source: 'Chosen Spell', unlock: 9, tier: '3rd', upcast: false, desc: () => `30ft emanation. You and allies inside deal +1d4 radiant on weapon/unarmed hits. Concentration, 1 min.` },
+        { name: 'Beacon of Hope', source: 'Oath Spell', unlock: 9, tier: '3rd', upcast: false, desc: () => `Creatures of your choice in range get advantage on Wis/death saves and max healing from spells. Concentration, 1 min.` },
+        { name: 'Dispel Magic', source: 'Oath Spell', unlock: 9, tier: '3rd', upcast: true, desc: () => `End ongoing spells of 3rd level or lower on a target; for each spell of 4th level or higher, make a Cha check against DC 10 + its level. Upcast: automatically end each spell whose level is equal to or lower than the slot used.` },
+        { name: 'Abjure Foes', source: 'Class Feature', unlock: 9, tier: 'Channel Divinity', upcast: false, desc: (lv) => `Magic action. Target up to ${L.chaMod[lv - 1]} creatures within 60ft. Wis save (DC ${L.dc[lv - 1]}) or Frightened 1 min/until damaged; while Frightened they can only move, act, OR bonus act \u2014 not all three.` },
       ]
 
       const BONUS = [
-        { name: 'Lay on Hands', unlock: 1, tier: 'Feature', upcast: false, desc: (lv) => `Touch a creature, heal up to ${L.loh[lv - 1]} HP from the pool (refills on Long Rest). Or spend 5 to cure Poisoned.` },
-        { name: 'Divine Smite', unlock: 2, tier: 'Spell, after a hit', upcast: true, desc: (lv) => `Immediately after a melee weapon or Unarmed Strike hit, deal 2d8 radiant with a 1st-level slot, +1d8 per higher slot (${L.smiteMax[lv - 1]}d8 at the highest current slot), and +1d8 against a Fiend or Undead. The once-per-Long-Rest free cast is at the base 2d8.` },
-        { name: 'Divine Sense', unlock: 3, tier: 'Channel Divinity', upcast: false, desc: () => `Sense Celestials, Fiends, Undead within 60ft, plus consecrated/desecrated ground, for 10 min.` },
-        { name: 'Compelled Duel', unlock: 3, tier: '1st', upcast: false, desc: () => `On a failed Wis save, one creature has Disadvantage attacking creatures other than you. Each time it tries to move to a space more than 30ft from you, it repeats the save; success permits that movement for the turn. Concentration, 1 min.` },
-        { name: 'Shield of Faith', unlock: 3, tier: '1st \u00b7 Oath', upcast: false, desc: () => `+2 AC to a creature you can see. Concentration, 10 min.` },
-        { name: 'Divine Favor', unlock: 4, remove: 5, tier: '1st', upcast: false, desc: () => `Your weapon strikes deal +1d4 radiant damage. 1 min. (Swapped for Warding Bond at level 5.)` },
-        { name: 'Lesser Restoration', unlock: 5, tier: '2nd', upcast: false, desc: () => `Touch a creature and end one of these conditions on it: Blinded, Deafened, Paralyzed, or Poisoned.` },
-        { name: 'Magic Weapon', unlock: 7, tier: '2nd', upcast: true, desc: () => `Touch a nonmagical weapon: +1 to attack and damage rolls (+2 with a 3rd\u20135th level slot). No concentration.` },
+        { name: 'Lay on Hands', source: 'Class Feature', unlock: 1, tier: 'Paladin', upcast: false, desc: (lv) => `Touch a creature, heal up to ${L.loh[lv - 1]} HP from the pool (refills on Long Rest). Or spend 5 to cure Poisoned.` },
+        { name: 'Wrathful Smite', source: 'Chosen Spell', unlock: 2, tier: '1st · after a hit', upcast: true, desc: () => `Immediately after a melee weapon or Unarmed Strike hit, deal +1d6 necrotic damage. The target makes a Wis save or becomes Frightened of you for up to 1 min, repeating the save at the end of each of its turns. No concentration. Upcast: add 1d6 necrotic damage per slot level above 1st (2d6 with a 2nd-level slot; 3d6 with a 3rd-level slot).` },
+        { name: 'Divine Smite', source: 'Class Feature', unlock: 2, tier: 'Always-prepared spell · after a hit', upcast: true, desc: (lv) => `Immediately after a melee weapon or Unarmed Strike hit, deal 2d8 radiant with a 1st-level slot, plus 1d8 against a Fiend or Undead. The once-per-Long-Rest free cast is at the base 2d8. Upcast: add 1d8 radiant damage per slot level above 1st (${L.smiteMax[lv - 1]}d8 at your highest current slot, before the Fiend/Undead bonus).` },
+        { name: 'Divine Sense', source: 'Class Feature', unlock: 3, tier: 'Channel Divinity', upcast: false, desc: () => `Sense Celestials, Fiends, Undead within 60ft, plus consecrated/desecrated ground, for 10 min.` },
+        { name: 'Thunderous Smite', source: 'Chosen Spell', unlock: 3, tier: '1st · after a hit', upcast: true, desc: () => `Immediately after a melee weapon or Unarmed Strike hit, deal +2d6 thunder damage. If the target is a creature, it makes a Str save or is pushed 10ft away and knocked Prone. Instantaneous. Upcast: add 1d6 thunder damage per slot level above 1st (3d6 with a 2nd-level slot; 4d6 with a 3rd-level slot).` },
+        { name: 'Shield of Faith', source: 'Oath Spell', unlock: 3, tier: '1st', upcast: false, desc: () => `+2 AC to a creature you can see. Concentration, 10 min.` },
+        { name: 'Divine Favor', source: 'Chosen Spell', unlock: 4, remove: 5, tier: '1st', upcast: false, desc: () => `Your weapon strikes deal +1d4 radiant damage. 1 min. (Swapped for Hold Person at level 5.)` },
+        { name: 'Lesser Restoration', source: 'Chosen Spell', unlock: 5, tier: '2nd', upcast: false, desc: () => `Touch a creature and end one of these conditions on it: Blinded, Deafened, Paralyzed, or Poisoned.` },
+        { name: 'Magic Weapon', source: 'Chosen Spell', unlock: 7, tier: '2nd', upcast: true, desc: () => `Touch a nonmagical weapon: it becomes magical and gains +1 to attack and damage rolls for 1 hour. No concentration. Upcast: the bonus becomes +2 with a 3rd\u20135th-level slot or +3 with a 6th-level or higher slot.` },
       ]
 
       const REACTIONS = [
-        { name: 'Protection (Fighting Style)', unlock: 2, tier: 'Requires Shield', upcast: false, desc: () => `When a creature you can see attacks a target other than you within 5ft, impose Disadvantage on that roll and every other attack against that target until the start of your next turn, while you remain within 5ft.` },
-        { name: 'Interception (Fighting Style)', unlock: 8, tier: 'Feat', upcast: false, desc: (lv) => `When a creature you can see hits another creature within 5ft, reduce the damage by 1d10 + ${L.prof[lv - 1]}. You must be holding a Shield or a Simple or Martial weapon.` },
-      ]
-
-      const LEVEL_FEATURES = [
-        { name: 'Faithful Steed', unlock: 5, desc: () => `Find Steed is always prepared. Cast it once without a spell slot, regaining the free cast on a Long Rest; additional casts use spell slots. Casting time: 10 minutes.` },
-        { name: 'Aura of Protection', unlock: 6, desc: (lv) => `You and allies within 10ft add +${L.chaMod[lv - 1]} to all saving throws. The save totals above include this bonus from level 6 onward; the aura is inactive while you are Incapacitated.` },
-        { name: 'Aura of Devotion', unlock: 7, desc: () => `You and allies within your 10ft Aura of Protection have immunity to the Charmed condition.` },
+        { name: 'Protection (Fighting Style)', source: 'Class Feature', unlock: 2, tier: 'Requires Shield', upcast: false, desc: () => `When a creature you can see attacks a target other than you within 5ft, impose Disadvantage on that roll and every other attack against that target until the start of your next turn, while you remain within 5ft.` },
+        { name: 'Interception (Fighting Style)', source: 'Feat', unlock: 8, tier: 'Fighting Style', upcast: false, desc: (lv) => `When a creature you can see hits another creature within 5ft, reduce the damage by 1d10 + ${L.prof[lv - 1]}. You must be holding a Shield or a Simple or Martial weapon.` },
       ]
 
       function formatModifier(value) {
@@ -1408,11 +1454,11 @@
 
       function abilityList(lv) {
         return [
-          { name: 'Strength', mod: '+3', score: 16, save: formatModifier(L.saveStr[lv - 1]), prof: false },
-          { name: 'Dexterity', mod: '\u22121', score: 8, save: formatModifier(L.saveDex[lv - 1]), prof: false },
-          { name: 'Constitution', mod: '+2', score: 15, save: formatModifier(L.saveCon[lv - 1]), prof: false },
+          { name: 'Strength', mod: '\u22121', score: 8, save: formatModifier(L.saveStr[lv - 1]), prof: false },
+          { name: 'Dexterity', mod: '+3', score: 16, save: formatModifier(L.saveDex[lv - 1]), prof: false },
+          { name: 'Constitution', mod: '+2', score: 14, save: formatModifier(L.saveCon[lv - 1]), prof: false },
           { name: 'Intelligence', mod: '\u22121', score: 8, save: formatModifier(L.saveInt[lv - 1]), prof: false },
-          { name: 'Wisdom', mod: '+0', score: 10, save: formatModifier(L.saveWis[lv - 1]), prof: true },
+          { name: 'Wisdom', mod: '+1', score: 12, save: formatModifier(L.saveWis[lv - 1]), prof: true },
           { name: 'Charisma', mod: lv >= 4 ? '+4' : '+3', score: lv >= 4 ? 18 : 16, save: formatModifier(L.saveCha[lv - 1]), prof: true },
         ]
       }
@@ -1427,7 +1473,8 @@
           .map(
             (e) => `
     <div class="action-item">
-      <div class="ai-name"><span>${e.name}</span><span class="ai-tag${e.upcast ? ' upcast' : ''}">${e.tier}${e.upcast ? ' \u00b7 upcastable' : ''}</span></div>
+      <div class="ai-source-row"><span class="ai-source ${e.source.toLowerCase().replaceAll(' ', '-')}">${e.source}</span><span class="ai-tag${e.upcast ? ' upcast' : ''}">${e.tier}${e.upcast ? ' \u00b7 upcastable' : ''}</span></div>
+      <div class="ai-name">${e.name}</div>
       <p>${e.desc(lv)}</p>
     </div>
   `
@@ -1506,26 +1553,26 @@
 
         // skills
         document.getElementById('skills-table').innerHTML = `
-    <div class="skill-row"><div class="sname"><span class="dot"></span>Athletics <span class="stat-tag">Str</span></div><div class="sval">${formatModifier(L.athletics[lv - 1])}</div></div>
-    <div class="skill-row"><div class="sname"><span class="dot"></span>History <span class="stat-tag">Int</span></div><div class="sval">${formatModifier(L.history[lv - 1])}</div></div>
+    <div class="skill-row"><div class="sname"><span class="dot"></span>Religion <span class="stat-tag">Wis</span></div><div class="sval">${formatModifier(L.religion[lv - 1])}</div></div>
+    <div class="skill-row"><div class="sname"><span class="dot"></span>Survival <span class="stat-tag">Wis</span></div><div class="sval">${formatModifier(L.survival[lv - 1])}</div></div>
     <div class="skill-row"><div class="sname"><span class="dot"></span>Insight <span class="stat-tag">Wis</span></div><div class="sval">${formatModifier(L.insight[lv - 1])}</div></div>
-    <div class="skill-row"><div class="sname"><span class="dot"></span>Intimidation <span class="stat-tag">Cha</span></div><div class="sval">${formatModifier(L.intimidation[lv - 1])}</div></div>
-    <div class="skill-row"><div class="sname"><span class="dot"></span>Investigation <span class="stat-tag">Int</span></div><div class="sval">${formatModifier(L.investigation[lv - 1])}</div></div>
-    <div class="skill-row"><div class="sname"><span class="dot"></span>Perception <span class="stat-tag">Wis</span></div><div class="sval">${formatModifier(L.perception[lv - 1])}</div></div>
     <div class="skill-row"><div class="sname"><span class="dot"></span>Persuasion <span class="stat-tag">Cha</span></div><div class="sval">${formatModifier(L.persuasion[lv - 1])}</div></div>
-    <div class="skill-row"><div class="sname"><span class="dot"></span>Religion <span class="stat-tag">Int</span></div><div class="sval">${formatModifier(L.religion[lv - 1])}</div></div>
+    <div class="skill-row"><div class="sname"><span class="dot"></span>Athletics <span class="stat-tag">Str</span></div><div class="sval">${formatModifier(L.athletics[lv - 1])}</div></div>
+    <div class="skill-row"><div class="sname"><span class="dot"></span>Intimidation <span class="stat-tag">Cha</span></div><div class="sval">${formatModifier(L.intimidation[lv - 1])}</div></div>
+    <div class="skill-row"><div class="sname"><span class="dot"></span>Medicine <span class="stat-tag">Wis</span></div><div class="sval">${formatModifier(L.medicine[lv - 1])}</div></div>
+    <div class="skill-row"><div class="sname"><span class="dot"></span>Perception <span class="stat-tag">Wis</span></div><div class="sval">${formatModifier(L.perception[lv - 1])}</div></div>
   `
         document.getElementById('sk-passinsight').textContent = L.passivePerc[lv - 1]
         document.getElementById('sk-passinvestigation').textContent = L.passiveInvestigation[lv - 1]
         document.getElementById('tool-tinker').textContent = formatModifier(L.tinker[lv - 1])
-        document.getElementById('tool-gaming').textContent = formatModifier(L.gaming[lv - 1])
+        document.getElementById('tool-smith').textContent = formatModifier(L.smith[lv - 1])
 
         // AC/HP
         document.getElementById('hp-calc').textContent = L.hp[lv - 1]
 
         // weapon summary
-        const sacredNote = lv >= 3 ? ` With Sacred Weapon active: +${L.sacredAtk[lv - 1]} to hit (Str + Cha + Prof, stacks by RAW).` : ''
-        document.getElementById('wpn-summary').textContent = `Attack bonus +${L.atk[lv - 1]} (Str + Prof). Longsword damage 1d8+3; javelin damage 1d6+3.${sacredNote}`
+        const sacredNote = lv >= 3 ? ` With Sacred Weapon active: +${L.sacredAtk[lv - 1]} to hit (Dex + Cha + Prof, stacks by RAW).` : ''
+        document.getElementById('wpn-summary').textContent = `Attack bonus +${L.atk[lv - 1]} (Dex + Prof). Rapier damage 1d8+3; dagger damage 1d4+3.${sacredNote}`
 
         // ===== HP tracker =====
         document.getElementById('hp-current').value = state.hpCurrent
@@ -1604,20 +1651,6 @@
         renderColumn(document.getElementById('col-action'), ACTIONS, lv)
         renderColumn(document.getElementById('col-bonus'), BONUS, lv)
         renderColumn(document.getElementById('col-reaction'), REACTIONS, lv)
-
-        const visibleFeatures = LEVEL_FEATURES.filter((feature) => feature.unlock <= lv)
-        document.getElementById('class-feature-list').innerHTML = visibleFeatures.length
-          ? visibleFeatures
-              .map(
-                (feature) => `
-    <div class="feature">
-      <h3>${feature.name}</h3>
-      <p>${feature.desc(lv)}</p>
-    </div>
-  `
-              )
-              .join('')
-          : `<div class="feature"><p>No additional passive Paladin features to track at this level.</p></div>`
 
         attachResourceHandlers(lv)
       }
@@ -1746,8 +1779,6 @@
             render(i)
             return
           }
-          const confirmed = window.confirm(`Switch the sheet to level ${i}? Spent resources and damage will be preserved where possible; this does not create a rest.`)
-          if (!confirmed) return
           const oldLevel = state.level
           const hpMissing = L.hp[oldLevel - 1] - state.hpCurrent
           const lohSpent = L.loh[oldLevel - 1] - state.lohCurrent

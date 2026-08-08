@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hunter of Artemis — Circle of the Moon Druid</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&amp;family=Crimson+Pro:ital,wght@0,400;0,500;0,600;1,400&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+:root{
+  --night:#050916;--tower:#0b1225;--panel:#101a32;--panel2:#15213d;
+  --ink:#eef3ff;--dim:#aab7d3;--faint:#6f7e9d;--line:rgba(164,190,238,.20);
+  --silver:#dce8ff;--blue:#82adff;--blue2:#506fc8;--moon:#f4e9ba;
+  --green:#78c8a6;--rose:#db8ca3;--gold:#d6b56d;
+  --display:"Cinzel",Georgia,serif;--body:"Crimson Pro",Georgia,serif;--mono:"IBM Plex Mono",monospace;
+}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;color:var(--ink);font:18px/1.5 var(--body);background:
+ radial-gradient(circle at 79% -5%,rgba(126,166,255,.25),transparent 28rem),
+ radial-gradient(circle at 9% 38%,rgba(73,103,185,.17),transparent 31rem),
+ linear-gradient(180deg,#050916,#080d1c 48%,#050813);background-attachment:fixed}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;opacity:.55;background-image:
+ radial-gradient(circle,#fff 0 1px,transparent 1.3px),radial-gradient(circle,#9fc0ff 0 1px,transparent 1.2px);
+ background-size:91px 91px,137px 137px;background-position:12px 8px,47px 63px}
+button,input,textarea{font:inherit}.wrap{width:min(1160px,calc(100% - 28px));margin:auto;padding-bottom:80px}
+h1,h2,h3{font-family:var(--display);margin:0}.mono{font-family:var(--mono)}
+.panel{background:linear-gradient(145deg,rgba(21,33,61,.95),rgba(10,17,35,.96));border:1px solid var(--line);box-shadow:0 18px 45px rgba(0,0,0,.28)}
+
+/* Header */
+.hero{display:grid;grid-template-columns:300px 1fr;gap:38px;align-items:center;padding:28px 0 22px}
+.portrait{position:relative;overflow:hidden;border-radius:150px 150px 8px 8px;border:1px solid rgba(220,232,255,.35);box-shadow:0 24px 60px #000,0 0 65px rgba(83,119,211,.24)}
+.portrait:after{content:"☾";position:absolute;right:13px;top:10px;font:34px var(--display);color:var(--moon);text-shadow:0 0 18px var(--moon)}
+.portrait img{display:block;width:100%;aspect-ratio:3/4;object-fit:cover}
+.eyebrow{font:600 10px/1.3 var(--mono);letter-spacing:.25em;text-transform:uppercase;color:var(--blue);margin:0 0 12px}
+#name{font-size:clamp(2.5rem,7vw,4.8rem);line-height:.98;color:var(--silver);outline:none;border-bottom:1px dashed transparent;min-height:1em;text-shadow:0 0 35px rgba(130,173,255,.24)}
+#name:empty:before{content:attr(data-placeholder);color:rgba(238,243,255,.33)}#name:hover,#name:focus{border-bottom-color:var(--line)}
+.subtitle{font:500 clamp(1rem,2vw,1.25rem) var(--display);color:var(--moon);margin:15px 0 0;letter-spacing:.04em}
+.chips,.meta{display:flex;align-items:center;gap:7px;flex-wrap:wrap}.chips{margin-top:19px}
+.chip,.tag{font:500 9px/1 var(--mono);letter-spacing:.11em;text-transform:uppercase;white-space:nowrap;border:1px solid var(--line);border-radius:99px;padding:6px 9px;color:var(--dim);background:rgba(5,9,22,.32)}
+.chip b{color:var(--silver)}.tag.conc{color:var(--rose);border-color:rgba(219,140,163,.45)}.tag.free{color:var(--green);border-color:rgba(120,200,166,.45)}.tag.moon{color:var(--moon);border-color:rgba(244,233,186,.42)}.tag.slot{color:var(--blue);border-color:rgba(130,173,255,.42)}
+
+/* Sticky level bar */
+.levelbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:13px;min-height:58px;padding:9px 14px;margin:0 0 12px;border-radius:5px;background:rgba(8,14,29,.94);border:1px solid var(--line);backdrop-filter:blur(12px);box-shadow:0 10px 28px rgba(0,0,0,.35)}
+.level-label{font:500 9px var(--mono);letter-spacing:.15em;text-transform:uppercase;color:var(--faint)}.levels{display:flex;gap:4px}
+.levels button{width:33px;height:33px;border-radius:50%;border:1px solid var(--line);background:transparent;color:var(--dim);font:600 13px var(--mono);cursor:pointer}
+.levels button:hover{border-color:var(--blue);color:#fff}.levels button.active{background:var(--blue2);border-color:var(--blue);color:white;box-shadow:0 0 17px rgba(130,173,255,.35)}
+.quick{margin-left:auto;display:flex;gap:18px}.q{text-align:center}.q b{display:block;font:600 16px var(--mono);color:var(--silver)}.q span{display:block;font:8px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--faint)}
+
+section{padding:35px 0 4px}.head{display:flex;align-items:center;gap:13px;margin-bottom:15px}.head h2{font-size:1.5rem;color:var(--silver);letter-spacing:.04em}.head:after{content:"";height:1px;flex:1;background:linear-gradient(90deg,var(--line),transparent)}
+.lede{max-width:78ch;margin:-4px 0 17px;color:var(--dim)}
+.grid{display:grid;gap:12px}.vitals{grid-template-columns:repeat(6,1fr)}.stat{padding:16px 11px;text-align:center;border-radius:5px}.stat .k{font:500 9px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--faint)}.stat .v{font:600 2rem var(--display);color:var(--silver);line-height:1.05;margin-top:6px}.stat .x{font-size:14px;color:var(--dim);margin-top:4px}.stat.moon .v{color:var(--moon)}.stat.blue .v{color:var(--blue)}
+.hpctl{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:4px}.hpctl input{width:60px;background:transparent;border:0;border-bottom:1px solid var(--line);color:var(--silver);text-align:center;font:600 1.8rem var(--display)}.hpctl button{width:27px;height:27px;padding:0;border:1px solid var(--line);border-radius:50%;background:transparent;color:var(--dim);cursor:pointer}.hpctl button:hover{color:white;border-color:var(--blue)}
+
+/* Start here */
+.turncard{display:grid;grid-template-columns:repeat(3,1fr);overflow:hidden;border-radius:6px}.turnstep{padding:21px 23px;position:relative}.turnstep+.turnstep{border-left:1px solid var(--line)}.turnstep .num{font:600 10px var(--mono);color:var(--blue);letter-spacing:.15em}.turnstep h3{font-size:1rem;color:var(--moon);margin:5px 0}.turnstep p{margin:0;color:var(--dim);font-size:16px}.callout{margin-top:12px;padding:15px 18px;border-left:3px solid var(--green);color:var(--dim)}.callout b{color:var(--green)}
+
+/* Resources */
+.resource-board{padding:18px;border-radius:6px}.resource-row{display:grid;grid-template-columns:135px 1fr;gap:15px;align-items:center;padding:9px 0}.resource-row+.resource-row{border-top:1px solid rgba(164,190,238,.09)}.res-label{font:500 9px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--faint)}.pips{display:flex;align-items:center;gap:7px;flex-wrap:wrap}.pip{appearance:none;width:20px;height:20px;border:1px solid var(--blue);border-radius:4px;background:rgba(5,9,22,.55);cursor:pointer;margin:0}.pip:checked{background:var(--blue2);box-shadow:inset 0 0 0 4px var(--tower),0 0 11px rgba(130,173,255,.45)}.pip.wild{border-color:var(--moon)}.pip.wild:checked{background:var(--moon)}.pip.free{border-color:var(--green)}.pip.free:checked{background:var(--green)}
+.res-note{font-size:14px;color:var(--dim)}.restbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px}.restbar p{margin:0 auto 0 0;color:var(--dim);font-size:15px}.rest{border:1px solid var(--line);border-radius:4px;background:rgba(130,173,255,.08);color:var(--silver);padding:8px 12px;font:500 10px var(--mono);letter-spacing:.08em;text-transform:uppercase;cursor:pointer}.rest:hover{border-color:var(--blue);background:rgba(130,173,255,.16)}
+
+/* Abilities and skills */
+.abilities{grid-template-columns:repeat(6,1fr)}.ability{padding:13px 8px;text-align:center;border-radius:5px}.ability .ab{font:500 9px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}.ability .mod{font:600 1.8rem var(--display);color:var(--silver)}.ability .score{font:11px var(--mono);color:var(--faint)}.ability.save{border-color:rgba(130,173,255,.48)}.ability .sv{font:10px var(--mono);color:var(--blue);margin-top:4px}
+.skills{display:grid;grid-template-columns:repeat(3,1fr);padding:10px 18px;border-radius:6px;gap:0 25px}.skill{display:flex;gap:9px;align-items:center;padding:7px 2px;border-bottom:1px solid rgba(164,190,238,.07);font-size:16px}.dot{width:7px;height:7px;border:1px solid var(--faint);border-radius:50%}.dot.on{background:var(--moon);border-color:var(--moon)}.skill .name{flex:1}.skill .val{font:600 13px var(--mono);color:var(--silver)}.skill.off{color:var(--faint)}
+
+/* Action economy */
+.economy{display:grid;grid-template-columns:1fr 1fr;gap:14px}.group{border-radius:6px;overflow:hidden}.ghead{display:flex;align-items:center;padding:14px 18px;border-bottom:1px solid var(--line);background:rgba(130,173,255,.07)}.ghead h3{font-size:1rem;color:var(--silver)}.ghead span{margin-left:auto;font:9px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+.entry{padding:15px 18px}.entry+.entry{border-top:1px solid rgba(164,190,238,.10)}.entry.locked{opacity:.36}.entry-title{font-weight:600;color:var(--ink);font-size:17px}.meta{margin-top:6px;flex-wrap:nowrap;overflow-x:auto;padding-bottom:2px}.entry p{margin:8px 0 0;color:var(--dim);font-size:15.5px;line-height:1.45}.entry p b{color:var(--silver)}
+.track-inline{display:flex;align-items:center;gap:5px;white-space:nowrap}.track-inline .pip{width:17px;height:17px}.track-label{font:500 8px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
+.lvlock{font:500 9px var(--mono);color:var(--faint);text-transform:uppercase;letter-spacing:.08em}
+
+/* Forms */
+.form-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px}.form-summary .stat{padding:13px}
+.forms{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.form{padding:18px;border-radius:6px}.form.locked{opacity:.38}.formtop{display:flex;gap:10px;align-items:start}.form h3{font-size:1rem;color:var(--moon)}.role{margin-left:auto;font:500 8px var(--mono);letter-spacing:.09em;text-transform:uppercase;color:var(--blue);border:1px solid var(--line);border-radius:99px;padding:5px 8px}.formstats{font:500 10px var(--mono);color:var(--faint);margin:7px 0}.form p{font-size:15px;color:var(--dim);margin:7px 0 0}.form p b{color:var(--silver)}
+.rules{padding:17px 20px;border-radius:6px;margin-top:12px}.rules ul{margin:7px 0 0;padding-left:20px;color:var(--dim)}.rules li+li{margin-top:5px}
+
+/* Reference and notes */
+.refgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.reference{padding:18px 20px;border-radius:6px}.reference h3{font-size:1rem;color:var(--moon);margin-bottom:8px}.reference dl{margin:0}.reference dt{font:500 9px var(--mono);letter-spacing:.11em;text-transform:uppercase;color:var(--blue);margin-top:11px}.reference dd{margin:3px 0 0;color:var(--dim);font-size:15px}.reference b{color:var(--silver)}
+textarea{width:100%;min-height:135px;resize:vertical;padding:16px 18px;border:1px solid var(--line);border-radius:6px;background:rgba(10,17,35,.8);color:var(--ink);outline:none}textarea:focus{border-color:var(--blue)}
+footer{text-align:center;margin-top:42px;font:9px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--faint)}
+
+@media(max-width:900px){.vitals{grid-template-columns:repeat(3,1fr)}.skills{grid-template-columns:repeat(2,1fr)}.form-summary{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:720px){.hero{grid-template-columns:1fr}.portrait{width:min(390px,100%);margin:auto}.levelbar{margin-left:-14px;margin-right:-14px;border-radius:0}.quick .q:first-child{display:none}.turncard,.economy,.forms,.refgrid{grid-template-columns:1fr}.turnstep+.turnstep{border-left:0;border-top:1px solid var(--line)}.abilities{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:480px){.wrap{width:min(100% - 20px,1160px)}.quick{gap:9px}.q b{font-size:13px}.levels button{width:29px;height:29px}.skills{grid-template-columns:1fr}.vitals{grid-template-columns:repeat(2,1fr)}.resource-row{grid-template-columns:1fr;gap:5px}}
+@media print{body{background:#fff;color:#111}.levelbar{position:static}.panel{background:#fff;box-shadow:none;border-color:#bbb}.entry p,.lede,.turnstep p,.form p,.rules li,.reference dd,.res-note{color:#333}.head h2,.entry-title,.stat .v,.form h3,.reference h3{color:#111}.restbar,textarea{display:none}.wrap{width:100%;padding:0 12px}.portrait{box-shadow:none}section{break-inside:avoid}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <header class="hero">
+    <div class="portrait"><img src="assets/artemis-moon-druid.png" alt="Moonlit elven hunter of Artemis in an astral observatory"></div>
+    <div>
+      <p class="eyebrow">D&amp;D 2024 · Character Sheet · Levels 3–9</p>
+      <h1 id="name" contenteditable="true" spellcheck="false" data-placeholder="Character Name"></h1>
+      <p class="subtitle">Hunter of Artemis · Circle of the Moon</p>
+      <div class="chips">
+        <span class="chip">Species <b>Wood Elf</b></span><span class="chip">Background <b>Acolyte</b></span>
+        <span class="chip">Order <b>Warden</b></span><span class="chip">Patron Deity <b>Artemis</b></span>
+        <span class="chip">Speed <b>35 ft</b></span><span class="chip">Darkvision <b>60 ft</b></span>
+      </div>
+    </div>
+  </header>
+
+  <nav class="levelbar" aria-label="Character level selector">
+    <span class="level-label">Level</span><div class="levels" id="levels"></div>
+    <div class="quick">
+      <div class="q"><b id="q-class">Druid 4</b><span>Build</span></div>
+      <div class="q"><b id="q-pb">+2</b><span>Prof</span></div>
+      <div class="q"><b id="q-atk">+6</b><span>Spell attack</span></div>
+      <div class="q"><b id="q-dc">14</b><span>Save DC</span></div>
+    </div>
+  </nav>
+
+  <section>
+    <div class="head"><h2>Start Here</h2></div>
+    <div class="turncard panel">
+      <article class="turnstep"><span class="num">01 · CHOOSE THE HUNT</span><h3>Pick one concentration spell</h3><p><b>Spike Growth</b> with Ariston's pushes, <b>Moonbeam</b> for repeatable light, or <b>Faerie Fire</b> when the whole party needs Advantage.</p></article>
+      <article class="turnstep"><span class="num">02 · TAKE YOUR SHAPE</span><h3>Cast, then become the beast</h3><p>Most turns begin with a spell as your Action and <b>Wild Shape</b> as your Bonus Action. Concentration continues after transforming.</p></article>
+      <article class="turnstep"><span class="num">03 · HOLD THE PREY</span><h3>Control space for Ariston</h3><p>Knock foes Prone, Restrain them, or keep them in a hazard. His Repelling Blast can push them through your thorns or moonlight.</p></article>
+    </div>
+    <div class="callout panel"><b>Signature team play:</b> place Spike Growth so Ariston can fire along its length. Each 10-foot Repelling Blast push through the area adds <b>4d4 Piercing</b>; your Thorn Whip can pull a target another 10 feet through it.</div>
+  </section>
+
+  <section>
+    <div class="head"><h2>Resources</h2></div>
+    <div class="grid vitals">
+      <div class="stat panel"><div class="k">Hit Points</div><div class="hpctl"><button id="hp-minus">−</button><input id="hp" inputmode="numeric"><button id="hp-plus">+</button></div><div class="x">of <b id="hp-max"></b></div></div>
+      <div class="stat panel moon"><div class="k">Wild Shape Temp HP</div><div class="v" id="temp-hp"></div><div class="x">each transformation</div></div>
+      <div class="stat panel"><div class="k">Wild Shape AC</div><div class="v" id="shape-ac"></div><div class="x">unless Beast AC is higher</div></div>
+      <div class="stat panel blue"><div class="k">Spell Save DC</div><div class="v" id="dc"></div><div class="x">Wisdom</div></div>
+      <div class="stat panel"><div class="k">Prepared</div><div class="v" id="prepared"></div><div class="x">chosen + always prepared</div></div>
+      <div class="stat panel"><div class="k">Passive Perception</div><div class="v" id="passive"></div><div class="x">proficient</div></div>
+    </div>
+    <div class="resource-board panel" style="margin-top:12px" id="resource-board"></div>
+    <div class="restbar panel" style="padding:12px 14px"><p><b>Short Rest:</b> regain one Wild Shape use. <b>Long Rest:</b> restore HP, all slots, all Wild Shapes, and free casts.</p><button class="rest" id="short-rest">Finish Short Rest</button><button class="rest" id="long-rest">Finish Long Rest</button></div>
+  </section>
+
+  <section>
+    <div class="head"><h2>Core Statistics</h2></div>
+    <div class="grid abilities" id="abilities"></div>
+    <div class="skills panel" id="skills" style="margin-top:12px"></div>
+  </section>
+
+  <section>
+    <div class="head"><h2>Actions</h2></div>
+    <p class="lede">Every spell is tagged with its normal minimum slot or <b>Free</b>. Resource boxes sit on the action that spends them and stay synchronized with the overview above. Higher slots may be used to upcast when a spell says so.</p>
+    <div class="economy" id="economy"></div>
+  </section>
+
+  <section>
+    <div class="head"><h2>Wild Shape Lodge</h2></div>
+    <p class="lede">The form's printed HP is not used: you retain your own HP and gain the Moon Druid temporary HP shown above. The featured forms below use their printed attacks, movement, physical ability scores, and senses.</p>
+    <div class="form-summary" id="form-summary"></div>
+    <div class="forms" id="forms"></div>
+    <div class="rules panel"><b>While transformed:</b><ul><li>You retain your personality, memories, speech, creature type, HP, Hit Dice, Intelligence, Wisdom, Charisma, languages, feats, class features, and your own skill/save proficiencies.</li><li>You normally can't cast spells, but transforming does not end Concentration. Circle spells are the exception: <b>Cure Wounds, Moonbeam, Starry Wisp, Conjure Animals, Fount of Moonlight, and Mass Cure Wounds</b> can be cast in Beast form once unlocked.</li><li>At Druid 6, Beast attacks may deal their normal type or Radiant, and you add Wisdom to Constitution saves in the form. War Caster still grants Advantage on concentration saves.</li></ul></div>
+  </section>
+
+  <section>
+    <div class="head"><h2>Hunter's Reference</h2></div>
+    <div class="refgrid">
+      <article class="reference panel"><h3>Equipment &amp; Traits</h3><dl><dt>Armour sets</dt><dd><b>Breastplate + shield: AC 18.</b> With the two-handed longbow, AC 16. Donning or doffing a shield takes the Utilize action.</dd><dt>Weapons</dt><dd>Longbow, quarterstaff/druidic focus, sickle. Warden grants Martial weapon proficiency and Medium armor training, but not Weapon Mastery.</dd><dt>Wood Elf</dt><dd>35-foot Speed, Darkvision 60 feet, Fey Ancestry, four-hour Trance, Druidcraft, and the free Longstrider / Pass without Trace casts shown in Actions.</dd><dt>Saving throws</dt><dd>Intelligence and Wisdom. War Caster grants Advantage on saves made to maintain Concentration.</dd></dl></article>
+      <article class="reference panel"><h3>Concentration Compass</h3><dl><dt>Spike Growth</dt><dd>Best team damage when Ariston has a clear Repelling Blast lane. Forced movement triggers the thorns.</dd><dt>Moonbeam</dt><dd>Best against clustered or shape-shifted enemies. Moving the Cylinder into a creature's space triggers its save once that turn.</dd><dt>Conjure Animals</dt><dd>Best mobile damage zone from level 5. Move its spectral pack when you move.</dd><dt>Fount of Moonlight</dt><dd>Best personal Beast-form damage from level 7: every melee hit gains 2d6 Radiant.</dd><dt>Faerie Fire / control</dt><dd>Best when Ariston and the rest of the party can capitalize on Advantage.</dd></dl></article>
+    </div>
+  </section>
+
+  <section><div class="head"><h2>Notes</h2></div><textarea id="notes" placeholder="Names, omens, prepared-spell swaps, known forms, ongoing effects…"></textarea></section>
+  <footer>Hunter of Artemis · Wood Elf Circle of the Moon Druid · D&amp;D 2024</footer>
+</main>
+
+<script>
+const LEVELS={
+  3:{pb:2,hp:21,wis:17,slots:[4,2,0,0,0],prep:6,wild:2,forms:4,maxCR:1,fly:false},
+  4:{pb:2,hp:27,wis:18,slots:[4,3,0,0,0],prep:7,wild:2,forms:6,maxCR:1,fly:false},
+  5:{pb:3,hp:33,wis:18,slots:[4,3,2,0,0],prep:9,wild:2,forms:6,maxCR:1,fly:false},
+  6:{pb:3,hp:39,wis:18,slots:[4,3,3,0,0],prep:10,wild:3,forms:6,maxCR:2,fly:false},
+  7:{pb:3,hp:45,wis:18,slots:[4,3,3,1,0],prep:11,wild:3,forms:6,maxCR:2,fly:false},
+  8:{pb:3,hp:51,wis:20,slots:[4,3,3,2,0],prep:12,wild:3,forms:8,maxCR:2,fly:true},
+  9:{pb:4,hp:57,wis:20,slots:[4,3,3,3,1],prep:14,wild:3,forms:8,maxCR:3,fly:true}
+};
+const ORD=['1st','2nd','3rd','4th','5th'];
+const KEY='moon.druid.sheet.v1';
+const defaults={level:4,name:'',notes:'',hp:{},slots:[0,0,0,0,0],wildUsed:0,free:{bless:false,longstrider:false,pass:false,convert:false,ink:false},hitDice:0};
+let state;try{state=Object.assign(structuredClone(defaults),JSON.parse(localStorage.getItem(KEY)||'{}'))}catch(e){state=structuredClone(defaults)}
+if(!LEVELS[state.level])state.level=4;if(!state.hp)state.hp={};if(!Array.isArray(state.slots))state.slots=[0,0,0,0,0];if(!state.free)state.free={...defaults.free};
+let level=state.level;const $=s=>document.querySelector(s);const sign=n=>(n>=0?'+':'')+n;const mod=n=>Math.floor((n-10)/2);const save=()=>localStorage.setItem(KEY,JSON.stringify(state));
+
+const SKILLS=[['Acrobatics','Dex',0],['Animal Handling','Wis',1],['Arcana','Int',0],['Athletics','Str',0],['Deception','Cha',0],['History','Int',0],['Insight','Wis',1],['Intimidation','Cha',0],['Investigation','Int',0],['Medicine','Wis',0],['Nature','Int',0],['Perception','Wis',1],['Performance','Cha',0],['Persuasion','Cha',0],['Religion','Int',1],['Sleight of Hand','Dex',0],['Stealth','Dex',0],['Survival','Wis',1]];
+const FORMS=[
+ {lv:3,n:'Brown Bear',cr:1,role:'Front line · Prone',move:'40 ft · climb 30 ft',atk:'+5',body:'Multiattack: Bite 1d8+3 Piercing, then Claw 1d4+3 Slashing. A Large or smaller target hit by Claw falls Prone.'},
+ {lv:3,n:'Dire Wolf',cr:1,role:'Team hunter · Prone',move:'50 ft',atk:'+5',body:'Pack Tactics grants Advantage when an active ally is within 5 feet of the target. Bite deals 1d10+3 Piercing and knocks a Large or smaller target Prone.'},
+ {lv:3,n:'Giant Spider',cr:1,role:'Control · Scout',move:'30 ft · climb 30 ft',atk:'+5 / DC 13',body:'Bite deals 1d8+3 Piercing plus 2d6 Poison. Web (Recharge 5–6): a creature within 60 feet fails a Dex save and becomes Restrained until the AC 10, 5 HP web is destroyed.'},
+ {lv:3,n:'Giant Octopus',cr:1,role:'Water · Restrain',move:'10 ft · swim 60 ft',atk:'+5',body:'Tentacles have 10-foot reach, deal 2d6+3 Bludgeoning, and Grapple a Medium or smaller target (escape DC 13); that target is also Restrained. Breathes only water but holds breath 1 hour.'},
+ {lv:6,n:'Saber-Toothed Tiger',cr:2,role:'Damage · Mobility',move:'40 ft',atk:'+6',body:'Multiattack makes two Rends, each 2d6+4 Slashing. As a Bonus Action, take Disengage or Hide. With a 10-foot start, long-jump up to 25 feet.'},
+ {lv:6,n:'Giant Constrictor Snake',cr:2,role:'Reach · Grapple',move:'30 ft · swim 30 ft',atk:'+6 / DC 14',body:'Multiattack: Bite for 2d6+4 Piercing at 10-foot reach, then Constrict. On a failed Strength save, Constrict deals 2d8+4 Bludgeoning and Grapples a Large or smaller target.'},
+ {lv:8,n:'Giant Bat',cr:.25,role:'Flight · Blindsight',move:'10 ft · fly 60 ft',atk:'+5',body:'Blindsight 120 feet. Bite deals 1d6+3 Piercing. This is a 2024 Beast and a legal flying form; the 2024 Giant Eagle is a Celestial, not a Beast.'},
+ {lv:9,n:'Giant Scorpion',cr:3,role:'Nova · Two Grapples',move:'40 ft',atk:'+5',body:'Multiattack: two Claws for 1d6+3 Bludgeoning each and a Sting for 1d8+3 Piercing plus 2d10 Poison. Each Claw can Grapple one Large or smaller target (escape DC 13).'}
+];
+
+function slotPips(i,S){return `<span class="track-inline"><span class="track-label">${ORD[i]} spent</span>${Array.from({length:S.slots[i]},(_,x)=>`<input class="pip slotpip" type="checkbox" data-slot="${i}" data-i="${x}" aria-label="${ORD[i]}-level slot ${x+1} spent" ${x<state.slots[i]?'checked':''}>`).join('')}</span>`}
+function wildPips(S){return `<span class="track-inline"><span class="track-label">uses spent</span>${Array.from({length:S.wild},(_,x)=>`<input class="pip wild wildpip" type="checkbox" data-i="${x}" aria-label="Wild Shape use ${x+1} spent" ${x<state.wildUsed?'checked':''}>`).join('')}</span>`}
+function freePip(k,label){return `<span class="track-inline"><span class="track-label">${label}</span><input class="pip free freepip" type="checkbox" data-free="${k}" aria-label="${label}" ${state.free[k]?'checked':''}></span>`}
+function cost(a,S){if(a.slot){const i=a.slot-1;return S.slots[i]?slotPips(i,S):''}if(a.wild)return wildPips(S);if(a.free)return freePip(a.free,a.freeLabel||'free cast spent');return ''}
+function entry(a,S,dc,atk){if(a.lv>level)return `<article class="entry locked"><div class="entry-title">${a.name}</div><div class="meta"><span class="lvlock">Unlocks at level ${a.lv}</span></div></article>`;let desc=typeof a.desc==='function'?a.desc(S,dc,atk):a.desc;return `<article class="entry"><div class="entry-title">${a.name}</div><div class="meta"><span class="tag ${a.source==='Moon Circle'?'moon':''}">${a.source}</span>${a.slot?`<span class="tag slot">${ORD[a.slot-1]}-level slot</span>`:''}${a.cantrip?'<span class="tag free">Free · cantrip</span>':''}${a.atwill?'<span class="tag free">Free · at will</span>':''}${a.conc?'<span class="tag conc">Concentration</span>':''}${a.wild?'<span class="tag moon">Wild Shape</span>':''}${a.free?`<span class="tag free">${a.freeTag||'Free 1/long rest'}</span>`:''}${cost(a,S)}</div><p>${desc}</p></article>`}
+
+const ACTIONS={
+ action:[
+  {lv:3,name:'Moonbeam',source:'Moon Circle',slot:2,conc:1,desc:(S,dc)=>`Create a 5-foot-radius, 40-foot-high Cylinder within 120 feet. Creatures in it make a Con save (DC ${dc}) for <b>2d10 Radiant</b>, half on success. On later turns use a Magic action to move it up to 60 feet. It triggers when it appears, moves into a creature, a creature enters it, or ends there—once per creature per turn. +1d10 per slot above 2nd.`},
+  {lv:3,name:'Spike Growth',source:'Chosen Druid',slot:2,conc:1,desc:'Create a camouflaged 20-foot-radius area within 150 feet for up to 10 minutes. It is Difficult Terrain; every 5 feet a creature moves through it deals <b>2d4 Piercing</b>. Ariston pushes 10 feet per Repelling Blast hit.'},
+  {lv:3,name:'Thorn Whip',source:'Druid cantrip',cantrip:1,desc:(S,dc,atk)=>`Melee spell attack at 30 feet (${sign(atk)} to hit). Deal ${level>=5?'2d6':'1d6'} Piercing and, if the target is Large or smaller, pull it up to 10 feet closer—excellent through Spike Growth.`},
+  {lv:3,name:'Starry Wisp',source:'Moon Circle',cantrip:1,desc:(S,dc,atk)=>`Ranged spell attack within 60 feet (${sign(atk)} to hit) for ${level>=5?'2d8':'1d8'} Radiant. Until the end of your next turn, the target sheds Dim Light and can't benefit from Invisible.`},
+  {lv:3,name:'Faerie Fire',source:'Chosen Druid',slot:1,conc:1,desc:(S,dc)=>`Creatures in a 20-foot Cube within 60 feet make a Dex save (DC ${dc}). On a failure they glow for up to 1 minute: attacks against them have Advantage if the attacker can see them, and they can't benefit from Invisible.`},
+  {lv:3,name:'Thunderwave',source:'Chosen Druid',slot:1,desc:(S,dc)=>`Creatures in a 15-foot Cube originating from you make a Con save (DC ${dc}): 2d8 Thunder and pushed 10 feet on failure; half damage and no push on success. The push can carry enemies through Spike Growth.`},
+  {lv:3,name:'Cure Wounds',source:'Moon Circle',slot:1,desc:S=>`Touch a creature to restore <b>2d8+${mod(S.wis)} HP</b>. Add 2d8 per slot above 1st. This Circle spell can be cast while in Wild Shape.`},
+  {lv:3,name:'Longbow',source:'Warden weapon',atwill:1,desc:S=>`${sign(S.pb+2)} to hit at 150/600 feet; 1d8+2 Piercing. The Heavy property's Dexterity 13 requirement is met. The bow needs two hands, so your shield isn't providing AC while you use it.`},
+  {lv:5,name:'Conjure Animals',source:'Moon Circle',slot:3,conc:1,desc:(S,dc)=>`Create a Large spectral pack within 60 feet for up to 10 minutes. Move it up to 30 feet when you move. When the pack moves within 10 feet of a creature, or a creature enters or ends there, force a Dex save (DC ${dc}) for <b>3d10 Slashing</b>, once per creature per turn.`},
+  {lv:5,name:'Call Lightning',source:'Chosen Druid',slot:3,conc:1,desc:(S,dc)=>`Create a 60-foot-radius storm cloud for up to 10 minutes. On cast and as a Magic action later, call a bolt into a point below it; creatures within 5 feet make a Dex save (DC ${dc}) for 3d10 Lightning, half on success.`},
+  {lv:5,name:'Revivify',source:'Chosen Druid',slot:3,desc:'Return a creature that died within the last minute to life with 1 HP. Requires a diamond worth 300+ GP, which the spell consumes.'},
+  {lv:6,name:'Dispel Magic',source:'Chosen Druid',slot:3,desc:S=>`End every spell of level 3 or lower on one creature, object, or magical effect within 120 feet. For each higher spell, make a Wisdom check (${sign(mod(S.wis))}) against DC 10 + its level.`},
+  {lv:7,name:'Conjure Woodland Beings',source:'Chosen Druid',slot:4,conc:1,desc:(S,dc)=>`Fey spirits fill a 10-foot Emanation around you for up to 10 minutes. A creature entering it, ending there, or entered by the Emanation makes a Wis save (DC ${dc}) for <b>5d8 Force</b>, half on success, once per turn. You may Disengage as a Bonus Action.`},
+  {lv:7,name:'Fount of Moonlight',source:'Moon Circle',slot:4,conc:1,desc:(S,dc)=>`For up to 10 minutes, shed light, resist Radiant damage, and add <b>2d6 Radiant to every melee attack hit</b>. When a visible creature within 60 feet damages you, use your Reaction to force a Con save (DC ${dc}) or Blind it until the end of your next turn. Castable in Wild Shape.`},
+  {lv:8,name:'Polymorph',source:'Chosen Druid',slot:4,conc:1,desc:(S,dc)=>`A creature within 60 feet makes a Wis save (DC ${dc}) if unwilling. It becomes a Beast with CR no higher than the target's level or CR, gaining that Beast's Temporary HP; the spell ends when those Temporary HP are gone.`},
+  {lv:9,name:'Wall of Stone',source:'Chosen Druid',slot:5,conc:1,desc:'Create ten contiguous stone panels within 120 feet for up to 10 minutes. Each panel is AC 15 with 30 HP per inch of thickness. Concentrate for the full duration and the wall becomes permanent.'},
+  {lv:9,name:'Greater Restoration',source:'Chosen Druid',slot:5,desc:'Touch a creature to reduce Exhaustion by 1 or end one Charmed/Petrified condition, one curse, any reduction to an ability score, or one reduction to Hit Point maximum. Consumes 100+ GP diamond dust.'},
+  {lv:9,name:'Mass Cure Wounds',source:'Moon Circle',slot:5,desc:S=>`Choose up to six creatures in a 30-foot-radius Sphere within 60 feet. Each regains <b>5d8+${mod(S.wis)} HP</b>. Add 1d8 per slot above 5th; castable in Wild Shape.`}
+ ],
+ bonus:[
+  {lv:3,name:'Wild Shape',source:'Circle Forms',wild:1,desc:S=>`Become one known Beast of CR ${S.maxCR} or lower for up to ${Math.floor(level/2)} hours. Gain <b>${level*3} Temporary HP</b> and use AC <b>${13+mod(S.wis)}</b> if it is higher than the Beast's AC. You may also leave the form early as a Bonus Action.`},
+  {lv:3,name:'Healing Word',source:'Chosen Druid',slot:1,desc:S=>`One creature within 60 feet regains <b>2d4+${mod(S.wis)} HP</b>. Add 2d4 per slot above 1st. Ideal for lifting an unconscious ally without giving up your Action.`},
+  {lv:4,name:'Shillelagh',source:'Druid cantrip',cantrip:1,desc:S=>`Empower a club or quarterstaff for 1 minute. Use Wisdom for attack and damage, and choose Force or its normal type. Current attack: ${sign(S.pb+mod(S.wis))}, damage ${level>=5?'1d10':'1d8'}+${mod(S.wis)}.`},
+  {lv:5,name:'Wild Resurgence — Restore Wild Shape',source:'Druid 5',slot:1,desc:'Once on each of your turns, if no Wild Shape uses remain, expend any spell slot to regain one Wild Shape use. No action required; the 1st-level tracker is the economical default.'}
+ ],
+ reaction:[
+  {lv:4,name:'Reactive Spell',source:'War Caster',atwill:1,desc:'When a creature provokes an Opportunity Attack by leaving your reach, cast an Action spell that targets only that creature instead. Thorn Whip and Starry Wisp qualify if their attack conditions are practical.'},
+  {lv:3,name:'Opportunity Attack',source:'Core rule',atwill:1,desc:'When a creature you can see leaves your reach using its movement, Action, Bonus Action, or Reaction, make one melee attack immediately before it leaves. Teleportation and forced movement do not provoke.'},
+  {lv:3,name:'Giant Octopus — Ink Cloud',source:'Wild Shape form',free:'ink',freeTag:'1/day',freeLabel:'use spent',desc:'Once per day while underwater, after taking damage, fill a 10-foot Cube with ink and move up to your Swim Speed. The Cube is Heavily Obscured for 1 minute or until dispersed.'},
+  {lv:7,name:'Fount of Moonlight — Blind',source:'Moon Circle',atwill:1,desc:(S,dc)=>`While Fount is active, immediately after a visible creature within 60 feet damages you, force it to make a Con save (DC ${dc}). On a failure, it is Blinded until the end of your next turn.`}
+ ],
+ other:[
+  {lv:3,name:'Bless',source:'Magic Initiate',free:'bless',conc:1,desc:'Acolyte spell. Up to three creatures within 30 feet add 1d4 to every attack roll and saving throw for up to 1 minute. The first casting each Long Rest is free; you may also use spell slots.'},
+  {lv:3,name:'Longstrider',source:'Wood Elf',free:'longstrider',desc:'Touch one creature; its Speed increases by 10 feet for 1 hour. One free cast per Long Rest, or cast with spell slots. Cast it before Wild Shape for a faster hunting form.'},
+  {lv:5,name:'Pass without Trace',source:'Wood Elf',free:'pass',conc:1,desc:'For up to 1 hour, you radiate a 30-foot Emanation. Chosen creatures in it gain +10 to Dexterity (Stealth) checks and leave no tracks. One free cast per Long Rest, or use spell slots.'},
+  {lv:3,name:'Goodberry',source:'Chosen Druid',slot:1,desc:'Create ten berries lasting 24 hours. Eating one is a Bonus Action and restores 1 HP; a berry also provides one day of nourishment.'},
+  {lv:3,name:'Aid',source:'Chosen Druid',slot:2,desc:'Choose up to three creatures within 30 feet. Each target increases its Hit Point maximum and current HP by 5 for 8 hours. +5 HP per slot above 2nd.'},
+  {lv:3,name:'Lesser Restoration',source:'Chosen Druid',slot:2,desc:'Touch a creature and end one condition: Blinded, Deafened, Paralyzed, or Poisoned.'},
+  {lv:3,name:'Speak with Animals',source:'Druidic',atwill:1,desc:'Always prepared ritual. For 10 minutes, comprehend and verbally communicate with Beasts; their perspective remains limited by their intelligence.'},
+  {lv:3,name:'Guidance',source:'Magic Initiate cantrip',cantrip:1,conc:1,desc:'Touch a willing creature and choose one skill. Before the spell ends, the target adds 1d4 to one ability check using that skill; the spell then ends.'},
+  {lv:3,name:'Druidcraft',source:'Wood Elf cantrip',cantrip:1,desc:'Create a harmless nature effect within 30 feet: a tiny weather forecast, blooming plant, sensory effect, or the lighting or extinguishing of a small flame.'},
+  {lv:3,name:'Thaumaturgy',source:'Magic Initiate cantrip',cantrip:1,desc:'Create a minor divine wonder within 30 feet, such as a booming voice, altered flames or eyes, a brief sound or tremor, or an unlocked door or window opening or shutting.'},
+  {lv:3,name:'Mending',source:'Druid cantrip',atwill:1,desc:'Cast for 1 minute to repair one break or tear in an object you touch, no larger than 1 foot in any dimension. It can physically repair a magic item but cannot restore its magic.'},
+  {lv:3,name:'Find Familiar — Wild Companion',source:'Druid 2',wild:1,desc:'As a Magic action, expend one Wild Shape use or a spell slot to cast Find Familiar without Material components. The familiar is Fey and disappears at your next Long Rest.'},
+  {lv:5,name:'Wild Resurgence — Recover Slot',source:'Druid 5',free:'convert',desc:'Once per Long Rest, expend one Wild Shape use with no action to regain one expended 1st-level spell slot. Check this box and one Wild Shape box when used.'}
+ ]
+};
+
+function group(cls,title,subtitle,items,S,dc,atk){return `<div class="group panel ${cls}"><div class="ghead"><h3>${title}</h3><span>${subtitle}</span></div>${items.map(a=>entry(a,S,dc,atk)).join('')}</div>`}
+function bindTrackers(){document.querySelectorAll('.slotpip').forEach(x=>x.onchange=()=>{let s=+x.dataset.slot,i=+x.dataset.i;state.slots[s]=x.checked?Math.max(state.slots[s],i+1):Math.min(state.slots[s],i);save();render()});document.querySelectorAll('.wildpip').forEach(x=>x.onchange=()=>{let i=+x.dataset.i;state.wildUsed=x.checked?Math.max(state.wildUsed,i+1):Math.min(state.wildUsed,i);save();render()});document.querySelectorAll('.freepip').forEach(x=>x.onchange=()=>{state.free[x.dataset.free]=x.checked;save();render()})}
+function render(){const S=LEVELS[level],wm=mod(S.wis),dc=8+S.pb+wm,atk=S.pb+wm;state.level=level;state.wildUsed=Math.min(state.wildUsed,S.wild);state.slots=state.slots.map((n,i)=>Math.min(n,S.slots[i]));if(state.hp[level]===undefined)state.hp[level]=S.hp;
+ document.querySelectorAll('.levels button').forEach(b=>b.classList.toggle('active',+b.dataset.lv===level));$('#q-class').textContent='Druid '+level;$('#q-pb').textContent=sign(S.pb);$('#q-atk').textContent=sign(atk);$('#q-dc').textContent=dc;$('#hp').value=state.hp[level];$('#hp-max').textContent=S.hp;$('#temp-hp').textContent=level*3;$('#shape-ac').textContent=13+wm;$('#dc').textContent=dc;$('#prepared').textContent=S.prep;$('#passive').textContent=10+wm+S.pb;
+ const vals={Str:-1,Dex:2,Con:1,Int:0,Wis:wm,Cha:1},scores={Str:8,Dex:14,Con:13,Int:11,Wis:S.wis,Cha:12};$('#abilities').innerHTML=Object.keys(vals).map(k=>`<div class="ability panel${k==='Int'||k==='Wis'?' save':''}"><div class="ab">${k}</div><div class="mod">${sign(vals[k])}</div><div class="score">${scores[k]}</div>${k==='Int'||k==='Wis'?`<div class="sv">save ${sign(vals[k]+S.pb)}</div>`:''}</div>`).join('');$('#skills').innerHTML=SKILLS.map(([n,a,p])=>`<div class="skill ${p?'':'off'}"><i class="dot ${p?'on':''}"></i><span class="name">${n} <small>${a}</small></span><b class="val">${sign(vals[a]+(p?S.pb:0))}</b></div>`).join('');
+ $('#resource-board').innerHTML=`<div class="resource-row"><span class="res-label">Wild Shape</span><div class="pips">${wildPips(S)} <span class="res-note">${S.wild} uses · regain one on Short Rest</span></div></div>${S.slots.map((n,i)=>n?`<div class="resource-row"><span class="res-label">${ORD[i]}-level slots</span><div class="pips">${slotPips(i,S)}</div></div>`:'').join('')}<div class="resource-row"><span class="res-label">Free casts</span><div class="pips">${freePip('bless','Bless')}${freePip('longstrider','Longstrider')}${level>=5?freePip('pass','Pass without Trace'):''}${level>=5?freePip('convert','Wild Resurgence slot'):''}${freePip('ink','Octopus ink')}</div></div>`;
+ $('#economy').innerHTML=group('act','Action / Magic Action','one per turn',ACTIONS.action,S,dc,atk)+group('bon','Bonus Action','one per turn',ACTIONS.bonus,S,dc,atk)+group('rea','Reaction','one per round',ACTIONS.reaction,S,dc,atk)+group('oth','Rest / Exploration','timing varies',ACTIONS.other,S,dc,atk);
+ $('#form-summary').innerHTML=[['Known forms',S.forms],['Maximum CR',S.maxCR],['Flight',S.fly?'Allowed':'Not yet'],['Form duration',Math.floor(level/2)+' hr']].map(([k,v])=>`<div class="stat panel"><div class="k">${k}</div><div class="v">${v}</div></div>`).join('');
+ $('#forms').innerHTML=FORMS.map(f=>{const locked=f.lv>level;return `<article class="form panel${locked?' locked':''}"><div class="formtop"><h3>${f.n}</h3><span class="role">${locked?'Level '+f.lv:f.role}</span></div>${locked?'':`<div class="formstats">CR ${f.cr} · AC ${13+wm} · ${f.move} · attack ${f.atk}</div><p>${f.body}${level>=7?' <b>Primal Strike:</b> add 1d8 Cold, Fire, Lightning, or Thunder once on your turn.':''}</p>`}</article>`}).join('');bindTrackers();save()}
+
+for(let i=3;i<=9;i++){const b=document.createElement('button');b.textContent=i;b.dataset.lv=i;b.onclick=()=>{level=i;render()};$('#levels').appendChild(b)}
+$('#name').textContent=state.name;$('#name').addEventListener('input',e=>{state.name=e.currentTarget.textContent.trim();save()});$('#notes').value=state.notes;$('#notes').addEventListener('input',e=>{state.notes=e.target.value;save()});
+function setHP(v){const S=LEVELS[level];state.hp[level]=Math.max(0,Math.min(S.hp,parseInt(v)||0));$('#hp').value=state.hp[level];save()}$('#hp-minus').onclick=()=>setHP(state.hp[level]-1);$('#hp-plus').onclick=()=>setHP(state.hp[level]+1);$('#hp').onchange=e=>setHP(e.target.value);
+$('#short-rest').onclick=()=>{state.wildUsed=Math.max(0,state.wildUsed-1);save();render()};$('#long-rest').onclick=()=>{Object.keys(LEVELS).forEach(k=>state.hp[k]=LEVELS[k].hp);state.slots=[0,0,0,0,0];state.wildUsed=0;state.free={bless:false,longstrider:false,pass:false,convert:false,ink:false};save();render()};
+render();
+</script>
+</body>
+</html>

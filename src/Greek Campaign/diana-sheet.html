@@ -135,19 +135,9 @@
       #name {
         font-size: clamp(2.5rem, 7vw, 4.8rem);
         line-height: 0.98;
-        color: var(--silver);
-        outline: none;
-        border-bottom: 1px dashed transparent;
+        color: rgba(238, 243, 255, 0.33);
         min-height: 1em;
         text-shadow: 0 0 35px rgba(130, 173, 255, 0.24);
-      }
-      #name:empty:before {
-        content: attr(data-placeholder);
-        color: rgba(238, 243, 255, 0.33);
-      }
-      #name:hover,
-      #name:focus {
-        border-bottom-color: var(--line);
       }
       .subtitle {
         font: 500 clamp(1rem, 2vw, 1.25rem) var(--display);
@@ -940,12 +930,7 @@
         </div>
         <div>
           <p class="eyebrow">D&amp;D 2024 · Character Sheet · Levels 3–9</p>
-          <h1
-            id="name"
-            contenteditable="true"
-            spellcheck="false"
-            data-placeholder="Diana"
-          ></h1>
+          <h1 id="name">Diana</h1>
           <p class="subtitle">Hunter of Artemis · Circle of the Moon</p>
           <div class="chips">
             <span class="chip">Species <b>Wood Elf</b></span
@@ -1132,7 +1117,7 @@
       }
       const ORD = ['1st', '2nd', '3rd', '4th', '5th']
       const KEY = 'moon.druid.sheet.v1'
-      const defaults = { level: 4, name: '', notes: '', hp: {}, slots: [0, 0, 0, 0, 0], wildUsed: 0, free: { bless: false, longstrider: false, pass: false, convert: false }, selectedForm: 'lesser-unicorn', hitDice: 0 }
+      const defaults = { level: 4, notes: '', hp: {}, slots: [0, 0, 0, 0, 0], wildUsed: 0, free: { bless: false, longstrider: false, pass: false, convert: false }, selectedForm: 'lesser-unicorn', hitDice: 0 }
       let state
       try {
         state = Object.assign(structuredClone(defaults), JSON.parse(localStorage.getItem(KEY) || '{}'))
@@ -1412,11 +1397,6 @@
         }
         $('#levels').appendChild(b)
       }
-      $('#name').textContent = state.name
-      $('#name').addEventListener('input', (e) => {
-        state.name = e.currentTarget.textContent.trim()
-        save()
-      })
       $('#notes').value = state.notes
       $('#notes').addEventListener('input', (e) => {
         state.notes = e.target.value

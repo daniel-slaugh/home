@@ -438,8 +438,8 @@ footer{padding:36px 0 0;text-align:center;font-family:var(--data);font-size:10px
       <dt>Species &amp; patron</dt>
       <dd>Changeling (Eberron: Forge of the Artificer) · Warlock patron reflavoured as <b>Khaos</b>,
       the primordial void of Hesiod's <i>Theogony</i> — mechanics as Great Old One.</dd>
-      <dt>RAW weapon warning</dt>
-      <dd><b>Strength 8 means Pike and Greatsword attacks have Disadvantage</b> from the Heavy property, even when Pact of the Blade uses Charisma. The Trident is not Heavy.</dd>
+      <dt>Pact weapon loadout</dt>
+      <dd><b>Warhammer</b> (Push) · <b>Trident</b> (Topple) · <b>Longsword</b> (Sap). All work one-handed with a shield and use Charisma through Pact of the Blade.</dd>
     </dl></div>
   </div>
 </section>
@@ -488,7 +488,7 @@ const SKILLS=[
 
 function defaultState(){return{
  level:4,hp:{},slotsUsed:0,secondWindUsed:0,clairvoyantUsed:false,magicalCunningUsed:false,
- charmFreeUsed:false,mistyFreeUsed:false,hitDiceUsed:[],name:store.get(LEGACY+"name")||"",
+ hitDiceUsed:[],name:store.get(LEGACY+"name")||"",
  notes:store.get(LEGACY+"notes")||""
 };}
 function loadState(){
@@ -496,6 +496,7 @@ function loadState(){
   const loaded=Object.assign(defaultState(),JSON.parse(store.get(KEY)||"{}"));
   if(!loaded.hp||typeof loaded.hp!=="object")loaded.hp={};
   if(!Array.isArray(loaded.hitDiceUsed))loaded.hitDiceUsed=[];
+  delete loaded.charmFreeUsed;delete loaded.mistyFreeUsed;
   return loaded;
  }catch(e){return defaultState();}
 }
@@ -522,18 +523,19 @@ function buildActions(S,atk,dc,cm){
  const dwDice=2+S.slotLv;
  const laughterTargets=S.slotLv;
  const holdTargets=Math.max(1,S.slotLv-1);
- const hexHours=S.slotLv===2?4:8;
- const heavy=`<div class="raw-note"><b>Heavy:</b> Strength 8 is below 13, so this attack has Disadvantage even though Pact of the Blade uses Charisma.</div>`;
+ const shield=S.fighter?` One-handed use allows the shield for AC ${S.ac+2}.`:" Shield training unlocks when Fighter 1 arrives at total level 4.";
  return{
   action:[
-   {lv:3,tag:"PACT WEAPON",cls:"",use:"FREE",tone:"free",n:"Attack — Pike",d:`${atkTxt} to hit, reach 10 ft, 1d10${sign(cm)} piercing (or Necrotic, Psychic, or Radiant).${attacks} ${mastery?"<b>Push mastery:</b> on a hit against a Large or smaller target, push it up to 10 ft straight away.":"Weapon Mastery unlocks when Fighter 1 arrives at total level 4."}${heavy}`},
-   {lv:3,tag:"PACT WEAPON",cls:"",use:"FREE",tone:"free",n:"Attack — Greatsword",d:`${atkTxt} to hit, 2d6${sign(cm)} slashing (or Necrotic, Psychic, or Radiant).${attacks} ${mastery?`<b>Graze mastery:</b> on a miss, deal ${cm} damage of the weapon's current type.`:"Weapon Mastery unlocks when Fighter 1 arrives at total level 4."}${heavy}`},
-   {lv:3,tag:"PACT WEAPON",cls:"",use:"FREE",tone:"free",n:"Attack — Trident",d:`${atkTxt} to hit, 1d8${sign(cm)} one-handed or 1d10${sign(cm)} two-handed; range 20/60 when thrown. It can deal piercing, Necrotic, Psychic, or Radiant damage.${attacks} ${mastery?`<b>Topple mastery:</b> on a hit, force a Constitution save (DC ${dc}) or the target is Prone.`:"Weapon Mastery unlocks when Fighter 1 arrives at total level 4."} One-handed use allows the shield for AC ${S.ac+2}.`},
+   {lv:3,tag:"PACT WEAPON",cls:"",use:"FREE",tone:"free",n:"Attack — Warhammer",d:`${atkTxt} to hit, 1d8${sign(cm)} one-handed or 1d10${sign(cm)} two-handed; Bludgeoning, Necrotic, Psychic, or Radiant damage.${attacks} ${mastery?"<b>Push mastery:</b> on a hit against a Large or smaller target, push it up to 10 ft straight away.":"Weapon Mastery unlocks when Fighter 1 arrives at total level 4."}${shield}`},
+   {lv:3,tag:"PACT WEAPON",cls:"",use:"FREE",tone:"free",n:"Attack — Trident",d:`${atkTxt} to hit, 1d8${sign(cm)} one-handed or 1d10${sign(cm)} two-handed; range 20/60 when thrown. It can deal Piercing, Necrotic, Psychic, or Radiant damage.${attacks} ${mastery?`<b>Topple mastery:</b> on a hit, force a Constitution save (DC ${dc}) or the target is Prone.`:"Weapon Mastery unlocks when Fighter 1 arrives at total level 4."}${shield}`},
+   {lv:3,tag:"PACT WEAPON",cls:"",use:"FREE",tone:"free",n:"Attack — Longsword",d:`${atkTxt} to hit, 1d8${sign(cm)} one-handed or 1d10${sign(cm)} two-handed; Slashing, Necrotic, Psychic, or Radiant damage.${attacks} ${mastery?"<b>Sap mastery:</b> on a hit, the target has Disadvantage on its next attack roll before the start of your next turn.":"Weapon Mastery unlocks when Fighter 1 arrives at total level 4."}${shield}`},
+   {lv:8,tag:"ELDRITCH SMITE · ON HIT",cls:"c",mode:"slot",n:"Eldritch Smite",d:`Once per turn when you hit with your pact weapon, expend a Pact slot to deal an extra ${S.slotLv+1}d8 Force damage and give the target the Prone condition if it is Huge or smaller. No action and no saving throw.`},
    {lv:3,tag:"CANTRIP · AGONIZING",cls:"c",use:"FREE · CANTRIP",tone:"free",n:"Eldritch Blast",d:`Fire ${S.beams===1?"one beam":"two separate beams"} within 120 ft. Each is ${atkTxt} to hit for 1d10${sign(cm)} Force damage (or Psychic via Psychic Spells).${level>=6?" Repelling Blast can push a Large or smaller target up to 10 ft straight away on each hit.":" Repelling Blast unlocks at total level 6."}`},
    {lv:3,tag:"CANTRIP · ILLUSION",cls:"",use:"FREE · CANTRIP",tone:"free",n:"Minor Illusion",d:"Create a sound or an image of an object within 30 ft for 1 minute. Psychic Spells removes its Somatic component, but its material component (or a spellcasting focus) is still required."},
    {lv:5,tag:"CANTRIP · ENCHANTMENT",cls:"",use:"FREE · CANTRIP",tone:"free",n:"Mind Sliver",d:`Intelligence save (DC ${dc}); on a failure, take 2d6 Psychic damage and subtract 1d4 from the next saving throw made before the end of your next turn. Psychic Spells removes its Verbal component.`},
    {lv:3,tag:"CHOSEN SPELL · 2ND",cls:"y",mode:"slot",n:"Suggestion",d:`One creature within 30 ft that can hear and understand you makes a Wisdom save (DC ${dc}). On a failure it is Charmed and follows an achievable suggestion of no more than 25 words for up to 8 hours (Concentration), ending early if you or your allies damage it. Psychic Spells removes V, but the honey/focus material remains.`},
    {lv:3,tag:"CHOSEN SPELL · 2ND",cls:"y",mode:"slot",n:"Hold Person",d:`Target ${holdTargets===1?"one Humanoid":holdTargets+" Humanoids"} within 60 ft. Wisdom save (DC ${dc}) or Paralyzed; repeat at the end of each turn. Concentration, up to 1 minute. Psychic Spells removes V/S, but the iron/focus material remains.`},
+   {lv:3,tag:"CHOSEN SPELL · 2ND",cls:"y",mode:"slot",n:"Mirror Image",d:"Create three illusory duplicates for 1 minute. When an attack roll hits you, roll a d6 for each remaining duplicate; if any rolls 3+, a duplicate is destroyed and you are not hit. No concentration. Psychic Spells removes V/S, so no components remain."},
    {lv:6,tag:"CHOSEN SPELL · 3RD",cls:"y",mode:"slot",n:"Hypnotic Pattern",d:`Creatures that see the pattern in a 30-ft cube within 120 ft make a Wisdom save (DC ${dc}) or are Charmed, Incapacitated, and Speed 0. <b>Taking any damage ends the spell for that creature</b>; someone can also use an action to shake it awake. Concentration, up to 1 minute. Psychic Spells removes S, but confetti/focus remains.`},
    {lv:8,tag:"CHOSEN SPELL · 4TH",cls:"y",mode:"slot",n:"Dimension Door",d:"Teleport up to 500 ft to a place you can visualize or describe, bringing one willing creature that starts within 5 ft of you. If either destination space is occupied or completely filled, each traveler takes 4d6 Force damage and the teleport fails. Verbal component; no concentration."},
    {lv:9,tag:"CHOSEN SPELL · 4TH",cls:"y",mode:"slot",n:"Banishment",d:`One creature within 30 ft makes a Charisma save (DC ${dc}) or is sent to a harmless demiplane and Incapacitated for up to 1 minute (Concentration). If it is an Aberration, Celestial, Elemental, Fey, or Fiend and the spell lasts the full minute, it is sent to a plane associated with its type; other creatures return.`},
@@ -544,22 +546,20 @@ function buildActions(S,atk,dc,cm){
    {lv:6,tag:"GOO SPELL · 3RD",cls:"a",mode:"slot",n:"Hunger of Hadar",d:`Always prepared. A 20-ft-radius sphere within 150 ft is Difficult Terrain and creatures fully inside are Blinded. A creature starting there takes 2d6 Cold; one ending there makes a Dexterity save (DC ${dc}) or takes 2d6 Acid. Concentration, up to 1 minute.`},
    {lv:8,tag:"GOO SPELL · 4TH",cls:"a",mode:"slot",n:"Confusion",d:`Always prepared. Creatures in a 10-ft-radius sphere within 90 ft make a Wisdom save (DC ${dc}) or lose Bonus Actions and Reactions and roll for random behavior each turn. Repeat the save at each turn's end. Concentration, up to 1 minute.`},
    {lv:8,tag:"GOO SPELL · 4TH",cls:"a",mode:"slot",n:"Summon Aberration",d:"Always prepared. Summon a Beholderkin, Mind Flayer, or Slaad spirit; it acts immediately after you and uses the slot level in its stat block. Concentration, up to 1 hour. Requires a pickled tentacle and eyeball in a platinum-inlaid vial worth 400+ GP (not consumed)."},
-   {lv:5,tag:"FEY-TOUCHED · 1ST",cls:"a",mode:"freeThenSlot",freeKey:"charmFreeUsed",n:"Charm Person",d:`Always prepared from Fey-Touched. One Humanoid within 30 ft makes a Wisdom save (DC ${dc}), with Advantage if you or allies are fighting it. On a failure it is Charmed/Friendly for 1 hour or until harmed, then knows it was Charmed. The free cast is 1st level; a Pact slot can target ${S.slotLv} Humanoids. Psychic Spells removes V/S.`},
    {lv:3,tag:"SPECIES",cls:"a",use:"FREE · AT WILL",tone:"free",n:"Shape-Shift",d:"Change your appearance and voice, including height, weight, sex, and Small/Medium size. You can resemble another playable species but not copy an individual you have never seen, and the form must keep your basic arrangement of limbs. Statistics and equipment do not change. Revert with another action; you also revert when you die."},
    {lv:3,tag:"MASK OF MANY FACES",cls:"c",use:"FREE · AT WILL",tone:"free",n:"Disguise Self",d:"Cast at will without a spell slot. This Illusion changes the appearance of you, clothing, armor, weapons, and carried gear for 1 hour. Psychic Spells removes V/S, so no components remain."},
    {lv:3,tag:"RULES",cls:"",use:"FREE",tone:"free",n:"Dash · Disengage · Dodge · Help · Hide · Influence · Ready · Search · Study · Utilize",d:"Standard actions available to every creature; Ready uses your Reaction when its trigger occurs."}
   ],
   bonus:[
    {lv:3,tag:"PACT OF THE BLADE",cls:"c",use:"FREE · AT WILL",tone:"free",n:"Conjure or Bond Pact Weapon",d:"Conjure one Simple or Martial melee weapon in hand, or bond with an eligible magic weapon you touch. You are proficient, may use it as a spellcasting focus, may use Charisma for attack/damage, and may choose normal, Necrotic, Psychic, or Radiant damage. Using this Bonus Action again ends the old bond; a conjured weapon disappears."},
-   {lv:3,tag:"CHOSEN SPELL · 1ST",cls:"y",mode:"slot",n:"Hex",d:`Curse a creature within 90 ft. Your attack-roll hits deal +1d6 Necrotic (or Psychic via Psychic Spells), and it has Disadvantage on checks with one ability. Concentration up to ${hexHours} hours at this Pact-slot level. After it drops to 0 HP, use a later Bonus Action to move the same Hex—do not recast it.`},
    {lv:3,tag:"CHOSEN SPELL · 1ST",cls:"y",mode:"slot",n:"Armour of Agathys",d:`Gain ${S.aoa} Temporary HP for 1 hour. While you have any Temporary HP, a creature that hits you with a melee attack roll takes ${S.aoa} Cold damage; the spell ends early when you have none. No concentration.`},
-   {lv:5,tag:"FEY-TOUCHED · 2ND",cls:"a",mode:"freeThenSlot",freeKey:"mistyFreeUsed",n:"Misty Step",d:"Always prepared from Fey-Touched. Teleport up to 30 ft to an unoccupied space you can see. One free 2nd-level cast per Long Rest; later casts use Pact slots. This Conjuration spell retains its Verbal component."},
    {lv:4,tag:"FIGHTER",cls:"",use:"FREE · 2 USES",tone:"free",resource:"secondWindUsed",count:2,label:"Uses spent",n:"Second Wind",d:"Regain 1d10 + 1 HP. Two uses. Finish a Short Rest to regain one spent use; finish a Long Rest to regain both."},
    {lv:3,tag:"GREAT OLD ONE",cls:"a",use:"FREE · AT WILL",tone:"free",n:"Awakened Mind",d:`Choose a creature you can see within 30 ft and form a telepathic bond for ${S.warlock} minutes. You can communicate both ways while within ${chaMod(S.cha)} miles, but each must mentally use a language the other knows. The bond ends early if you are Incapacitated, you die, or you form a new bond.`},
    {lv:7,tag:"GREAT OLD ONE",cls:"a",use:"FREE 1/SHORT REST · PACT SLOT TO RESTORE",tone:"free",resource:"clairvoyantUsed",count:1,label:"Use spent",extraSlot:true,n:"Clairvoyant Combatant",d:`When you form an Awakened Mind bond, force that creature to make a Wisdom save (DC ${dc}). On a failure, it has Disadvantage on attacks against you and you have Advantage on attacks against it for the bond's duration. The use is spent even on a successful save. Restore the use on a Short/Long Rest, or expend a Pact slot (no action) to restore it.`}
   ],
   reaction:[
    {lv:3,tag:"RULES",cls:"",use:"FREE · 1 REACTION",tone:"free",n:"Opportunity Attack",d:"When a creature you can see leaves your reach using its action, Bonus Action, Reaction, or movement, make one melee attack immediately before it leaves. Forced movement and teleportation do not trigger it."},
+   {lv:5,tag:"WAR CASTER",cls:"a",use:"FREE · 1 REACTION",tone:"free",n:"Reactive Spell",d:"When a creature provokes an Opportunity Attack from you by leaving your reach, cast a spell with a casting time of an action that targets only that creature instead of making the Opportunity Attack."},
    {lv:5,tag:"CHOSEN SPELL · 1ST",cls:"y",mode:"slot",n:"Hellish Rebuke",d:`When a creature you can see within 60 ft damages you, it makes a Dexterity save (DC ${dc}); ${hrDice}d10 Fire (or Psychic) on a failure, half on a success.`},
    {lv:7,tag:"CHOSEN SPELL · 3RD",cls:"y",mode:"slot",n:"Counterspell",d:`Trigger: you see a creature within 60 ft casting a spell with V, S, or M. The caster makes a Constitution save against DC ${dc}. On a failure, the spell has no effect and its action is wasted, but its spell slot—if any—is <b>not</b> expended. The spell's level does not change this save.`}
   ],
@@ -575,9 +575,9 @@ const ALWAYS=[
  {lv:3,tag:"GREAT OLD ONE",cls:"a",n:"Psychic Spells",d:"Any Warlock spell that deals damage can deal Psychic damage instead. Any Enchantment or Illusion Warlock spell can be cast without Verbal or Somatic components; a required Material component or focus still remains."},
  {lv:3,tag:"CHANGELING",cls:"a",n:"Shape-Shifter Advantage",d:"While shape-shifted, you have Advantage on all Charisma checks—not only checks using proficient skills."},
  {lv:3,tag:"AGONIZING BLAST",cls:"c",n:"Eldritch Blast Damage",d:"Add Charisma to every Eldritch Blast beam's damage; the current damage is already printed in its action entry."},
- {lv:4,tag:"FIGHTER",cls:"",n:"Weapon Mastery",d:"Current mastered weapons: Pike (Push), Greatsword (Graze), and Trident (Topple). After every Long Rest, you may replace one of these weapon choices."},
+ {lv:4,tag:"FIGHTER",cls:"",n:"Weapon Mastery",d:"Current mastered weapons: Warhammer (Push), Trident (Topple), and Longsword (Sap). After every Long Rest, you may replace one of these weapon choices."},
  {lv:4,tag:"FIGHTING STYLE",cls:"",n:"Defense",d:"+1 AC while wearing Light, Medium, or Heavy armor; already included from total level 4 onward."},
- {lv:8,tag:"ELDRITCH MIND",cls:"c",n:"Concentration",d:"Advantage on Constitution saving throws made to maintain Concentration."}
+ {lv:5,tag:"WAR CASTER",cls:"a",n:"Battle Casting",d:"The +1 Charisma is already included. You have Advantage on Constitution saves to maintain Concentration and can perform Somatic components while holding weapons or a shield."}
 ];
 
 function tracker(key,count,label,tone=""){
@@ -621,7 +621,7 @@ document.getElementById("short-rest").onclick=()=>{
 };
 document.getElementById("long-rest").onclick=()=>{
  Object.keys(L).forEach(k=>state.hp[k]=L[k].hp);state.slotsUsed=0;state.secondWindUsed=0;state.clairvoyantUsed=false;
- state.magicalCunningUsed=false;state.charmFreeUsed=false;state.mistyFreeUsed=false;state.hitDiceUsed=[];saveState();render();
+ state.magicalCunningUsed=false;state.hitDiceUsed=[];saveState();render();
 };
 
 function attachTrackers(){

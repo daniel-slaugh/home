@@ -171,24 +171,29 @@ section{padding:44px 0 6px}
 .sp span{font-size:15px;color:var(--dim);line-height:1.5}
 .sp.sub{border-left:3px solid rgba(123,84,216,.4)}
 
-/* ---------- economy ---------- */
-.econ{display:grid;grid-template-columns:repeat(auto-fit,minmax(278px,1fr));gap:13px}
+/* ---------- action economy ---------- */
+.econ{display:grid;grid-template-columns:minmax(0,1fr);gap:18px}
 .col{overflow:hidden;padding:0}
-.colhead{padding:14px 20px;font-family:var(--disp);font-size:1.06rem;font-weight:600;
+.colhead{padding:15px 20px;font-family:var(--disp);font-size:1.12rem;font-weight:600;
   display:flex;align-items:center;gap:10px;color:var(--bone);border-bottom:1px solid var(--line)}
 .colhead .cost{font-family:var(--data);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;
-  opacity:.7;margin-left:auto;font-weight:400}
+  opacity:.62;margin-left:auto;font-weight:400}
 .col.a .colhead{background:linear-gradient(180deg,rgba(163,34,43,.5),transparent)}
 .col.b .colhead{background:linear-gradient(180deg,rgba(201,146,46,.32),transparent)}
 .col.r .colhead{background:linear-gradient(180deg,rgba(123,84,216,.4),transparent)}
 .col.f .colhead{background:linear-gradient(180deg,rgba(79,195,232,.28),transparent)}
-.colbody{padding:4px 20px 16px}
-.ei{padding:11px 0;border-bottom:1px solid rgba(237,228,212,.07)}
-.ei:last-child{border-bottom:none}
-.ei b{display:block;font-size:15.5px;color:var(--bone);font-weight:600;margin-bottom:2px}
-.ei span{font-size:14.5px;color:var(--dim);line-height:1.5}
-.ei .new{font-family:var(--data);font-size:9px;letter-spacing:.09em;text-transform:uppercase;
-  background:var(--crimson);color:#fff;padding:2px 7px;border-radius:2px;margin-left:7px;vertical-align:2px;font-weight:400}
+.colbody{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:14px}
+.ei{min-width:0;padding:13px 14px;border:1px solid rgba(237,228,212,.09);border-radius:3px;
+  background:rgba(8,10,20,.34)}
+.ei.wide{grid-column:1/-1}
+.ei-title{font-family:var(--body);font-size:16.5px;line-height:1.25;color:var(--bone);font-weight:700}
+.ei-meta{display:flex;align-items:center;flex-wrap:nowrap;gap:6px;margin-top:7px;max-width:100%;
+  overflow-x:auto;scrollbar-width:thin;scrollbar-color:rgba(237,228,212,.16) transparent}
+.ei-desc{margin-top:9px;font-size:14.75px;color:var(--dim);line-height:1.52}
+.ei-desc b{color:var(--bone);font-weight:600}
+.ei.locked{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:52px;
+  padding:11px 14px;background:rgba(8,10,20,.18)}
+@media(max-width:760px){.colbody{grid-template-columns:minmax(0,1fr);padding:10px}.ei{padding:14px}}
 
 /* ---------- tables ---------- */
 .tblwrap{padding:2px 20px 10px;overflow-x:auto}
@@ -233,24 +238,26 @@ footer{padding:36px 0 0;text-align:center;font-family:var(--data);font-size:10px
 /* ---------- resources / actions additions ---------- */
 .res2{display:grid;gap:13px;grid-template-columns:1fr}
 @media(min-width:900px){.res2{grid-template-columns:1.15fr .85fr}}
+.pact-resource{gap:18px}
+.pact-note{margin-left:auto;font-size:14px;color:var(--dim)}
 .srctag{font-family:var(--data);font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;
-  padding:2px 7px;border-radius:2px;border:1px solid var(--line);color:var(--bronze);
-  margin-left:8px;vertical-align:2px;font-weight:400;white-space:nowrap}
-.srctag.a{border-color:rgba(123,84,216,.55);color:var(--arcane-hi)}
-.srctag.c{border-color:rgba(163,34,43,.6);color:var(--crimson-hi)}
-.srctag.y{border-color:rgba(79,195,232,.5);color:var(--cyan)}
-.ei .locked{opacity:.36}
-.ei .lvtag{font-family:var(--data);font-size:9px;color:var(--dimmer);margin-left:6px}
+  padding:3px 7px;border-radius:2px;background:rgba(201,146,46,.11);color:var(--bronze-hi);
+  font-weight:400;white-space:nowrap}
+.srctag.a{background:rgba(123,84,216,.15);color:var(--arcane-hi)}
+.srctag.c{background:rgba(163,34,43,.16);color:var(--crimson-hi)}
+.srctag.y{background:rgba(79,195,232,.12);color:var(--cyan)}
+.ei.locked{opacity:.48}
+.ei .lvtag{font-family:var(--data);font-size:9px;letter-spacing:.07em;text-transform:uppercase;
+  color:var(--dimmer);white-space:nowrap}
 .usetag{display:inline-flex;align-items:center;font-family:var(--data);font-size:8.5px;
-  letter-spacing:.09em;text-transform:uppercase;padding:2px 7px;border-radius:2px;
-  border:1px solid rgba(79,195,232,.5);color:var(--cyan);margin:5px 6px 0 0;white-space:nowrap}
-.usetag.free{border-color:rgba(201,146,46,.55);color:var(--bronze-hi)}
-.usetag.warn{border-color:rgba(224,85,96,.65);color:var(--crimson-hi)}
-.resource-control{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:9px;
-  padding-top:9px;border-top:1px solid rgba(237,228,212,.09)}
+  letter-spacing:.09em;text-transform:uppercase;padding:3px 7px;border-radius:2px;
+  background:rgba(79,195,232,.12);color:var(--cyan);white-space:nowrap}
+.usetag.free{background:rgba(201,146,46,.11);color:var(--bronze-hi)}
+.usetag.warn{background:rgba(224,85,96,.13);color:var(--crimson-hi)}
+.resource-control{display:flex;align-items:center;gap:5px;flex-wrap:nowrap;white-space:nowrap}
 .resource-label{font-family:var(--data);font-size:9px;letter-spacing:.1em;text-transform:uppercase;
-  color:var(--dimmer);margin-right:2px}
-.usebox{appearance:none;-webkit-appearance:none;width:23px;height:23px;border-radius:3px;
+  color:var(--dim);margin-right:2px}
+.usebox{appearance:none;-webkit-appearance:none;width:25px;height:25px;border-radius:3px;
   border:2px solid var(--arcane);background:rgba(8,10,20,.7);cursor:pointer;position:relative;flex:none}
 .usebox:checked{background:var(--arcane)}
 .usebox:checked::after{content:"\00d7";position:absolute;inset:0;display:grid;place-items:center;
@@ -263,14 +270,15 @@ footer{padding:36px 0 0;text-align:center;font-family:var(--data);font-size:10px
 .restbtn{font-family:var(--disp);font-size:12px;letter-spacing:.04em;padding:8px 13px;
   border:1px solid var(--line);background:var(--void3);color:var(--bone);border-radius:2px;cursor:pointer}
 .restbtn:hover{border-color:var(--bronze);color:var(--bronze-hi)}
-.raw-note{margin-top:10px;padding:9px 11px;border-left:2px solid var(--crimson-hi);
+.raw-note{margin-top:9px;padding:8px 10px;border-radius:2px;
   background:rgba(163,34,43,.1);color:var(--bone);font-size:14px;line-height:1.45}
 .alwayson{padding:14px 20px}
 .ao-item{display:flex;flex-wrap:wrap;align-items:baseline;gap:0;padding:9px 0;
   border-bottom:1px solid rgba(237,228,212,.07)}
 .ao-item:last-child{border-bottom:none}
 .ao-item b{font-size:15px;color:var(--bone);font-weight:600}
-.ao-item span{display:block;width:100%;font-size:14px;color:var(--dim);margin-top:3px;line-height:1.5}
+.ao-item>span{display:block;width:100%;font-size:14px;color:var(--dim);margin-top:3px;line-height:1.5}
+.ao-item b .srctag{display:inline-flex;width:auto;margin-left:8px;vertical-align:2px}
 </style>
 </head>
 <body>
@@ -367,10 +375,9 @@ footer{padding:36px 0 0;text-align:center;font-family:var(--data);font-size:10px
 
 <!-- ================= RESOURCES ================= -->
 <section>
-  <div class="shead"><h2>Resources</h2></div>
+  <div class="shead"><h2>Resources</h2><span class="tag">Track what gets spent</span></div>
 
   <div class="grid g-vitals">
-    <div class="vital pnl"><div class="k">Armour Class</div><div class="v" id="v-ac">17</div><div class="x" id="v-acx">—</div></div>
     <div class="vital pnl hpv">
       <div class="k">Hit Points</div>
       <div class="hpbox">
@@ -381,23 +388,14 @@ footer{padding:36px 0 0;text-align:center;font-family:var(--data);font-size:10px
       <div class="x">of <b id="hp-max">40</b> · Tough</div>
     </div>
     <div class="vital pnl arc"><div class="k">Armour of Agathys</div><div class="v" id="v-aoa">10</div><div class="x">temp HP · cold retaliation</div></div>
-    <div class="vital pnl"><div class="k">Initiative</div><div class="v">+2</div><div class="x">Dexterity</div></div>
-    <div class="vital pnl"><div class="k">Passive Perception</div><div class="v" id="v-pp">13</div><div class="x">proficient</div></div>
     <div class="vital pnl"><div class="k">Hit Point Dice</div><div class="v" id="v-hd">3d8+1d10</div><div class="x">spend on a Short Rest</div></div>
   </div>
 
-  <div class="grid g-abil" id="abils" style="margin-top:12px"></div>
-
-  <div class="skills pnl" id="skills" style="margin-top:12px"></div>
-
-  <div class="slotrow pnl" style="margin-top:12px;margin-bottom:0">
+  <div class="slotrow pnl pact-resource" style="margin-top:12px;margin-bottom:0">
     <div><div class="lbl2">Slot level</div><div class="big" id="slot-lv">2nd</div></div>
     <div class="sep"></div>
     <div><div class="lbl2">Pact slots spent</div><div class="pips" id="pips"></div></div>
-    <div class="sep"></div>
-    <div><div class="lbl2">Save DC</div><div class="big" id="dc-big">13</div></div>
-    <div class="sep"></div>
-    <div><div class="lbl2">Chosen spells</div><div class="big" id="prep-count">4</div></div>
+    <div class="pact-note">All Pact slots return on a Short or Long Rest.</div>
   </div>
 
   <div class="restbar pnl">
@@ -406,7 +404,26 @@ footer{padding:36px 0 0;text-align:center;font-family:var(--data);font-size:10px
     <button class="restbtn" id="long-rest" type="button">Finish Long Rest</button>
   </div>
 
-  <div class="res2" style="margin-top:12px">
+ </section>
+
+<!-- ================= CORE STATISTICS ================= -->
+<section>
+  <div class="shead"><h2>Core Statistics</h2><span class="tag">Checks, saves &amp; spellcasting</span></div>
+  <div class="grid g-vitals">
+    <div class="vital pnl"><div class="k">Armour Class</div><div class="v" id="v-ac">17</div><div class="x" id="v-acx">—</div></div>
+    <div class="vital pnl"><div class="k">Initiative</div><div class="v">+2</div><div class="x">Dexterity</div></div>
+    <div class="vital pnl"><div class="k">Passive Perception</div><div class="v" id="v-pp">13</div><div class="x">proficient</div></div>
+    <div class="vital pnl arc"><div class="k">Spell Save DC</div><div class="v" id="dc-big">13</div><div class="x">Charisma</div></div>
+    <div class="vital pnl"><div class="k">Chosen Spells</div><div class="v" id="prep-count">4</div><div class="x">plus always prepared</div></div>
+  </div>
+  <div class="grid g-abil" id="abils" style="margin-top:12px"></div>
+  <div class="skills pnl" id="skills" style="margin-top:12px"></div>
+</section>
+
+<!-- ================= TRAITS & EQUIPMENT ================= -->
+<section>
+  <div class="shead"><h2>Traits &amp; Equipment</h2><span class="tag">Reference</span></div>
+  <div class="res2">
     <div class="alwayson pnl">
       <p class="note" style="margin:0 0 10px">Always on — no action required.</p>
       <div id="alwayson"></div>
@@ -537,9 +554,9 @@ function buildActions(S,atk,dc,cm){
    {lv:3,tag:"CHOSEN SPELL · 1ST",cls:"y",mode:"slot",n:"Hex",d:`Curse a creature within 90 ft. Your attack-roll hits deal +1d6 Necrotic (or Psychic via Psychic Spells), and it has Disadvantage on checks with one ability. Concentration up to ${hexHours} hours at this Pact-slot level. After it drops to 0 HP, use a later Bonus Action to move the same Hex—do not recast it.`},
    {lv:3,tag:"CHOSEN SPELL · 1ST",cls:"y",mode:"slot",n:"Armour of Agathys",d:`Gain ${S.aoa} Temporary HP for 1 hour. While you have any Temporary HP, a creature that hits you with a melee attack roll takes ${S.aoa} Cold damage; the spell ends early when you have none. No concentration.`},
    {lv:5,tag:"FEY-TOUCHED · 2ND",cls:"a",mode:"freeThenSlot",freeKey:"mistyFreeUsed",n:"Misty Step",d:"Always prepared from Fey-Touched. Teleport up to 30 ft to an unoccupied space you can see. One free 2nd-level cast per Long Rest; later casts use Pact slots. This Conjuration spell retains its Verbal component."},
-   {lv:4,tag:"FIGHTER",cls:"",use:"FREE · 2 USES",tone:"free",resource:"secondWindUsed",count:2,label:"Second Wind used",n:"Second Wind",d:"Regain 1d10 + 1 HP. Two uses. Finish a Short Rest to regain one spent use; finish a Long Rest to regain both."},
+   {lv:4,tag:"FIGHTER",cls:"",use:"FREE · 2 USES",tone:"free",resource:"secondWindUsed",count:2,label:"Uses spent",n:"Second Wind",d:"Regain 1d10 + 1 HP. Two uses. Finish a Short Rest to regain one spent use; finish a Long Rest to regain both."},
    {lv:3,tag:"GREAT OLD ONE",cls:"a",use:"FREE · AT WILL",tone:"free",n:"Awakened Mind",d:`Choose a creature you can see within 30 ft and form a telepathic bond for ${S.warlock} minutes. You can communicate both ways while within ${chaMod(S.cha)} miles, but each must mentally use a language the other knows. The bond ends early if you are Incapacitated, you die, or you form a new bond.`},
-   {lv:7,tag:"GREAT OLD ONE",cls:"a",use:"FREE 1/SHORT REST · PACT SLOT TO RESTORE",tone:"free",resource:"clairvoyantUsed",count:1,label:"Clairvoyant use spent",extraSlot:true,n:"Clairvoyant Combatant",d:`When you form an Awakened Mind bond, force that creature to make a Wisdom save (DC ${dc}). On a failure, it has Disadvantage on attacks against you and you have Advantage on attacks against it for the bond's duration. The use is spent even on a successful save. Restore the use on a Short/Long Rest, or expend a Pact slot (no action) to restore it.`}
+   {lv:7,tag:"GREAT OLD ONE",cls:"a",use:"FREE 1/SHORT REST · PACT SLOT TO RESTORE",tone:"free",resource:"clairvoyantUsed",count:1,label:"Use spent",extraSlot:true,n:"Clairvoyant Combatant",d:`When you form an Awakened Mind bond, force that creature to make a Wisdom save (DC ${dc}). On a failure, it has Disadvantage on attacks against you and you have Advantage on attacks against it for the bond's duration. The use is spent even on a successful save. Restore the use on a Short/Long Rest, or expend a Pact slot (no action) to restore it.`}
   ],
   reaction:[
    {lv:3,tag:"RULES",cls:"",use:"FREE · 1 REACTION",tone:"free",n:"Opportunity Attack",d:"When a creature you can see leaves your reach using its action, Bonus Action, Reaction, or movement, make one melee attack immediately before it leaves. Forced movement and teleportation do not trigger it."},
@@ -547,7 +564,7 @@ function buildActions(S,atk,dc,cm){
    {lv:7,tag:"CHOSEN SPELL · 3RD",cls:"y",mode:"slot",n:"Counterspell",d:`Trigger: you see a creature within 60 ft casting a spell with V, S, or M. The caster makes a Constitution save against DC ${dc}. On a failure, the spell has no effect and its action is wasted, but its spell slot—if any—is <b>not</b> expended. The spell's level does not change this save.`}
   ],
   rest:[
-   {lv:3,tag:"WARLOCK · 1 MINUTE",cls:"",use:"FREE · 1/LONG REST",tone:"free",resource:"magicalCunningUsed",count:1,label:"Magical Cunning used",n:"Magical Cunning",d:"Perform a 1-minute rite to recover expended Pact Magic slots up to half your maximum, rounded up: with two maximum slots, recover one. This is separate from the full slot recovery on a Short Rest."},
+   {lv:3,tag:"WARLOCK · 1 MINUTE",cls:"",use:"FREE · 1/LONG REST",tone:"free",resource:"magicalCunningUsed",count:1,label:"Use spent",n:"Magical Cunning",d:"Perform a 1-minute rite to recover expended Pact Magic slots up to half your maximum, rounded up: with two maximum slots, recover one. This is separate from the full slot recovery on a Short Rest."},
    {lv:3,tag:"SHORT REST",cls:"",use:"HIT POINT DICE",tone:"",hitDice:true,n:"Spend Hit Point Dice",d:"At the end of a Short Rest, spend dice one at a time. Each d8 or d10 restores its roll +2 HP (minimum 1); decide after each roll whether to spend another. A 2024 Long Rest restores all spent Hit Point Dice."},
    {lv:6,tag:"GOO SPELL · 3RD · 10 MIN",cls:"a",mode:"slot",n:"Clairvoyance",d:"Always prepared. Create an invisible sensor at a familiar or obvious location within 1 mile for up to 10 minutes, Concentration. Choose sight or hearing when cast, then switch between them as a Bonus Action. Requires a 100+ GP jeweled horn or glass-eye focus."}
   ]
@@ -572,16 +589,16 @@ function hitDiceTracker(S){
  return `<div class="resource-control"><span class="resource-label">Dice spent</span>${dice.map(d=>`<label class="resource-label" style="display:flex;align-items:center;gap:4px"><input type="checkbox" class="usebox gold hitdie-box" data-die="${d.id}" aria-label="${d.label} Hit Point Die spent" ${state.hitDiceUsed.includes(d.id)?"checked":""}>${d.label}</label>`).join("")}</div>`;
 }
 function costHtml(i,S){
- if(i.mode==="slot")return `<span class="usetag">${slotName(S)}</span>${tracker("slotsUsed",S.slots,"Pact slots spent")}`;
- if(i.mode==="freeThenSlot")return `<span class="usetag free">FREE 1/LONG REST</span><span class="usetag">THEN ${slotName(S)}</span>${tracker(i.freeKey,1,"Free cast spent","gold")}${tracker("slotsUsed",S.slots,"Pact slots spent")}`;
+ if(i.mode==="slot")return `<span class="usetag">${slotName(S)}</span>${tracker("slotsUsed",S.slots,"Slots spent")}`;
+ if(i.mode==="freeThenSlot")return `<span class="usetag free">FREE 1/LONG REST</span><span class="usetag">THEN ${slotName(S)}</span>${tracker(i.freeKey,1,"Free cast","gold")}${tracker("slotsUsed",S.slots,"Slots spent")}`;
  const tag=i.use?`<span class="usetag ${i.tone||""}">${i.use}</span>`:"";
  const res=i.resource?tracker(i.resource,i.count,i.label,"gold"):"";
- return tag+res+(i.extraSlot?tracker("slotsUsed",S.slots,"Pact slots spent"):"")+(i.hitDice?hitDiceTracker(S):"");
+ return tag+res+(i.extraSlot?tracker("slotsUsed",S.slots,"Slots spent"):"")+(i.hitDice?hitDiceTracker(S):"");
 }
 function econCol(cls,title,cost,items,S){
  return `<div class="col pnl ${cls}"><div class="colhead">${title}<span class="cost">${cost}</span></div><div class="colbody">${items.map(i=>{
-  if(i.lv>level){const lockedCost=i.mode==="slot"?'<span class="usetag">PACT SLOT WHEN UNLOCKED</span>':i.mode==="freeThenSlot"?'<span class="usetag free">FREE 1/LONG REST · THEN PACT SLOT</span>':i.use?`<span class="usetag ${i.tone||""}">${i.use}</span>`:"";return `<div class="ei locked"><b>${i.n}<span class="srctag ${i.cls}">${i.tag}</span><span class="lvtag">unlocks at level ${i.lv}</span></b>${lockedCost}</div>`;}
-  return `<div class="ei"><b>${i.n}<span class="srctag ${i.cls}">${i.tag}</span></b>${costHtml(i,S)}<span style="display:block;margin-top:7px">${i.d}</span></div>`;
+  if(i.lv>level)return `<article class="ei locked"><div class="ei-title">${i.n}</div><span class="lvtag">Level ${i.lv}</span></article>`;
+  return `<article class="ei${i.hitDice?" wide":""}"><div class="ei-title">${i.n}</div><div class="ei-meta"><span class="srctag ${i.cls}">${i.tag}</span>${costHtml(i,S)}</div><div class="ei-desc">${i.d}</div></article>`;
  }).join("")}</div></div>`;
 }
 

@@ -60,6 +60,76 @@ const timeRangeMax = Math.max(timeRangeStep, Math.ceil(maxRecipeMinutes / timeRa
         margin: 0 auto;
         padding: 0 1.5rem 5rem;
       }
+      .mobile-search {
+        display: none;
+      }
+      @media (max-width: 1023px) {
+        .recipe-hero {
+          padding-bottom: 1.25rem;
+        }
+        .recipe-shell {
+          padding-inline: 1rem;
+        }
+        .mobile-search {
+          display: block;
+          margin-bottom: 1.25rem;
+        }
+        .mobile-search-field {
+          display: flex;
+          align-items: center;
+          gap: 0.7rem;
+          min-height: 3.25rem;
+          border: 1px solid var(--paper-line-hot);
+          border-radius: 999px;
+          background: var(--paper-card);
+          padding: 0.2rem 0.35rem 0.2rem 1rem;
+          box-shadow: 0 8px 24px -18px var(--paper-shadow);
+          transition:
+            border-color 0.15s ease,
+            box-shadow 0.15s ease;
+        }
+        .mobile-search-field:focus-within {
+          border-color: var(--herb);
+          box-shadow: 0 0 0 3px var(--herb-dim);
+        }
+        .mobile-search-field > svg {
+          flex: 0 0 auto;
+          color: var(--herb);
+        }
+        .mobile-search-field input {
+          -webkit-appearance: none;
+          appearance: none;
+          min-width: 0;
+          flex: 1;
+          border: 0;
+          outline: 0;
+          background: transparent;
+          color: var(--cocoa);
+          font: 500 1rem/1.3 var(--sans);
+        }
+        .mobile-search-field input::placeholder {
+          color: var(--cocoa-faint);
+        }
+        .mobile-search-clear {
+          display: inline-grid;
+          width: 2.5rem;
+          height: 2.5rem;
+          flex: 0 0 auto;
+          place-items: center;
+          border: 0;
+          border-radius: 999px;
+          background: transparent;
+          color: var(--cocoa-faint);
+          cursor: pointer;
+        }
+        .mobile-search-clear:hover {
+          background: var(--herb-dim);
+          color: var(--forest);
+        }
+        .mobile-search-clear[hidden] {
+          display: none;
+        }
+      }
       .recipe-grid-layout {
         display: grid;
         gap: 2rem;
@@ -501,6 +571,62 @@ const timeRangeMax = Math.max(timeRangeStep, Math.ceil(maxRecipeMinutes / timeRa
     </div>
 
     <main class="recipe-shell">
+      <search
+        class="mobile-search"
+        aria-label="Search recipes"
+      >
+        <div class="mobile-search-field">
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <path
+              d="M21 21l-4.2-4.2m1.7-5.1A7.5 7.5 0 1 1 4 6.5 7.5 7.5 0 0 1 18.5 11.7z"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+            ></path>
+          </svg>
+          <label
+            for="mobile-q"
+            class="sr-only"
+            >Search recipes by name</label
+          >
+          <input
+            id="mobile-q"
+            type="search"
+            placeholder="Search recipes..."
+            enterkeyhint="search"
+            autocomplete="off"
+          />
+          <button
+            id="mobile-search-clear"
+            class="mobile-search-clear"
+            type="button"
+            aria-label="Clear recipe search"
+            hidden
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 20 20"
+              aria-hidden="true"
+            >
+              <path
+                d="M5 5l10 10M15 5L5 15"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.7"
+                stroke-linecap="round"
+              ></path>
+            </svg>
+          </button>
+        </div>
+      </search>
+
       <div class="recipe-grid-layout">
         <input
           id="filters-toggle"
@@ -915,6 +1041,8 @@ const timeRangeMax = Math.max(timeRangeStep, Math.ceil(maxRecipeMinutes / timeRa
       ;(function () {
         const cards = Array.from(document.querySelectorAll('.recipe-card'))
         const q = document.getElementById('q')
+        const mobileQ = document.getElementById('mobile-q')
+        const mobileSearchClear = document.getElementById('mobile-search-clear')
         const ingredients = document.getElementById('ingredients')
         const tagsMatchAll = document.getElementById('tagsMatchAll')
         const timeIncludeInactive = document.getElementById('timeIncludeInactive')
@@ -925,7 +1053,7 @@ const timeRangeMax = Math.max(timeRangeStep, Math.ceil(maxRecipeMinutes / timeRa
         const summary = document.getElementById('summary')
         const noResults = document.getElementById('no-results')
 
-        if (!q || !ingredients || !tagsMatchAll || !timeIncludeInactive || !maxTime || !maxTimeLabel || !timeFill || !clear || !summary || !noResults) {
+        if (!q || !mobileQ || !mobileSearchClear || !ingredients || !tagsMatchAll || !timeIncludeInactive || !maxTime || !maxTimeLabel || !timeFill || !clear || !summary || !noResults) {
           return
         }
 
@@ -1053,6 +1181,12 @@ const timeRangeMax = Math.max(timeRangeStep, Math.ceil(maxRecipeMinutes / timeRa
 
           summary.textContent = `${shown} / ${cards.length} recipes`
           noResults.classList.toggle('hidden', shown !== 0)
+          mobileSearchClear.hidden = !mobileQ.value
+        }
+
+        function syncSearch(source, target) {
+          target.value = source.value
+          applyFilters()
         }
 
         courseInputs.forEach((input) => input.addEventListener('change', applyFilters))
@@ -1060,7 +1194,14 @@ const timeRangeMax = Math.max(timeRangeStep, Math.ceil(maxRecipeMinutes / timeRa
         methodInputs.forEach((input) => input.addEventListener('change', applyFilters))
         tagInputs.forEach((input) => input.addEventListener('change', applyFilters))
 
-        q.addEventListener('input', applyFilters)
+        q.addEventListener('input', () => syncSearch(q, mobileQ))
+        mobileQ.addEventListener('input', () => syncSearch(mobileQ, q))
+        mobileSearchClear.addEventListener('click', () => {
+          mobileQ.value = ''
+          q.value = ''
+          applyFilters()
+          mobileQ.focus()
+        })
         ingredients.addEventListener('input', applyFilters)
 
         tagsMatchAll.addEventListener('change', () => {
@@ -1076,6 +1217,7 @@ const timeRangeMax = Math.max(timeRangeStep, Math.ceil(maxRecipeMinutes / timeRa
 
         clear.addEventListener('click', () => {
           q.value = ''
+          mobileQ.value = ''
           ingredients.value = ''
           tagsMatchAll.checked = false
           timeIncludeInactive.checked = false

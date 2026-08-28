@@ -1,0 +1,30 @@
+{
+  "preset": "jordanelle",
+  "lat": 40.62642,
+  "lon": -111.39001,
+  "zoom": 13,
+  "width": 1600,
+  "height": 1000,
+  "bbox": "-111.5273341015625,40.5612502224245,-111.2526758984375,40.69153623694591",
+  "argv": "--preset jordanelle --fit 0.5 --out out-jordanelle",
+  "fit": 0.5,
+  "shift": [
+    0.0,
+    0.0
+  ],
+  "huc": 12,
+  "contour_step": 3,
+  "simplify": 1.1,
+  "min_feature_px": 26.0,
+  "counts": {
+    "waterbodies": 128,
+    "flowlines": 555,
+    "contours": 497,
+    "watersheds": 13
+  },
+  "sources": {
+    "water": "https://hydro.nationalmap.gov/arcgis/rest/services/nhd/MapServer",
+    "contours": "https://carto.nationalmap.gov/arcgis/rest/services/contours/MapServer",
+    "watersheds": "https://hydro.nationalmap.gov/arcgis/rest/services/wbd/MapServer"
+  }
+}

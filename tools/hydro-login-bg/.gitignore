@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+
+# cached raw API responses (regenerated on demand; can be large)
+out/cache/
+out-*/cache/
+
+# raw fetched GeoJSON dumps — provenance/debug only, several MB each.
+# The layer_*.svg files are the reviewable intermediate outputs; keep those.
+out/*.geojson
+out-*/*.geojson

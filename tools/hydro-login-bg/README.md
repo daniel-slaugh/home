@@ -18,8 +18,12 @@ Needs Python 3.10+, `requests`, `numpy` (`pip install requests numpy`).
 | 1 | **Bounding box** | center `lat,lon` + slippy `zoom` + pixel size → Web-Mercator bbox (same math a map tile uses) |
 | 2 | **Water** — lakes, reservoirs, rivers, streams, canals | USGS **NHD** (National Hydrography Dataset) `nhd/MapServer` layers 12 / 9 / 6 |
 | 3 | **Terrain** — index + intermediate contour lines | USGS **contours** `contours/MapServer` layers 25 / 26 (The National Map) |
-| 4 | **Watersheds** — dashed HUC boundary lines | USGS **WBD** (Watershed Boundary Dataset) `wbd/MapServer`, HUC-8/10/12/14 |
+| 4 | **Watersheds** — fat dashed HUC boundary lines, drawn *on top* | USGS **WBD** (Watershed Boundary Dataset) `wbd/MapServer`, HUC-8/10/12/14 |
 | 5 | **Compose** | project → simplify (Douglas–Peucker) → grouped SVG `<path>` layers with CSS-variable theming |
+
+The server generalizes geometry to ~1 screen pixel (`maxAllowableOffset`) before
+sending, so even a frame that spans the whole Great Salt Lake stays a few MB
+rather than 100+.
 
 ## Outputs (`out/`)
 
@@ -48,8 +52,9 @@ Needs Python 3.10+, `requests`, `numpy` (`pip install requests numpy`).
 Finer knobs (all optional, sensible defaults baked in):
 `--hlb-contour`, `--hlb-watershed`, `--hlb-contour-opacity`, `--hlb-index-opacity`,
 `--hlb-watershed-opacity`, `--hlb-stream-opacity`, `--hlb-waterbody-fill-opacity`,
-`--hlb-contour-width`, `--hlb-index-width`, `--hlb-watershed-width`,
-`--hlb-stream-width`.
+`--hlb-contour-width`, `--hlb-index-width`, `--hlb-watershed-width` (default **20** —
+the watershed dashes are meant to read as a bold top layer), `--hlb-stream-width`.
+The watershed dash gaps scale with `--hlb-watershed-width`, so one knob resizes them.
 
 `preserveAspectRatio="xMidYMid slice"` — it fills any container, cropping the
 overflow, like a CSS `background-size: cover`.
@@ -57,7 +62,8 @@ overflow, like a CSS `background-size: cover`.
 ## Common flags
 
 ```
---preset {deer-creek,jordanelle,pineview,bear-lake,yellowstone,tahoe,crater-lake,powell}
+--preset {deer-creek,jordanelle,pineview,bear-lake,yellowstone,tahoe,
+          crater-lake,powell,great-salt-lake}
 --lat --lon --zoom          explicit framing (zoom ~10–14)
 --fit 0.5                   auto re-center + re-zoom so the lake fills ~50% of the width
 --auto-center               re-center on the lake but keep the given zoom
@@ -65,22 +71,32 @@ overflow, like a CSS `background-size: cover`.
 --shift-y -0.1              +y = down
 --width 1600 --height 1000  output viewBox size
 --out out-tahoe             write to a different dir (cache stays shared in out/cache)
---huc 12                    watershed level for the dashed lines (8/10/12/14)
+--huc 8|10|12|14            watershed level for the dashed lines. Default: auto by
+                            frame size (wide frame → coarser, so it stays legible)
 --contour-step 3            keep every Nth 40-ft contour (3 = 120-ft interval; 1 = dense)
 --simplify 1.1              Douglas–Peucker px tolerance (higher = smaller file)
 --min-feature-px 26         drop contour crumbs shorter than this
+--min-stream-px 7           drop unnamed stream fragments / ponds smaller than this;
+                            raise to ~20 for metro areas (named rivers always kept)
 --dump-raw                  also write the raw *.geojson feature dumps
 --refresh                   ignore the cache and refetch
 ```
 
-The current `out/` was built with:
+Samples in this folder were built with:
 
 ```
+# out/  (hero)
 python3 hydro_login_bg.py --preset deer-creek --fit 0.55 --shift-y -0.18 --dump-raw
+# out-jordanelle/
+python3 hydro_login_bg.py --preset jordanelle --fit 0.5 --out out-jordanelle
+# out-great-salt-lake/  — huge, urbanized shoreline: needs the declutter knobs
+python3 hydro_login_bg.py --preset great-salt-lake --out out-great-salt-lake \
+    --contour-step 5 --min-feature-px 40 --min-stream-px 24 --simplify 1.5
 ```
 
-Tune for file size: raise `--contour-step`, `--simplify`, `--min-feature-px`.
-`background.svg` for the default preset is ~470 KB (~120 KB gzipped).
+Tune for file size: raise `--contour-step`, `--simplify`, `--min-feature-px`,
+`--min-stream-px`. `background.svg` for the default preset is ~480 KB (~120 KB
+gzipped); a lake-spanning frame like Great Salt Lake lands near 900 KB.
 
 ## Using it in HydroServer
 

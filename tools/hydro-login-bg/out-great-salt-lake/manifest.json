@@ -1,0 +1,30 @@
+{
+  "preset": "great-salt-lake",
+  "lat": 41.17,
+  "lon": -112.57,
+  "zoom": 10,
+  "width": 1600,
+  "height": 1000,
+  "bbox": "-113.6686328125,40.651083774260805,-111.4713671875,41.684838601129925",
+  "argv": "--preset great-salt-lake --out out-great-salt-lake --contour-step 5 --min-feature-px 40 --min-stream-px 24 --simplify 1.5",
+  "fit": 0.0,
+  "shift": [
+    0.0,
+    0.0
+  ],
+  "huc": 8,
+  "contour_step": 5,
+  "simplify": 1.5,
+  "min_feature_px": 40.0,
+  "counts": {
+    "waterbodies": 185,
+    "flowlines": 3462,
+    "contours": 2940,
+    "watersheds": 12
+  },
+  "sources": {
+    "water": "https://hydro.nationalmap.gov/arcgis/rest/services/nhd/MapServer",
+    "contours": "https://carto.nationalmap.gov/arcgis/rest/services/contours/MapServer",
+    "watersheds": "https://hydro.nationalmap.gov/arcgis/rest/services/wbd/MapServer"
+  }
+}

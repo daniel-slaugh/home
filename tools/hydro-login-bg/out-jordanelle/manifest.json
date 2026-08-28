@@ -17,9 +17,9 @@
   "simplify": 1.1,
   "min_feature_px": 26.0,
   "counts": {
-    "waterbodies": 128,
-    "flowlines": 555,
-    "contours": 497,
+    "waterbodies": 38,
+    "flowlines": 510,
+    "contours": 490,
     "watersheds": 13
   },
   "sources": {

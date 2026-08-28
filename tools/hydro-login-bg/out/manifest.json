@@ -1,11 +1,11 @@
 {
   "preset": "deer-creek",
-  "lat": 40.42139,
+  "lat": 40.42144,
   "lon": -111.50042,
   "zoom": 13,
   "width": 1600,
   "height": 1000,
-  "bbox": "-111.6377441015625,40.3560164676582,-111.3630858984375,40.4867016285442",
+  "bbox": "-111.6377441015625,40.3560665337238,-111.3630858984375,40.48675159744309",
   "argv": "--preset deer-creek --fit 0.55 --shift-y -0.18 --dump-raw",
   "fit": 0.55,
   "shift": [
@@ -17,9 +17,9 @@
   "simplify": 1.1,
   "min_feature_px": 26.0,
   "counts": {
-    "waterbodies": 110,
-    "flowlines": 525,
-    "contours": 815,
+    "waterbodies": 24,
+    "flowlines": 491,
+    "contours": 808,
     "watersheds": 15
   },
   "sources": {

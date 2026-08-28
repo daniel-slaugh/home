@@ -1,6 +1,9 @@
 __pycache__/
 *.pyc
 
+# Generated render output
+out/
+
 # cached raw API responses (regenerated on demand; can be large)
 out/cache/
 out-*/cache/

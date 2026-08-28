@@ -68,6 +68,7 @@ PRESETS: dict[str, tuple[float, float, int]] = {
     "tahoe":        (39.0968, -120.0324, 11),   # Lake Tahoe, CA/NV
     "crater-lake":  (42.9446, -122.1090, 12),   # Crater Lake, OR
     "powell":       (37.0700, -111.2400, 11),   # Lake Powell (Wahweap), UT/AZ
+    "great-salt-lake": (41.1700, -112.5700, 10), # Great Salt Lake, UT (huge, flat)
 }
 
 # --------------------------------------------------------------------------- #
@@ -141,6 +142,10 @@ class Frame:
     def bbox(self) -> str:
         return f"{self.west},{self.south},{self.east},{self.north}"
 
+    @property
+    def deg_per_px(self) -> float:
+        return abs(self.east - self.west) / self.width
+
     def project(self, lon: float, lat: float) -> tuple[float, float]:
         wx, wy = lonlat_to_world(lon, lat)
         return ((wx - self.world_x0) / self.scale, (wy - self.world_y0) / self.scale)
@@ -167,9 +172,15 @@ def arcgis_query(
     where: str = "1=1",
     out_fields: str = "*",
     refresh: bool = False,
-    max_offset_pages: int = 12,
+    max_offset_pages: int = 20,
+    offset_px: float = 1.2,
 ) -> dict:
-    """Return a GeoJSON FeatureCollection for `layer` clipped to `frame.bbox`."""
+    """Return a GeoJSON FeatureCollection for `layer` clipped to `frame.bbox`.
+
+    `maxAllowableOffset` makes the server generalize geometry to ~`offset_px`
+    screen pixels before sending -- without it a wide frame (a big lake) pulls
+    down hundreds of MB of contour vertices.
+    """
     base_params = dict(
         geometry=frame.bbox,
         geometryType="esriGeometryEnvelope",
@@ -180,6 +191,7 @@ def arcgis_query(
         outFields=out_fields,
         returnGeometry="true",
         geometryPrecision="5",
+        maxAllowableOffset=f"{frame.deg_per_px * offset_px:.8f}",
         f="geojson",
     )
     cache_file = _cache_path(tag, {**base_params, "svc": service, "layer": layer})
@@ -375,7 +387,7 @@ def build_watersheds(frame: Frame, fc: dict, simplify: float) -> list[str]:
     return paths
 
 
-def build_flowlines(frame: Frame, fc: dict, simplify: float
+def build_flowlines(frame: Frame, fc: dict, simplify: float, min_px: float = 0.0
                     ) -> tuple[list[str], list[str], list[str]]:
     perennial, intermittent, canal = [], [], []
     for feat in fc["features"]:
@@ -383,19 +395,23 @@ def build_flowlines(frame: Frame, fc: dict, simplify: float
         fcode = props.get("fcode") or 0
         if fcode in FCODE_SKIP_FLOW:
             continue
+        named = bool(props.get("gnis_name"))
         bucket = perennial
         if fcode in FCODE_INTERMITTENT:
             bucket = intermittent
         elif fcode in FCODE_CANAL:
             bucket = canal
-        for ring in clip_visible(project_feature(feat, frame), frame):
+        parts = clip_visible(project_feature(feat, frame), frame)
+        if min_px and not named and sum(polyline_len(p) for p in parts) < min_px:
+            continue  # drop short unnamed fragments (keeps named rivers whole)
+        for ring in parts:
             ring = rdp(ring, simplify)
             if len(ring) >= 2:
                 bucket.append(f'<path d="{path_d(ring)}"/>')
     return perennial, intermittent, canal
 
 
-def build_waterbodies(frame: Frame, *fcs: dict, simplify: float
+def build_waterbodies(frame: Frame, *fcs: dict, simplify: float, min_px: float = 0.0
                       ) -> tuple[list[str], list[str]]:
     solid, marsh = [], []
     for fc in fcs:
@@ -406,6 +422,11 @@ def build_waterbodies(frame: Frame, *fcs: dict, simplify: float
             rings = [r for r in rings if len(r) >= 3]
             if not rings:
                 continue
+            if min_px:
+                xs = [p[0] for r in rings for p in r]
+                ys = [p[1] for r in rings for p in r]
+                if math.hypot(max(xs) - min(xs), max(ys) - min(ys)) < min_px:
+                    continue  # drop ponds smaller than min_px across
             d = " ".join(path_d(r, close=True) for r in rings)
             (marsh if fcode in WATERBODY_MARSH else solid).append(
                 f'<path fill-rule="evenodd" d="{d}"/>')
@@ -454,7 +475,7 @@ BACKGROUND_STYLE = """
 
       --hlb-contour-width: 1;
       --hlb-index-width: 1.5;
-      --hlb-watershed-width: 1.4;
+      --hlb-watershed-width: 20;
       --hlb-stream-width: 1.6;
     }
     .hlb-bg        { fill: var(--hlb-bg); }
@@ -468,8 +489,10 @@ BACKGROUND_STYLE = """
                           stroke-linejoin: round; stroke-linecap: round; }
     .hlb-watersheds     { fill: none; stroke: var(--hlb-watershed);
                           stroke-width: var(--hlb-watershed-width);
-                          stroke-dasharray: 7 6; opacity: var(--hlb-watershed-opacity);
-                          stroke-linejoin: round; }
+                          stroke-dasharray: calc(var(--hlb-watershed-width) * 1.9)
+                                            calc(var(--hlb-watershed-width) * 1.25);
+                          opacity: var(--hlb-watershed-opacity);
+                          stroke-linejoin: round; stroke-linecap: butt; }
     .hlb-streams        { fill: none; stroke: var(--hlb-water);
                           stroke-width: var(--hlb-stream-width);
                           opacity: var(--hlb-stream-opacity);
@@ -499,12 +522,12 @@ def write_background(frame: Frame, lb: LayerBundle, meta: dict) -> Path:
         f'<rect class="hlb-bg" width="{frame.width}" height="{frame.height}"/>',
         group("hlb-contours", lb.contours_inter),
         group("hlb-contours-index", lb.contours_index),
-        group("hlb-watersheds", lb.watersheds),
         group("hlb-canals", lb.canals),
         group("hlb-streams hlb-streams-intermittent", lb.streams_intermittent),
         group("hlb-streams", lb.streams),
         group("hlb-waterbodies-marsh", lb.waterbodies_marsh),
         group("hlb-waterbodies", lb.waterbodies),
+        group("hlb-watersheds", lb.watersheds),   # bold dashed HUC lines on top
     ]
     comment = ("<!-- generated by hydro_login_bg.py  "
                f"center={meta['lat']},{meta['lon']} zoom={meta['zoom']} "
@@ -589,6 +612,7 @@ PREVIEW_HTML = r"""<!doctype html>
     <div class="row"><span>Contour opacity</span><input type="range" id="r-cont" min="0" max="1" step="0.02" value="0.34"></div>
     <div class="row"><span>Contour width</span><input type="range" id="r-cw" min="0.3" max="3" step="0.1" value="1"></div>
     <div class="row"><span>Watershed opacity</span><input type="range" id="r-ws" min="0" max="1" step="0.02" value="0.5"></div>
+    <div class="row"><span>Watershed width</span><input type="range" id="r-wsw" min="0" max="48" step="1" value="20"></div>
     <div class="row"><span>Water opacity</span><input type="range" id="r-wat" min="0" max="1" step="0.02" value="0.9"></div>
     <div class="presets">
       <button data-t="paper">Paper</button>
@@ -632,6 +656,7 @@ bind('c-water', v => { S('--hlb-water', v); document.documentElement.style.setPr
 bind('r-cont', v => S('--hlb-contour-opacity', v));
 bind('r-cw',  v => { S('--hlb-contour-width', v); S('--hlb-index-width', v * 1.5); });
 bind('r-ws',  v => S('--hlb-watershed-opacity', v));
+bind('r-wsw', v => S('--hlb-watershed-width', v));
 bind('r-wat', v => S('--hlb-stream-opacity', v));
 
 const THEMES = {
@@ -781,9 +806,11 @@ def run(args: argparse.Namespace) -> None:
     cn = arcgis_query(CONTOURS, CONTOUR_INTER, frame, tag="contour_inter",
                       out_fields="contourelevation", refresh=args.refresh)
 
-    print("Fetching WBD watershed boundaries ...")
-    huc_layer = {8: 4, 10: 5, 12: 6, 14: 7}.get(args.huc, 6)
-    ws = arcgis_query(WBD, huc_layer, frame, tag=f"wbd_hu{args.huc}",
+    frame_deg = frame.deg_per_px * frame.width
+    huc = args.huc or (8 if frame_deg > 1.4 else 10 if frame_deg > 0.55 else 12)
+    print(f"Fetching WBD watershed boundaries (HUC-{huc}) ...")
+    huc_layer = {8: 4, 10: 5, 12: 6, 14: 7}[huc]
+    ws = arcgis_query(WBD, huc_layer, frame, tag=f"wbd_hu{huc}",
                       out_fields="name", refresh=args.refresh)
 
     if args.dump_raw:
@@ -800,9 +827,10 @@ def run(args: argparse.Namespace) -> None:
     lb.contours_index, lb.contours_inter = build_contours(
         frame, ci, cn, args.contour_step, simplify, args.min_feature_px)
     lb.watersheds = build_watersheds(frame, ws, simplify * 1.5)
-    lb.streams, lb.streams_intermittent, lb.canals = build_flowlines(frame, fl, simplify)
+    lb.streams, lb.streams_intermittent, lb.canals = build_flowlines(
+        frame, fl, simplify, args.min_stream_px)
     lb.waterbodies, lb.waterbodies_marsh = build_waterbodies(
-        frame, wb, ar, simplify=simplify)
+        frame, wb, ar, simplify=simplify, min_px=args.min_stream_px)
 
     lb.counts = dict(
         waterbodies=len(lb.waterbodies) + len(lb.waterbodies_marsh),
@@ -825,14 +853,14 @@ def run(args: argparse.Namespace) -> None:
         ("index", 'fill="none" stroke="#c9d6e0" stroke-width="1.4"', lb.contours_index),
     ])
     write_layer_preview("watersheds", frame, [
-        ("huc", 'fill="none" stroke="#e0a458" stroke-width="1.6" stroke-dasharray="7 6"', lb.watersheds),
+        ("huc", 'fill="none" stroke="#e0a458" stroke-width="20" stroke-dasharray="38 25" opacity="0.85"', lb.watersheds),
     ])
 
     meta = dict(preset=args.preset, lat=round(frame.lat, 5), lon=round(frame.lon, 5),
                 zoom=zoom, width=args.width, height=args.height, bbox=frame.bbox,
                 argv=" ".join(sys.argv[1:]),
                 fit=args.fit, shift=[args.shift_x, args.shift_y],
-                huc=args.huc, contour_step=args.contour_step,
+                huc=huc, contour_step=args.contour_step,
                 simplify=args.simplify, min_feature_px=args.min_feature_px,
                 counts=lb.counts,
                 sources=dict(water=NHD, contours=CONTOURS, watersheds=WBD))
@@ -872,14 +900,18 @@ def build_parser() -> argparse.ArgumentParser:
                    help="slide subject off-center horizontally, e.g. 0.18 = right")
     p.add_argument("--shift-y", type=float, default=0.0, metavar="FRAC",
                    help="slide subject off-center vertically, e.g. -0.1 = up")
-    p.add_argument("--huc", type=int, default=12, choices=[8, 10, 12, 14],
-                   help="watershed boundary level to draw as dashed lines")
+    p.add_argument("--huc", type=int, default=None, choices=[8, 10, 12, 14],
+                   help="watershed level for the dashed lines (8=big basins .. 14=tiny). "
+                        "Default: auto by frame size (wide frame -> coarser).")
     p.add_argument("--contour-step", type=int, default=3,
                    help="keep every Nth 40-ft intermediate contour (3 = every 120 ft)")
     p.add_argument("--simplify", type=float, default=1.1,
                    help="Douglas-Peucker tolerance in px (higher = smaller file)")
     p.add_argument("--min-feature-px", type=float, default=26.0,
                    help="drop contour fragments shorter than this (px)")
+    p.add_argument("--min-stream-px", type=float, default=7.0,
+                   help="drop unnamed stream fragments / ponds smaller than this "
+                        "(px); raise it for metro areas, e.g. 18")
     p.add_argument("--refresh", action="store_true", help="ignore cache, refetch")
     p.add_argument("--dump-raw", action="store_true",
                    help="also write 01_water / 02_contours / 03_watersheds .geojson "

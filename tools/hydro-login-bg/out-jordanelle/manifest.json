@@ -1,13 +1,13 @@
 {
-  "preset": "jordanelle",
-  "lat": 40.62642,
-  "lon": -111.39001,
+  "preset": null,
+  "lat": 40.611,
+  "lon": -111.429,
   "zoom": 13,
   "width": 1600,
   "height": 1000,
-  "bbox": "-111.5273341015625,40.5612502224245,-111.2526758984375,40.69153623694591",
-  "argv": "--preset jordanelle --fit 0.5 --out out-jordanelle",
-  "fit": 0.5,
+  "bbox": "-111.5663291015625,40.54581018185159,-111.2916708984375,40.67612628279212",
+  "argv": "--lat 40.611 --lon -111.429 --zoom 13 --out out-jordanelle",
+  "fit": 0.0,
   "shift": [
     0.0,
     0.0
@@ -16,11 +16,12 @@
   "contour_step": 3,
   "simplify": 1.1,
   "min_feature_px": 26.0,
+  "label": "Jordanelle Reservoir",
   "counts": {
-    "waterbodies": 38,
-    "flowlines": 510,
-    "contours": 490,
-    "watersheds": 13
+    "waterbodies": 43,
+    "flowlines": 467,
+    "contours": 512,
+    "watersheds": 885
   },
   "sources": {
     "water": "https://hydro.nationalmap.gov/arcgis/rest/services/nhd/MapServer",

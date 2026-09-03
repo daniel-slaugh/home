@@ -16,11 +16,12 @@
   "contour_step": 5,
   "simplify": 1.5,
   "min_feature_px": 40.0,
+  "label": "Great Salt Lake",
   "counts": {
     "waterbodies": 185,
     "flowlines": 3462,
     "contours": 2940,
-    "watersheds": 12
+    "watersheds": 1026
   },
   "sources": {
     "water": "https://hydro.nationalmap.gov/arcgis/rest/services/nhd/MapServer",

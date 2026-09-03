@@ -1,26 +1,27 @@
 {
-  "preset": "deer-creek",
-  "lat": 40.42144,
-  "lon": -111.50042,
+  "preset": null,
+  "lat": 40.415,
+  "lon": -111.44,
   "zoom": 13,
   "width": 1600,
   "height": 1000,
-  "bbox": "-111.6377441015625,40.3560665337238,-111.3630858984375,40.48675159744309",
-  "argv": "--preset deer-creek --fit 0.55 --shift-y -0.18 --dump-raw",
-  "fit": 0.55,
+  "bbox": "-111.5773291015625,40.34961947905173,-111.3026708984375,40.48031705420128",
+  "argv": "--lat 40.415 --lon -111.440 --zoom 13 --dump-raw",
+  "fit": 0.0,
   "shift": [
     0.0,
-    -0.18
+    0.0
   ],
   "huc": 12,
   "contour_step": 3,
   "simplify": 1.1,
   "min_feature_px": 26.0,
+  "label": "Deer Creek Reservoir",
   "counts": {
-    "waterbodies": 24,
-    "flowlines": 491,
-    "contours": 808,
-    "watersheds": 15
+    "waterbodies": 20,
+    "flowlines": 467,
+    "contours": 568,
+    "watersheds": 837
   },
   "sources": {
     "water": "https://hydro.nationalmap.gov/arcgis/rest/services/nhd/MapServer",

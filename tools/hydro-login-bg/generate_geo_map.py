@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-hydro_login_bg.py
-=================
+generate_geo_map.py
+===================
 
 Build a stunning, themeable SVG "map" background for the HydroServer login /
 signup page out of *real* public hydrography + terrain data.
@@ -14,10 +14,10 @@ Pipeline
                      rivers, streams, canals.
 3. TERRAIN        -- USGS elevation contours (The National Map "contours"
                      service).  Index + intermediate lines so mountains read.
-4. WATERSHEDS     -- USGS WBD (Watershed Boundary Dataset) HUC polygons, drawn as
-                     dashed boundary lines.
-5. COMPOSE        -- reproject every geometry into SVG pixel space, simplify, and
-                     emit:
+4. WATERSHEDS     -- USGS WBD (Watershed Boundary Dataset) HUC polygons, traced
+                     as thin square-dotted boundary seams.
+5. COMPOSE        -- reproject every geometry into SVG pixel space, simplify,
+                     label the feature of interest, and emit:
                        out/01_water.geojson  02_contours.geojson  03_watersheds.geojson
                        out/layer_water.svg   layer_contours.svg   layer_watersheds.svg
                        out/background.svg    <- the deliverable (CSS-var themeable)
@@ -31,10 +31,10 @@ Deps: requests, numpy (numpy only used for Douglas-Peucker; optional).
 
 Examples
 --------
-    python hydro_login_bg.py                       # default preset (Deer Creek, UT)
-    python hydro_login_bg.py --preset jordanelle
-    python hydro_login_bg.py --lat 44.46 --lon -110.57 --zoom 12   # Yellowstone L.
-    python hydro_login_bg.py --preset deer-creek --auto-center --contour-step 2
+    python generate_geo_map.py                       # default preset (Deer Creek, UT)
+    python generate_geo_map.py --preset jordanelle
+    python generate_geo_map.py --lat 44.46 --lon -110.57 --zoom 12   # Yellowstone L.
+    python generate_geo_map.py --preset deer-creek --auto-center --contour-step 2
 """
 from __future__ import annotations
 
@@ -377,14 +377,300 @@ def build_contours(frame: Frame, fc_index: dict, fc_inter: dict,
     return idx, inter
 
 
-def build_watersheds(frame: Frame, fc: dict, simplify: float) -> list[str]:
-    paths = []
+def clip_ring_rect(ring: Ring, x0: float, y0: float, x1: float, y1: float) -> Ring:
+    """Sutherland-Hodgman: clip a polygon ring to an axis-aligned rectangle.
+
+    Cropping the huge HUC polygons to (a little past) the viewport before we
+    square them off means we only staircase the handful of vertices actually on
+    screen -- and the parts that run along a frame edge come out dead straight.
+    """
+    def clip(pts: Ring, keep, cut) -> Ring:
+        out: Ring = []
+        for i in range(len(pts)):
+            a, b = pts[i - 1], pts[i]
+            ka, kb = keep(a), keep(b)
+            if kb:
+                if not ka:
+                    out.append(cut(a, b))
+                out.append(b)
+            elif ka:
+                out.append(cut(a, b))
+        return out
+
+    def lerp(a, b, t):
+        return (a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t)
+
+    pts = list(ring)
+    if len(pts) > 1 and pts[0] == pts[-1]:
+        pts = pts[:-1]
+    pts = clip(pts, lambda p: p[0] >= x0,
+               lambda a, b: lerp(a, b, (x0 - a[0]) / ((b[0] - a[0]) or 1e-9)))
+    pts = clip(pts, lambda p: p[0] <= x1,
+               lambda a, b: lerp(a, b, (x1 - a[0]) / ((b[0] - a[0]) or 1e-9)))
+    pts = clip(pts, lambda p: p[1] >= y0,
+               lambda a, b: lerp(a, b, (y0 - a[1]) / ((b[1] - a[1]) or 1e-9)))
+    pts = clip(pts, lambda p: p[1] <= y1,
+               lambda a, b: lerp(a, b, (y1 - a[1]) / ((b[1] - a[1]) or 1e-9)))
+    return pts
+
+
+def _resample(pts: Ring, res: float) -> Ring:
+    """Points along an open polyline at constant `res`-px arc-length spacing,
+    still lying exactly on the input line."""
+    if len(pts) < 2:
+        return list(pts)
+    out: Ring = [pts[0]]
+    carry = 0.0
+    for (x0, y0), (x1, y1) in zip(pts, pts[1:]):
+        dx, dy = x1 - x0, y1 - y0
+        seg = math.hypot(dx, dy)
+        if seg < 1e-9:
+            continue
+        ux, uy = dx / seg, dy / seg
+        d = res - carry
+        while d <= seg:
+            out.append((x0 + ux * d, y0 + uy * d))
+            d += res
+        carry = seg - (d - res)
+    if out[-1] != pts[-1]:
+        out.append(pts[-1])
+    return out
+
+
+def _dissolve_edges(rings: list[Ring], quant: float
+                    ) -> list[Ring]:
+    """Merge many basin rings into a set of shared, non-overlapping polylines.
+
+    Neighbouring HUC polygons carry the *same* vertices along a shared border,
+    so quantising to a `quant`-px grid and de-duplicating undirected edges
+    collapses every shared border to one line. The unique edges are then
+    chained into maximal polylines, broken only where 3+ basins meet.
+    """
+    def key(p):
+        return (round(p[0] / quant), round(p[1] / quant))
+
+    adj: dict[tuple, set] = {}
+    seen: set[tuple] = set()
+    for ring in rings:
+        q = [key(p) for p in ring]
+        for a, b in zip(q, q[1:] + q[:1]):
+            if a == b:
+                continue
+            e = (a, b) if a <= b else (b, a)
+            if e in seen:
+                continue
+            seen.add(e)
+            adj.setdefault(a, set()).add(b)
+            adj.setdefault(b, set()).add(a)
+
+    used: set[tuple] = set()
+
+    def edge(a, b):
+        return (a, b) if a <= b else (b, a)
+
+    def walk(a, b) -> list[tuple]:
+        chain = [a, b]
+        used.add(edge(a, b))
+        while len(adj.get(b, ())) == 2:
+            nxt = next((n for n in adj[b] if n != chain[-2]), None)
+            if nxt is None or edge(b, nxt) in used:
+                break
+            used.add(edge(b, nxt))
+            chain.append(nxt)
+            b = nxt
+        return chain
+
+    chains: list[Ring] = []
+    for node, nbrs in adj.items():
+        if len(nbrs) == 2:
+            continue                      # start at junctions / dead ends only
+        for nb in list(nbrs):
+            if edge(node, nb) not in used:
+                chains.append([(x * quant, y * quant) for x, y in walk(node, nb)])
+    for e in seen:                        # anything left is a pure loop
+        if e not in used:
+            chains.append([(x * quant, y * quant) for x, y in walk(*e)])
+    return chains
+
+
+def build_watersheds(frame: Frame, fc: dict, simplify: float,
+                     dash: float, gap: float) -> list[str]:
+    """Trace every HUC basin boundary with short, evenly spaced curved marks.
+
+    Shared borders are dissolved to a single line first (so marks never stack
+    up and read as solid), then each resulting polyline is walked at a constant
+    arc-length step: one little round-capped dash ("macaroni") of `dash` px
+    every `dash + gap` px, phase reset per line so the rhythm is uniform.
+    """
+    W, H = float(frame.width), float(frame.height)
+    rings: list[Ring] = []
     for feat in fc["features"]:
+        for raw in project_feature(feat, frame):
+            ring = clip_ring_rect(raw, -12.0, -12.0, W + 12.0, H + 12.0)
+            if len(ring) < 2:
+                continue
+            rings.append(simplify_ring(ring, max(simplify * 0.4, 0.35), closed=True))
+
+    res = max(dash / 3.0, 1.5)
+    k = max(2, round(dash / res))               # sample points per macaroni
+    step = max(k + 1, round((dash + gap) / res))
+    marks: list[str] = []
+    for chain in _dissolve_edges(rings, quant=3.0):
+        pit = _resample(chain, res)
+        if len(pit) < 2:
+            continue
+        # centre the rhythm on the line so both ends get a partial gap, not a stub
+        pad = ((len(pit) - 1) % step) // 2
+        for i in range(pad, len(pit) - 1, step):
+            run = pit[i:i + k + 1]
+            if len(run) >= 2:
+                d = "M" + " L".join(f"{x:.1f},{y:.1f}" for x, y in run)
+                marks.append(f'<path d="{d}"/>')
+    return marks
+
+
+# --------------------------------------------------------------------------- #
+# Feature-of-interest label
+# --------------------------------------------------------------------------- #
+def _prop(props: dict, key: str):
+    """Case-insensitive property lookup -- ArcGIS GeoJSON returns UPPER-CASE
+    field names (GNIS_NAME, FCODE), the docs and our fcode sets use lower."""
+    if key in props:
+        return props[key]
+    up = props.get(key.upper())
+    return up if up is not None else props.get(key.lower())
+
+
+def pick_feature_label(frame: Frame, wb: dict, ar: dict, fl: dict,
+                       prefer: str | None = None
+                       ) -> tuple[str, float, float] | None:
+    """Name + pixel anchor for the thing the frame is *about*.
+
+    If `prefer` is given (an explicit --label), anchor on the NHD feature that
+    actually carries that name -- the longest matching river reach, or the
+    matching waterbody -- so a canal or a neighbouring lake can't hijack the
+    anchor. Otherwise: largest waterbody by on-screen area, else the longest
+    named flowline.
+    """
+    def clamp(v: float, lo: float, hi: float) -> float:
+        return max(lo, min(hi, v))
+
+    if prefer:
+        pl = prefer.strip().lower()
+
+        def hit(feat) -> bool:
+            nm = (_prop(feat.get("properties", {}), "gnis_name") or "").strip().lower()
+            return bool(nm) and (pl in nm or nm in pl)
+
+        matched: Ring = []
+        for feat in fl["features"]:
+            if not hit(feat):
+                continue
+            for r in clip_visible(project_feature(feat, frame), frame):
+                matched.extend(r)
+        if len(matched) >= 2:
+            # length-weighted centroid of every matched reach in view
+            sx = sy = tw = 0.0
+            for a, b in zip(matched, matched[1:]):
+                w = math.hypot(b[0] - a[0], b[1] - a[1])
+                sx += (a[0] + b[0]) * 0.5 * w
+                sy += (a[1] + b[1]) * 0.5 * w
+                tw += w
+            if tw > 0:
+                return (prefer, clamp(sx / tw, 70, frame.width - 70),
+                        clamp(sy / tw, 40, frame.height - 40))
+        for feat in wb["features"]:
+            if not hit(feat):
+                continue
+            pts = [p for ring in project_feature(feat, frame) for p in ring]
+            if len(pts) < 3:
+                continue
+            xs = [p[0] for p in pts]
+            ys = [p[1] for p in pts]
+            vx0, vx1 = max(min(xs), 0.0), min(max(xs), frame.width)
+            vy0, vy1 = max(min(ys), 0.0), min(max(ys), frame.height)
+            if vx1 > vx0 and vy1 > vy0:
+                return (prefer, clamp((vx0 + vx1) / 2, 70, frame.width - 70),
+                        clamp((vy0 + vy1) / 2, 40, frame.height - 40))
+        # named feature not in frame -- fall through, but keep the caller's text
+
+    # Only NHD waterbodies carry a usable name here; NHDArea (wide-river
+    # polygons, passed as `ar`) is nameless in our query, so a big river flat
+    # would otherwise beat the lake and land an anonymous "Reservoir" label.
+    best: tuple[float, str, float, float] | None = None
+    for fc in (wb,):
+        for feat in fc["features"]:
+            name = (_prop(feat.get("properties", {}), "gnis_name") or "").strip()
+            rings = project_feature(feat, frame)
+            pts = [p for r in rings for p in r]
+            if len(pts) < 3:
+                continue
+            xs = [p[0] for p in pts]
+            ys = [p[1] for p in pts]
+            vx0, vx1 = max(min(xs), 0.0), min(max(xs), frame.width)
+            vy0, vy1 = max(min(ys), 0.0), min(max(ys), frame.height)
+            if vx1 - vx0 <= 0 or vy1 - vy0 <= 0:
+                continue
+            area = (vx1 - vx0) * (vy1 - vy0)
+            # anchor on the middle of the visible extent -- robust for a lake
+            # that runs off-frame, where a true polygon centroid drifts away.
+            cx = clamp((vx0 + vx1) / 2, 70, frame.width - 70)
+            cy = clamp((vy0 + vy1) / 2, 40, frame.height - 40)
+            if best is None or area > best[0]:
+                best = (area, name, cx, cy)
+    if best and best[0] > 5000:
+        return (best[1] or "Reservoir", best[2], best[3])
+
+    longest: tuple[float, str, float, float] | None = None
+    for feat in fl["features"]:
+        name = (_prop(feat.get("properties", {}), "gnis_name") or "").strip()
+        if not name:
+            continue
+        rings = clip_visible(project_feature(feat, frame), frame)
+        if not rings:
+            continue
+        ring = max(rings, key=polyline_len)
+        total = sum(polyline_len(r) for r in rings)
+        mx, my = ring[len(ring) // 2]
+        mx = clamp(mx, 60, frame.width - 60)
+        my = clamp(my, 40, frame.height - 40)
+        if longest is None or total > longest[0]:
+            longest = (total, name, mx, my)
+    if longest:
+        return (longest[1], longest[2], longest[3])
+    return None
+
+
+def _closest_on_segment(px: float, py: float, a, b) -> tuple[float, float]:
+    ax, ay = a
+    bx, by = b
+    dx, dy = bx - ax, by - ay
+    L2 = dx * dx + dy * dy
+    if L2 < 1e-9:
+        return ax, ay
+    t = max(0.0, min(1.0, ((px - ax) * dx + (py - ay) * dy) / L2))
+    return ax + t * dx, ay + t * dy
+
+
+def _snap_to_flowline(frame: Frame, fl: dict, x: float, y: float,
+                      prefer: str | None = None) -> tuple[float, float]:
+    """Nearest point on a (named, or `prefer`-matching) flowline to (x, y)."""
+    pl = prefer.strip().lower() if prefer else None
+    best = (float("inf"), x, y)
+    for feat in fl["features"]:
+        nm = (_prop(feat.get("properties", {}), "gnis_name") or "").strip().lower()
+        if pl:
+            if not nm or (pl not in nm and nm not in pl):
+                continue
+        elif not nm:
+            continue
         for ring in clip_visible(project_feature(feat, frame), frame):
-            ring = simplify_ring(ring, simplify, closed=True)
-            if len(ring) >= 2:
-                paths.append(f'<path d="{path_d(ring, close=True, prec=0)}"/>')
-    return paths
+            for i in range(len(ring) - 1):
+                cx, cy = _closest_on_segment(x, y, ring[i], ring[i + 1])
+                d = (cx - x) ** 2 + (cy - y) ** 2
+                if d < best[0]:
+                    best = (d, cx, cy)
+    return (best[1], best[2])
 
 
 def build_flowlines(frame: Frame, fc: dict, simplify: float, min_px: float = 0.0
@@ -461,24 +747,30 @@ BACKGROUND_STYLE = """
        --hlb-water / --hlb-contour / --hlb-watershed and the opacity/width knobs.
        Inline this SVG in your markup so the CSS variables reach it. */
     .hlb-root {
-      --hlb-bg: #eef4f7;
-      --hlb-ink: #93a9b8;
-      --hlb-water: #3f7fae;
+      --hlb-bg: #f2f6f8;
+      --hlb-ink: #a6bac6;
+      --hlb-water: #6ba4c4;
+      --hlb-label: #2f6d97;
+      --hlb-marker: #2f6d97;
       --hlb-contour: var(--hlb-ink);
       --hlb-watershed: var(--hlb-ink);
 
-      --hlb-contour-opacity: .34;
-      --hlb-index-opacity: .55;
-      --hlb-watershed-opacity: .5;
-      --hlb-stream-opacity: .9;
-      --hlb-waterbody-fill-opacity: .38;
+      --hlb-contour-opacity: .28;
+      --hlb-index-opacity: .46;
+      --hlb-watershed-opacity: 1;
+      --hlb-stream-opacity: .72;
+      --hlb-waterbody-fill-opacity: .28;
 
-      --hlb-contour-width: 1;
-      --hlb-index-width: 1.5;
-      --hlb-watershed-width: 20;
-      --hlb-stream-width: 1.6;
+      --hlb-contour-width: .9;
+      --hlb-index-width: 1.3;
+      --hlb-watershed-width: 3.2;
+      --hlb-stream-width: 1.4;
+      --hlb-label-size: 17;
+
+      --hlb-overlay-opacity: 1;   /* fades every drawn layer at once; bg stays */
     }
     .hlb-bg        { fill: var(--hlb-bg); }
+    .hlb-overlay   { opacity: var(--hlb-overlay-opacity); }
     .hlb-contours       { fill: none; stroke: var(--hlb-contour);
                           stroke-width: var(--hlb-contour-width);
                           opacity: var(--hlb-contour-opacity);
@@ -489,10 +781,18 @@ BACKGROUND_STYLE = """
                           stroke-linejoin: round; stroke-linecap: round; }
     .hlb-watersheds     { fill: none; stroke: var(--hlb-watershed);
                           stroke-width: var(--hlb-watershed-width);
-                          stroke-dasharray: calc(var(--hlb-watershed-width) * 1.9)
-                                            calc(var(--hlb-watershed-width) * 1.25);
                           opacity: var(--hlb-watershed-opacity);
-                          stroke-linejoin: round; stroke-linecap: butt; }
+                          stroke-linejoin: round; stroke-linecap: round; }
+    .hlb-label          { fill: var(--hlb-label);
+                          font-family: Archivo, "Helvetica Neue", Arial, sans-serif;
+                          font-size: calc(var(--hlb-label-size) * 1px);
+                          font-weight: 500; letter-spacing: .01em;
+                          paint-order: stroke; stroke: var(--hlb-bg);
+                          stroke-width: 4px; stroke-linejoin: round; }
+    .hlb-marker-pin     { fill: var(--hlb-marker); stroke: var(--hlb-bg);
+                          stroke-width: 2.5; paint-order: stroke;
+                          stroke-linejoin: round; }
+    .hlb-marker-dot     { fill: var(--hlb-bg); }
     .hlb-streams        { fill: none; stroke: var(--hlb-water);
                           stroke-width: var(--hlb-stream-width);
                           opacity: var(--hlb-stream-opacity);
@@ -513,13 +813,31 @@ BACKGROUND_STYLE = """
   </style>"""
 
 
-def write_background(frame: Frame, lb: LayerBundle, meta: dict) -> Path:
+def write_background(frame: Frame, lb: LayerBundle, meta: dict,
+                     label: tuple[str, float, float] | None = None,
+                     overlay_opacity: float = 1.0,
+                     marker: tuple[float, float] | None = None,
+                     marker_crisp: bool = False) -> Path:
     def group(cls: str, paths: list[str]) -> str:
         return f'<g class="{cls}">{"".join(paths)}</g>' if paths else ""
 
-    body = [
-        BACKGROUND_STYLE,
-        f'<rect class="hlb-bg" width="{frame.width}" height="{frame.height}"/>',
+    label_el = ""
+    if label:
+        text, lx, ly = label
+        esc = (text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;"))
+        label_el = (f'<text class="hlb-label" x="{lx:.0f}" y="{ly:.0f}" '
+                    f'text-anchor="middle" dominant-baseline="middle">{esc}</text>')
+
+    marker_el = ""
+    if marker:
+        mx, my = marker
+        marker_el = (
+            f'<g class="hlb-marker" transform="translate({mx:.0f} {my:.0f})">'
+            '<path class="hlb-marker-pin" d="M0 0C-6.5 -9 -12 -14.5 -12 -22'
+            'A12 12 0 1 1 12 -22C12 -14.5 6.5 -9 0 0Z"/>'
+            '<circle class="hlb-marker-dot" cx="0" cy="-22" r="4.6"/></g>')
+
+    overlay = "".join([
         group("hlb-contours", lb.contours_inter),
         group("hlb-contours-index", lb.contours_index),
         group("hlb-canals", lb.canals),
@@ -527,12 +845,23 @@ def write_background(frame: Frame, lb: LayerBundle, meta: dict) -> Path:
         group("hlb-streams", lb.streams),
         group("hlb-waterbodies-marsh", lb.waterbodies_marsh),
         group("hlb-waterbodies", lb.waterbodies),
-        group("hlb-watersheds", lb.watersheds),   # bold dashed HUC lines on top
+        group("hlb-watersheds", lb.watersheds),   # square-dotted basin boundaries
+        label_el,                                 # feature-of-interest label
+        "" if marker_crisp else marker_el,        # pin fades with the map...
+    ])
+    body = [
+        BACKGROUND_STYLE,
+        f'<rect class="hlb-bg" width="{frame.width}" height="{frame.height}"/>',
+        f'<g class="hlb-overlay">{overlay}</g>',
+        marker_el if marker_crisp else "",        # ...unless it's kept crisp
     ]
-    comment = ("<!-- generated by hydro_login_bg.py  "
+    comment = ("<!-- generated by generate_geo_map.py  "
                f"center={meta['lat']},{meta['lon']} zoom={meta['zoom']} "
                f"bbox={meta['bbox']} -->")
-    svg = _svg_open(frame, 'class="hlb-root"') + comment + "".join(body) + "</svg>"
+    root = 'class="hlb-root"'
+    if abs(overlay_opacity - 1.0) > 1e-6:
+        root += f' style="--hlb-overlay-opacity:{overlay_opacity:g}"'
+    svg = _svg_open(frame, root) + comment + "".join(body) + "</svg>"
     p = OUT / "background.svg"
     p.write_text(svg)
     return p
@@ -556,12 +885,16 @@ PREVIEW_HTML = r"""<!doctype html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>HydroServer login background - preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --hlb-bg: #eef4f7;
-    --hlb-ink: #93a9b8;
-    --hlb-water: #3f7fae;
-    --page-ground: #f5f8fa;
+    --hlb-bg: #f2f6f8;
+    --hlb-ink: #a6bac6;
+    --hlb-water: #6ba4c4;
+    --hlb-label: #2f6d97;
+    --page-ground: #f2f6f8;
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; height: 100%; font-family: -apple-system, BlinkMacSystemFont,
@@ -571,7 +904,8 @@ PREVIEW_HTML = r"""<!doctype html>
   .stage .hlb-root { position: absolute; inset: 0; width: 100%; height: 100%; }
   .card {
     position: relative; z-index: 2; width: min(440px, calc(100vw - 40px));
-    margin: 7vh auto 0; background: #fff; border-radius: 18px; padding: 40px 40px 32px;
+    margin: 7vh max(6vw, 40px) 0 auto; background: #fff; border-radius: 18px;
+    padding: 40px 40px 32px;
     box-shadow: 0 20px 60px -20px rgba(20,50,80,.35), 0 4px 12px rgba(20,50,80,.08);
   }
   .card h1 { text-align: center; font-size: 26px; margin: 8px 0 26px; }
@@ -606,19 +940,20 @@ PREVIEW_HTML = r"""<!doctype html>
 
   <div class="panel">
     <h2>Theme</h2>
-    <div class="row"><span>Background</span><input type="color" id="c-bg" value="#eef4f7"></div>
-    <div class="row"><span>Lines (ink)</span><input type="color" id="c-ink" value="#93a9b8"></div>
-    <div class="row"><span>Water</span><input type="color" id="c-water" value="#3f7fae"></div>
-    <div class="row"><span>Contour opacity</span><input type="range" id="r-cont" min="0" max="1" step="0.02" value="0.34"></div>
-    <div class="row"><span>Contour width</span><input type="range" id="r-cw" min="0.3" max="3" step="0.1" value="1"></div>
-    <div class="row"><span>Watershed opacity</span><input type="range" id="r-ws" min="0" max="1" step="0.02" value="0.5"></div>
-    <div class="row"><span>Watershed width</span><input type="range" id="r-wsw" min="0" max="48" step="1" value="20"></div>
-    <div class="row"><span>Water opacity</span><input type="range" id="r-wat" min="0" max="1" step="0.02" value="0.9"></div>
+    <div class="row"><span>Background</span><input type="color" id="c-bg" value="#f2f6f8"></div>
+    <div class="row"><span>Lines (ink)</span><input type="color" id="c-ink" value="#a6bac6"></div>
+    <div class="row"><span>Water</span><input type="color" id="c-water" value="#6ba4c4"></div>
+    <div class="row"><span>Label</span><input type="color" id="c-label" value="#2f6d97"></div>
+    <div class="row"><span>Contour opacity</span><input type="range" id="r-cont" min="0" max="1" step="0.02" value="0.28"></div>
+    <div class="row"><span>Contour width</span><input type="range" id="r-cw" min="0.3" max="3" step="0.1" value="0.9"></div>
+    <div class="row"><span>Basin opacity</span><input type="range" id="r-ws" min="0" max="1" step="0.02" value="1"></div>
+    <div class="row"><span>Basin mark width</span><input type="range" id="r-wsw" min="0.5" max="5" step="0.1" value="3.2"></div>
+    <div class="row"><span>Water opacity</span><input type="range" id="r-wat" min="0" max="1" step="0.02" value="0.72"></div>
     <div class="presets">
-      <button data-t="paper">Paper</button>
-      <button data-t="blueprint">Blueprint</button>
+      <button data-t="mist">Mist</button>
+      <button data-t="sand">Sand</button>
+      <button data-t="slate">Slate</button>
       <button data-t="night">Night</button>
-      <button data-t="sage">Sage</button>
     </div>
     <div class="meta" id="meta"></div>
   </div>
@@ -647,23 +982,25 @@ const S = (k, v) => root.style.setProperty(k, v);
 const meta = __META__;
 document.getElementById('meta').textContent =
   `${meta.preset || 'custom'} - ${meta.lat}, ${meta.lon} - zoom ${meta.zoom}
-water:${meta.counts.waterbodies}+${meta.counts.flowlines}  contours:${meta.counts.contours}  huc:${meta.counts.watersheds}`;
+label: ${meta.label || '(none)'}
+water:${meta.counts.waterbodies}+${meta.counts.flowlines}  contours:${meta.counts.contours}  basins:${meta.counts.watersheds}`;
 
 const bind = (id, fn) => document.getElementById(id).addEventListener('input', e => fn(e.target.value));
 bind('c-bg',  v => { S('--hlb-bg', v); document.body.style.setProperty('--page-ground', v); });
 bind('c-ink', v => S('--hlb-ink', v));
 bind('c-water', v => { S('--hlb-water', v); document.documentElement.style.setProperty('--hlb-water', v); });
-bind('r-cont', v => S('--hlb-contour-opacity', v));
+bind('c-label', v => S('--hlb-label', v));
+bind('r-cont', v => { S('--hlb-contour-opacity', v); S('--hlb-index-opacity', Math.min(1, v * 1.7)); });
 bind('r-cw',  v => { S('--hlb-contour-width', v); S('--hlb-index-width', v * 1.5); });
 bind('r-ws',  v => S('--hlb-watershed-opacity', v));
 bind('r-wsw', v => S('--hlb-watershed-width', v));
-bind('r-wat', v => S('--hlb-stream-opacity', v));
+bind('r-wat', v => { S('--hlb-stream-opacity', v); S('--hlb-waterbody-fill-opacity', v * 0.3); });
 
 const THEMES = {
-  paper:     { '--hlb-bg':'#f2ede2', '--hlb-ink':'#b8a888', '--hlb-water':'#5f8fb0' },
-  blueprint: { '--hlb-bg':'#0f2f52', '--hlb-ink':'#5f9fd6', '--hlb-water':'#a7d3f2' },
-  night:     { '--hlb-bg':'#0d1b2a', '--hlb-ink':'#39506a', '--hlb-water':'#4b9fd6' },
-  sage:      { '--hlb-bg':'#eef1ec', '--hlb-ink':'#9fb39a', '--hlb-water':'#4f8a6b' },
+  mist:      { '--hlb-bg':'#f3f7f9', '--hlb-ink':'#b3c4cd', '--hlb-water':'#6ea7c6', '--hlb-label':'#2f6d97' },
+  sand:      { '--hlb-bg':'#f6f2ea', '--hlb-ink':'#c8b7a0', '--hlb-water':'#7ba7ba', '--hlb-label':'#4a6b78' },
+  slate:     { '--hlb-bg':'#eef1f4', '--hlb-ink':'#aab7c4', '--hlb-water':'#6b93b8', '--hlb-label':'#3a5f86' },
+  night:     { '--hlb-bg':'#0e1c2b', '--hlb-ink':'#33475d', '--hlb-water':'#4b9fd6', '--hlb-label':'#8fc7ea' },
 };
 document.querySelectorAll('.presets button').forEach(b =>
   b.addEventListener('click', () => {
@@ -725,7 +1062,7 @@ def frame_on_water(lat: float, lon: float, zoom: int, width: int, height: int,
         for ring in _exterior_rings_lonlat(feat):
             if len(ring) >= 4:
                 parts.append((*_shoelace(ring), ring,
-                              feat.get("properties", {}).get("gnis_name")))
+                              _prop(feat.get("properties", {}), "gnis_name")))
     if not parts:
         print("  frame-on-water: no waterbody found; keeping center")
         return Frame(lat, lon, zoom, width, height)
@@ -826,7 +1163,8 @@ def run(args: argparse.Namespace) -> None:
     lb = LayerBundle()
     lb.contours_index, lb.contours_inter = build_contours(
         frame, ci, cn, args.contour_step, simplify, args.min_feature_px)
-    lb.watersheds = build_watersheds(frame, ws, simplify * 1.5)
+    lb.watersheds = build_watersheds(frame, ws, simplify * 1.5,
+                                     args.basin_dash, args.basin_gap)
     lb.streams, lb.streams_intermittent, lb.canals = build_flowlines(
         frame, fl, simplify, args.min_stream_px)
     lb.waterbodies, lb.waterbodies_marsh = build_waterbodies(
@@ -839,6 +1177,29 @@ def run(args: argparse.Namespace) -> None:
         watersheds=len(lb.watersheds),
     )
     print("  ", lb.counts)
+
+    # ---- feature-of-interest label / marker ------------------------------
+    picked = None
+    if args.marker or not args.no_label:
+        picked = pick_feature_label(frame, wb, ar, fl, prefer=args.label)
+    anchor = picked[1:] if picked else (frame.width * 0.3, frame.height * 0.5)
+
+    label = None
+    if not args.no_label:
+        label = (args.label, anchor[0], anchor[1]) if args.label else picked
+    if label:
+        print(f"  label: {label[0]!r} @ ({label[1]:.0f},{label[2]:.0f})")
+
+    marker = None
+    if args.marker:
+        seek = anchor
+        if args.marker_at:
+            parts = [float(v) for v in args.marker_at.split(",")]
+            sx = parts[0] * frame.width
+            sy = parts[1] * frame.height if len(parts) > 1 else anchor[1]
+            seek = (sx, sy)
+        marker = _snap_to_flowline(frame, fl, seek[0], seek[1], prefer=args.label)
+        print(f"  marker: on river @ ({marker[0]:.0f},{marker[1]:.0f})")
 
     # ---- per-stage previews --------------------------------------------------
     write_layer_preview("water", frame, [
@@ -853,7 +1214,7 @@ def run(args: argparse.Namespace) -> None:
         ("index", 'fill="none" stroke="#c9d6e0" stroke-width="1.4"', lb.contours_index),
     ])
     write_layer_preview("watersheds", frame, [
-        ("huc", 'fill="none" stroke="#e0a458" stroke-width="20" stroke-dasharray="38 25" opacity="0.85"', lb.watersheds),
+        ("huc", 'fill="none" stroke="#e0a458" stroke-width="3.2" opacity="1" stroke-linecap="round" stroke-linejoin="round"', lb.watersheds),
     ])
 
     meta = dict(preset=args.preset, lat=round(frame.lat, 5), lon=round(frame.lon, 5),
@@ -862,11 +1223,15 @@ def run(args: argparse.Namespace) -> None:
                 fit=args.fit, shift=[args.shift_x, args.shift_y],
                 huc=huc, contour_step=args.contour_step,
                 simplify=args.simplify, min_feature_px=args.min_feature_px,
+                label=label[0] if label else None,
+                overlay_opacity=args.overlay_opacity,
+                marker=[round(marker[0]), round(marker[1])] if marker else None,
                 counts=lb.counts,
                 sources=dict(water=NHD, contours=CONTOURS, watersheds=WBD))
     (OUT / "manifest.json").write_text(json.dumps(meta, indent=2))
 
-    bg = write_background(frame, lb, meta)
+    bg = write_background(frame, lb, meta, label, args.overlay_opacity, marker,
+                          marker_crisp=args.marker_crisp)
     write_preview(frame, bg.read_text(), meta)
 
     kb = bg.stat().st_size / 1024
@@ -912,6 +1277,28 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--min-stream-px", type=float, default=7.0,
                    help="drop unnamed stream fragments / ponds smaller than this "
                         "(px); raise it for metro areas, e.g. 18")
+    p.add_argument("--basin-dash", type=float, default=9.0, metavar="PX",
+                   help="length of each little curved basin-boundary mark (px)")
+    p.add_argument("--basin-gap", type=float, default=10.0, metavar="PX",
+                   help="gap between basin-boundary marks along the line (px)")
+    p.add_argument("--label", type=str, default=None, metavar="TEXT",
+                   help="override the feature-of-interest label text (default: "
+                        "the largest waterbody's name, else the longest named river)")
+    p.add_argument("--no-label", action="store_true",
+                   help="don't draw the feature-of-interest label")
+    p.add_argument("--overlay-opacity", type=float, default=1.0, metavar="F",
+                   help="fade every drawn layer at once (bg stays solid); "
+                        "e.g. 0.8 = 20%% more transparent, for a subtler variant")
+    p.add_argument("--marker", action="store_true",
+                   help="drop a HydroServer-style monitoring-site pin on the "
+                        "subject river/lake (snapped to the nearest flowline)")
+    p.add_argument("--marker-crisp", action="store_true",
+                   help="keep the marker at full opacity even when "
+                        "--overlay-opacity fades the rest of the map")
+    p.add_argument("--marker-at", type=str, default=None, metavar="X[,Y]",
+                   help="aim the marker at this fraction of the frame before "
+                        "snapping to the river, e.g. 0.22 (keeps it clear of a "
+                        "centered login form)")
     p.add_argument("--refresh", action="store_true", help="ignore cache, refetch")
     p.add_argument("--dump-raw", action="store_true",
                    help="also write 01_water / 02_contours / 03_watersheds .geojson "

@@ -1295,10 +1295,14 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         progress.value = done
         progress.setAttribute('aria-valuetext', label)
       }
+      /**
+       * A routine card is laid out like an exercise card: the name, the pip, its total time
+       * where an exercise has its reps, then the moves in the small text below.
+       */
       function routineFace({ deck, card }: ReturnType<typeof drawRoutine>, phase: RoutinePhase) {
+        const total = card.moves.reduce((s, [, secs]) => s + secs, 0)
         const moves = card.moves.map(([move, secs]) => `<li><span>${esc(move)}</span><b>${routineDuration(secs)}</b></li>`).join('')
-        const label = `<p class="routine-phase">${ROUTINE_LABELS[phase]}</p>`
-        return cardFront(deck, card.suit, ROUTINE_LABELS[phase][0], `${label}<h3>${esc(card.name)}</h3><ol class="routine-moves">${moves}</ol>`)
+        return cardFront(deck, card.suit, ROUTINE_LABELS[phase][0], `<h3>${esc(card.name)}</h3><p class="reps">${routineDuration(total)}</p><ol class="routine-moves">${moves}</ol>`)
       }
       function show() {
         if (!run) return
@@ -1515,6 +1519,12 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         --go: #1f3fb4;
         --go-edge: #13286f;
         --card-aspect: 5 / 7;
+        --bottom-controls-inset: calc(12px + env(safe-area-inset-bottom, 0px));
+      }
+      @media (max-width: 700px) {
+        :root {
+          --bottom-controls-inset: calc(24px + env(safe-area-inset-bottom, 0px));
+        }
       }
       * {
         box-sizing: border-box;
@@ -2026,9 +2036,11 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: center;
+        /* Like a printed card, every face starts at the same place: the name, pip and reps
+           line up across the hand however much text sits below them. */
+        justify-content: flex-start;
         gap: 2.6cqw;
-        padding: 14cqw 9cqw 13cqw;
+        padding: 20cqw 9cqw 13cqw;
         text-align: center;
         color: var(--face-text);
         background: linear-gradient(155deg, #ffffff22, #0000 38%, #0000 70%, #00000030), var(--face);
@@ -2319,28 +2331,27 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
       .solo {
         width: min(100%, 29rem, max(16rem, calc((100cqh - 24px) * var(--card-aspect))));
       }
-      .routine-phase {
-        order: -1;
-        margin: 0;
-        color: var(--face-accent);
-        font: 800 calc(6cqw * var(--fit)) / 1.1 var(--letter);
-      }
+      /* A routine's moves sit where an exercise card has its cue: the same small, muted text. */
       .routine-moves {
         order: 3;
         width: 100%;
-        margin: 2cqw 0 0;
+        /* Stops above the bottom corner index: the times sit right under it. */
+        margin: 0 0 8cqw;
         padding: 0;
         list-style: none;
         text-align: left;
-        font-size: calc(5.3cqw * var(--fit));
-        line-height: 1.35;
+        color: var(--face-muted);
+        font-size: calc(4.1cqw * var(--fit));
+        line-height: 1.28;
       }
       .routine-moves li {
         display: grid;
         grid-template-columns: minmax(0, 1fr) auto;
-        gap: 2cqw;
-        padding-block: 2cqw;
-        border-top: 1px solid var(--face-line);
+        gap: 3cqw;
+        padding-block: 0.8cqw;
+      }
+      .routine-moves li + li {
+        border-top: 0.3cqw solid color-mix(in srgb, var(--face-line) 35%, #0000);
       }
       .routine-moves b {
         color: var(--face-accent);
@@ -2506,7 +2517,7 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
       .rfoot {
         flex: none;
         z-index: 1;
-        padding: 8px max(4vw, 12px) calc(12px + env(safe-area-inset-bottom));
+        padding: 8px max(4vw, 12px) var(--bottom-controls-inset);
         background: var(--noise), linear-gradient(#4a2b1c, var(--leather));
         box-shadow: 0 -4px 12px #0005;
       }
@@ -2587,7 +2598,7 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
 
       /* ---- mobile-first layout: one screen per step ---- */
       body {
-        padding-bottom: calc(96px + env(safe-area-inset-bottom));
+        padding-bottom: calc(84px + var(--bottom-controls-inset));
       }
       .top {
         flex: none;
@@ -2808,7 +2819,7 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         right: 0;
         bottom: 0;
         z-index: 12;
-        padding: 10px 16px calc(12px + env(safe-area-inset-bottom));
+        padding: 10px 16px var(--bottom-controls-inset);
         background: var(--noise), linear-gradient(180deg, #4a2b1c, var(--leather));
         box-shadow:
           0 -6px 16px #0006,
@@ -2836,7 +2847,7 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
       }
       /* Let the hand scroll clear of the fixed bar when it can't fit in the available height. */
       #s-cards.fan-scroll {
-        padding-bottom: calc(96px + env(safe-area-inset-bottom));
+        padding-bottom: calc(84px + var(--bottom-controls-inset));
       }
       .hand {
         position: relative;

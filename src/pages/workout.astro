@@ -142,6 +142,12 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
             </div>
           </div>
         </div>
+        <p
+          class="fanpos"
+          id="fanpos"
+          aria-live="polite"
+        >
+        </p>
       </section>
 
       <section
@@ -332,7 +338,7 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
           top
             .map((x, i) => `<span class="stock back l${i}" style="${art(x.deck)}"></span>`)
             .reverse()
-            .join('') + `<span class="lab">Deal</span>`
+            .join('')
       }
       $('#decks').addEventListener('click', (e) => {
         const b = (e.target as HTMLElement).closest<HTMLButtonElement>('.tuck')
@@ -375,6 +381,19 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
 
       let cards: HTMLElement[] = []
       const touch = matchMedia('(hover: none)')
+      /** Phone-sized screens hold the cards as a hand (see the fan section below). */
+      const phone = matchMedia('(max-width: 700px)')
+      let fanOn = false
+      /** The help text on the Cards step, for each way of handling the cards. */
+      const HINT = {
+        phone: 'Swipe to look through your cards. Flick one up to swap it. Tap the deck for a new hand.',
+        touch: 'Tap a card to read it or swap it. Tap the deck for a new hand.',
+        mouse: 'Hover over a card to read it. Click one to swap it. Click the deck for a new hand.',
+      }
+      /** Match the help text to how the cards work right now; it changes with the layout. */
+      const setHint = () => ($('#hint').textContent = phone.matches ? HINT.phone : touch.matches ? HINT.touch : HINT.mouse)
+      phone.addEventListener('change', setHint)
+      touch.addEventListener('change', setHint)
       /** Make one slot per card in the hand (the pile is always the first slot). */
       function slots(n: number) {
         const box = $('#hand')
@@ -386,7 +405,11 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
           const c = s.firstElementChild as HTMLElement
           // A mouse swaps on click (hovering already lifts the card to read it). A touch screen can't
           // hover, so a tap picks the card up instead, with Swap and Keep.
-          c.addEventListener('click', () => (touch.matches ? inspect(i) : redraw(i)))
+          c.addEventListener('click', () => {
+            if (fanOn) return
+            if (touch.matches) inspect(i)
+            else redraw(i)
+          })
           c.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' || e.key === ' ') {
               e.preventDefault()
@@ -447,48 +470,71 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
       }
 
       // ---- dealing: cards come off the top of the pile and go back onto it ----
-      /** From a card's resting place to the pile, in px. */
+      /**
+       * From a card's resting place to the pile, worked out in the card's own frame (its slot may
+       * be tilted and scaled, as in the phone fan): the offset, the scale that makes it the size of
+       * the pile, and the turn that squares it up with the pile.
+       */
       function toPile(el: HTMLElement) {
-        const d = $('#deck').getBoundingClientRect(),
-          r = el.getBoundingClientRect()
-        return { dx: d.left + d.width / 2 - (r.left + r.width / 2), dy: d.top + d.height / 2 - (r.top + r.height / 2) }
+        const d = $('#deck').getBoundingClientRect()
+        const slot = el.parentElement as HTMLElement
+        const t = getComputedStyle(slot).transform
+        const m = t && t !== 'none' ? new DOMMatrix(t) : new DOMMatrix()
+        const r = slot.getBoundingClientRect()
+        const sx = Math.hypot(m.a, m.b) || 1
+        const v = new DOMMatrix([m.a, m.b, m.c, m.d, 0, 0]).inverse().transformPoint(new DOMPoint(d.left + d.width / 2 - (r.left + r.width / 2), d.top + d.height / 2 - (r.top + r.height / 2)))
+        return { dx: v.x, dy: v.y, s0: d.width / (el.offsetWidth * sx), rot0: (-Math.atan2(m.b, m.a) * 180) / Math.PI }
       }
       /**
        * The deal: the top card is pushed off the pile at a slight angle, travels face down in a
        * low arc while turning toward where it lands, flips over just before it lands, and settles.
+       * On a phone the pile is smaller than the hand, so the card grows on the way.
        */
       function dealKeys(el: HTMLElement): Keyframe[] {
-        const { dx, dy } = toPile(el)
-        const arc = Math.min(70, Math.hypot(dx, dy) * 0.12)
+        const { dx, dy, s0, rot0 } = toPile(el)
+        const arc = Math.min(70, Math.abs(dx) * 0.12)
         const turn = Math.max(-9, Math.min(9, -dx / 60))
         const at = (p: number) => `translate(${dx * (1 - p)}px, ${dy * (1 - p) - Math.sin(Math.PI * p) * arc}px)`
+        const rot = (p: number, extra: number) => `rotate(${rot0 * (1 - p) + extra}deg)`
+        const size = (p: number, lift: number) => `scale(${(s0 + (1 - s0) * p) * lift})`
         return [
-          { offset: 0, transform: `${at(0)} rotate(0deg) rotateY(180deg) scale(1)`, easing: 'ease-out' },
-          { offset: 0.14, transform: `${at(0.05)} rotate(-1.5deg) rotateY(180deg) scale(1.035)`, easing: 'cubic-bezier(.45,0,.4,1)' },
-          { offset: 0.62, transform: `${at(0.82)} rotate(${turn}deg) rotateY(180deg) scale(1.06)`, easing: 'ease-in' },
-          { offset: 0.8, transform: `${at(0.97)} rotate(${turn * 0.4}deg) rotateY(90deg) scale(1.08)`, easing: 'ease-out' },
-          { offset: 1, transform: 'translate(0, 0) rotate(0deg) rotateY(0deg) scale(1)' },
+          { offset: 0, transform: `${at(0)} ${rot(0, 0)} rotateY(180deg) ${size(0, 1)}`, easing: 'ease-out' },
+          { offset: 0.14, transform: `${at(0.05)} ${rot(0.05, -1.5)} rotateY(180deg) ${size(0.05, 1.035)}`, easing: 'cubic-bezier(.45,0,.4,1)' },
+          { offset: 0.62, transform: `${at(0.82)} ${rot(0.82, turn)} rotateY(180deg) ${size(0.82, 1.06)}`, easing: 'ease-in' },
+          { offset: 0.8, transform: `${at(0.97)} ${rot(0.97, turn * 0.4)} rotateY(90deg) ${size(0.97, 1.08)}`, easing: 'ease-out' },
+          { offset: 1, transform: 'translate(0px, 0px) rotate(0deg) rotateY(0deg) scale(1)' },
         ]
       }
+      /** A card's resting transform, written the same way as the motion keyframes. */
+      const REST = 'translate(0px, 0px) rotate(0deg) rotateY(0deg) scale(1)'
       /**
-       * Returning a card to the bottom of the deck, at its normal size: it flips face down where
-       * it lies, slides flat across the felt to the edge of the pile, and slips under it.
+       * Returning a card to the bottom of the deck: it flips face down and slips under the pile.
+       * Beside the pile (desktop) it slides flat across the felt to the pile's edge first; below
+       * it (the phone hand) it goes straight up and under, shrinking to the pile's size.
+       * `from` starts it where a finger left it.
        */
-      function tuckKeys(el: HTMLElement): Keyframe[] {
-        const { dx, dy } = toPile(el)
+      function tuckKeys(el: HTMLElement, from = REST): Keyframe[] {
+        const { dx, dy, s0, rot0 } = toPile(el)
         const w = el.offsetWidth
+        if (fanOn) {
+          return [
+            { offset: 0, transform: from, easing: 'ease-out' },
+            { offset: 0.4, transform: `translate(${dx * 0.45}px, ${dy * 0.45}px) rotate(${rot0 * 0.45}deg) rotateY(180deg) scale(${1 + (s0 - 1) * 0.45})`, easing: 'ease-in-out' },
+            { offset: 1, transform: `translate(${dx}px, ${dy + w * s0 * 0.06}px) rotate(${rot0}deg) rotateY(180deg) scale(${s0})` },
+          ]
+        }
         const side = dx < 0 ? 1 : -1
         return [
-          { offset: 0, transform: 'translate(0, 0) rotate(0deg) rotateY(0deg)', easing: 'ease-in-out' },
-          { offset: 0.3, transform: `translate(${dx * 0.03}px, ${dy * 0.03}px) rotate(0deg) rotateY(180deg)`, easing: 'cubic-bezier(.4,0,.2,1)' },
-          { offset: 0.72, transform: `translate(${dx + side * w * 0.5}px, ${dy + 4}px) rotate(${side * 3}deg) rotateY(180deg)`, easing: 'ease-in-out' },
-          { offset: 1, transform: `translate(${dx + w * 0.04}px, ${dy + w * 0.04}px) rotate(1deg) rotateY(180deg)` },
+          { offset: 0, transform: from, easing: 'ease-in-out' },
+          { offset: 0.3, transform: `translate(${dx * 0.03}px, ${dy * 0.03}px) rotate(0deg) rotateY(180deg) scale(1)`, easing: 'cubic-bezier(.4,0,.2,1)' },
+          { offset: 0.72, transform: `translate(${dx + side * w * 0.5}px, ${dy + 4}px) rotate(${side * 3}deg) rotateY(180deg) scale(${s0})`, easing: 'ease-in-out' },
+          { offset: 1, transform: `translate(${dx + w * 0.04}px, ${dy + w * 0.04}px) rotate(1deg) rotateY(180deg) scale(${s0})` },
         ]
       }
       const DEAL_MS = 760
       const motion = () => !reduce && !!document.body.animate
       /** Stack order while cards are on the move: higher `z` sits on top; 0 clears it. */
-      const lift = (el: HTMLElement, z: number) => ((el.parentElement as HTMLElement).style.zIndex = z ? String(z) : '')
+      const lift = (el: HTMLElement, z: number) => ((el.parentElement as HTMLElement).style.zIndex = z ? String(z) : fanOn ? String(10 + cards.indexOf(el)) : '')
       const still = (el: HTMLElement) => el.getAnimations().forEach((a) => a.cancel())
       /**
        * Cards in motion ignore the hover lift. A card that's lifted under the pointer eases back to
@@ -496,7 +542,7 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
        */
       async function unzoom(list: HTMLElement[]) {
         const slotsOf = list.map((el) => el.parentElement as HTMLElement)
-        const zoomed = slotsOf.some((s) => getComputedStyle(s).transform !== 'none')
+        const zoomed = !fanOn && slotsOf.some((s) => getComputedStyle(s).transform !== 'none')
         slotsOf.forEach((s) => s.classList.add('moving'))
         if (zoomed) await new Promise((r) => setTimeout(r, 240))
       }
@@ -505,7 +551,7 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
        * Return cards to the deck: each one flips face down, slides over to the pile and tucks
        * underneath it. The rightmost goes first, so the leftmost ends up at the very bottom.
        */
-      async function tuck(list: HTMLElement[]) {
+      async function tuck(list: HTMLElement[], from?: string) {
         if (!list.length) return
         await unzoom(list)
         const pileSlot = $('#deck').parentElement as HTMLElement
@@ -514,7 +560,9 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         await Promise.all(
           list.map((el, i) => {
             lift(el, 300 + i)
-            return el.animate(tuckKeys(el), { duration: 640, delay: (list.length - 1 - i) * gap, fill: 'forwards' }).finished.catch(() => {})
+            const a = el.animate(tuckKeys(el, from), { duration: 640, delay: (list.length - 1 - i) * gap, fill: 'forwards' })
+            el.style.transform = ''
+            return a.finished.catch(() => {})
           })
         )
         pileSlot.style.zIndex = ''
@@ -587,6 +635,8 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
           if (run !== dealRun) return
         }
         slots(h.length)
+        pos = Math.min(pos, h.length - 1)
+        layoutFan()
         schedule()
         h.forEach((x, i) => fill(i, x))
         cards.forEach((el) => el.classList.remove('pending'))
@@ -603,7 +653,7 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
        * it (the bottom of the deck), then the card on top of the pile is dealt into its place,
        * whichever deck that card is from.
        */
-      async function redraw(i: number) {
+      async function redraw(i: number, from?: string) {
         if (busy.has(i) || !hand()[i]) return
         const el = cards[i]
         const next = swap(i)
@@ -613,7 +663,7 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
           return fill(i, next)
         }
         busy.add(i)
-        await tuck([el])
+        await tuck([el], from)
         schedule()
         fill(i, next)
         dealOut([el])
@@ -636,6 +686,164 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         st.type = b.dataset.v as WorkoutType
         setHand('fit')
         schedule()
+      })
+
+      // ---- the phone hand: one card on top, the rest fanned behind it ----
+      // Each card keeps its place in the stack, like a real hand: the cards before the current
+      // one are tucked underneath it (peeking out on the left) and the cards after it lie on top
+      // (peeking in from the right). Swiping slides them over and off each other, so a card never
+      // has to jump through another.
+      let pos = 0
+      /** Piecewise-linear value for a card `a` places from the current one (0, 1, 2, 3+). */
+      const ramp = (a: number, v: number[]) => {
+        const i = Math.min(Math.floor(a), v.length - 2)
+        const f = Math.min(1, a - i)
+        return v[i] + (v[i + 1] - v[i]) * f
+      }
+      function layoutFan(p = pos) {
+        const box = $('#hand')
+        fanOn = phone.matches
+        box.classList.toggle('fan', fanOn)
+        setHint()
+        const all = [...box.children] as HTMLElement[]
+        const handSlots = all.slice(1)
+        if (!fanOn) {
+          all.forEach((s) => {
+            s.style.transform = ''
+            s.style.opacity = ''
+            if (parseInt(s.style.zIndex || '0') < 100) s.style.zIndex = ''
+          })
+          $('#fanpos').textContent = ''
+          return
+        }
+        // Size the hand to the screen. Between the top of the hand and the bottom bar go the deck
+        // row (0.42 card widths tall), the card on top (1.4), and an even gap above and below it.
+        // The fanned cards hang about 0.15 card widths below the top card, so the gap below has
+        // to be at least that; the card is as big as fits with that rule.
+        const navH = ($('.navbar') as HTMLElement).offsetHeight
+        const room = innerHeight - navH - (box.getBoundingClientRect().top + scrollY)
+        const cw = Math.max(170, Math.min(box.clientWidth * 0.8, 360, (room - 12) / 2.124))
+        const gap = Math.max(10, Math.min(96, (room - cw * 1.82) / 2))
+        const screen = $('#s-cards')
+        screen.style.setProperty('--cw', `${cw}px`)
+        screen.style.setProperty('--pw', `${cw * 0.3}px`)
+        screen.style.setProperty('--gap', `${gap}px`)
+        handSlots.forEach((s, i) => {
+          const k = i - p
+          const a = Math.abs(k)
+          const sg = Math.sign(k)
+          // Cards after the current one sit on top, so they stay clear of it; cards before it can
+          // tuck further underneath.
+          const x = sg * cw * (k > 0 ? ramp(a, [0, 0.98, 1.12, 1.22, 1.3]) : ramp(a, [0, 0.62, 0.74, 0.82, 0.88]))
+          const y = cw * ramp(a, [0, 0.04, 0.07, 0.09, 0.1])
+          const rot = sg * ramp(a, [0, 4, 7, 9, 10])
+          const sc = ramp(a, [1, 0.9, 0.84, 0.8, 0.78])
+          s.style.transform = `translate(${x}px, ${y}px) rotate(${rot}deg) scale(${sc})`
+          s.style.opacity = String(Math.max(0, Math.min(1, 4 - a)))
+          if (parseInt(s.style.zIndex || '0') < 100) s.style.zIndex = String(10 + i)
+        })
+        const n = handSlots.length
+        $('#fanpos').textContent = n ? `${Math.round(Math.max(0, Math.min(n - 1, p))) + 1} / ${n}` : ''
+      }
+      /** Glide the hand to card `to`. */
+      function fanTo(to: number) {
+        const n = cards.length
+        const target = Math.max(0, Math.min(n - 1, to))
+        const from = pos
+        pos = target
+        if (!motion() || from === target) return layoutFan(target)
+        const t0 = performance.now()
+        const step = (now: number) => {
+          const t = Math.min(1, (now - t0) / 280)
+          const e = 1 - Math.pow(1 - t, 3)
+          layoutFan(from + (target - from) * e)
+          if (t < 1 && pos === target) requestAnimationFrame(step)
+        }
+        requestAnimationFrame(step)
+      }
+      addEventListener('resize', () => layoutFan())
+      phone.addEventListener('change', () => layoutFan())
+
+      // Gestures: drag sideways to look through the hand; drag the top card up and let go (or
+      // flick it) to swap it for the top card of the deck; tap a peeking card to bring it forward.
+      let drag: { id: number; i: number; x0: number; y0: number; p0: number; axis: '' | 'x' | 'y' | 'none'; lx: number; ly: number; lt: number; vx: number; vy: number } | null = null
+      const cardWidth = () => parseFloat($('#s-cards').style.getPropertyValue('--cw')) || 260
+      $('#hand').addEventListener('pointerdown', (e) => {
+        if (!fanOn || held >= 0) return
+        const slot = (e.target as HTMLElement).closest<HTMLElement>('.slot')
+        if (!slot || slot === $('#deck').parentElement) return
+        const i = cards.indexOf(slot.firstElementChild as HTMLElement)
+        if (i < 0) return
+        drag = { id: e.pointerId, i, x0: e.clientX, y0: e.clientY, p0: pos, axis: '', lx: e.clientX, ly: e.clientY, lt: e.timeStamp, vx: 0, vy: 0 }
+        try {
+          $('#hand').setPointerCapture(e.pointerId)
+        } catch (err) {}
+      })
+      $('#hand').addEventListener('pointermove', (e) => {
+        if (!drag || e.pointerId !== drag.id) return
+        const dx = e.clientX - drag.x0,
+          dy = e.clientY - drag.y0
+        const dt = Math.max(1, e.timeStamp - drag.lt)
+        drag.vx = (e.clientX - drag.lx) / dt
+        drag.vy = (e.clientY - drag.ly) / dt
+        drag.lx = e.clientX
+        drag.ly = e.clientY
+        drag.lt = e.timeStamp
+        if (!drag.axis && Math.hypot(dx, dy) > 8) {
+          const top = drag.i === Math.round(pos) && !busy.has(drag.i)
+          drag.axis = Math.abs(dx) > Math.abs(dy) ? 'x' : dy < 0 && top ? 'y' : 'none'
+        }
+        if (drag.axis === 'x') {
+          const n = cards.length
+          let p = drag.p0 - dx / (cardWidth() * 0.62)
+          if (p < 0) p *= 0.3
+          if (p > n - 1) p = n - 1 + (p - (n - 1)) * 0.3
+          pos = p
+          layoutFan(p)
+        }
+        if (drag.axis === 'y') {
+          const el = cards[drag.i]
+          el.style.transform = `translate(${dx * 0.25}px, ${Math.min(0, dy)}px) rotate(${dx * 0.02}deg) rotateY(0deg) scale(1)`
+        }
+      })
+      const endDrag = (e: PointerEvent) => {
+        if (!drag || e.pointerId !== drag.id) return
+        const d = drag
+        drag = null
+        const dx = e.clientX - d.x0,
+          dy = e.clientY - d.y0
+        if (d.axis === 'x') {
+          // A swipe moves one card (a short drag or a quick flick is enough); dragging further
+          // than a whole card lands wherever you let go.
+          const moved = pos - d.p0
+          let to = Math.round(pos)
+          if (Math.abs(moved) < 1.2 && (Math.abs(moved) > 0.25 || Math.abs(d.vx) > 0.3)) to = Math.round(d.p0) + Math.sign(moved || -d.vx)
+          return fanTo(to)
+        }
+        if (d.axis === 'y') {
+          const el = cards[d.i]
+          const at = el.style.transform
+          if (dy < -cardWidth() * 0.35 || d.vy < -0.6) return void redraw(d.i, at)
+          el.style.transform = ''
+          if (motion()) el.animate([{ transform: at }, { transform: REST }], { duration: 220, easing: 'cubic-bezier(.2,.8,.2,1)' })
+          return
+        }
+        // A tap on a card peeking out from the hand brings it forward.
+        if (!d.axis && d.i !== Math.round(pos)) fanTo(d.i)
+      }
+      $('#hand').addEventListener('pointerup', endDrag)
+      $('#hand').addEventListener('pointercancel', endDrag)
+      $('#hand').addEventListener('keydown', (e) => {
+        if (!fanOn) return
+        if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+          e.preventDefault()
+          fanTo(Math.round(pos) + (e.key === 'ArrowRight' ? 1 : -1))
+          cards[Math.round(pos)]?.focus({ preventScroll: true })
+        }
+        if (e.key === 'ArrowUp') {
+          e.preventDefault()
+          redraw(Math.round(pos))
+        }
       })
 
       // ---- picking a card up to read it (touch screens) ----
@@ -814,7 +1022,7 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         $('#back').hidden = at === 0
         $('#next').textContent = NEXT[next]
         document.body.dataset.step = next
-        $('#hint').textContent = touch.matches ? 'Tap a card to read it or swap it. Tap the deck for a new hand.' : 'Hover a card to read it, click to swap it. Click the deck for a new hand.'
+        setHint()
         window.scrollTo(0, 0)
         const screen = $(`#s-${next}`)
         if (motion()) screen.animate([{ opacity: 0, transform: `translateX(${dir * 28}px)` }, { opacity: 1, transform: 'none' }], { duration: 260, easing: 'cubic-bezier(.2,.8,.2,1)' })
@@ -1220,17 +1428,6 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
       .pile .l1 {
         transform: translate(2cqw, 2cqw) rotate(-1deg);
       }
-      .pile .lab {
-        position: absolute;
-        left: 0;
-        right: 0;
-        bottom: 10cqw;
-        text-align: center;
-        font:
-          800 13cqw/1 'Big Shoulders Display',
-          sans-serif;
-        text-shadow: 0 1px 3px #0009;
-      }
       .pile.empty {
         border: 0.6cqw dashed #ffffff55;
         border-radius: 6cqw;
@@ -1359,48 +1556,48 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
 
       /* Small cards jump out so their text is readable: on hover, or on keyboard focus. */
       @media (hover: hover) {
-        .hand .slot:not(:first-child):hover {
+        .hand:not(.fan) .slot:not(:first-child):hover {
           z-index: 5;
           transform: scale(var(--lift, 1.9));
         }
       }
-      .hand .slot:has(.card:focus-visible) {
+      .hand:not(.fan) .slot:has(.card:focus-visible) {
         z-index: 5;
         transform: scale(var(--lift, 1.9));
       }
-      .hand .slot.moving {
+      .hand:not(.fan) .slot.moving {
         transform: none !important;
       }
       /* Cards in the outer columns grow inward so they stay on screen. */
-      .hand .slot {
+      .hand:not(.fan) .slot {
         transform-origin: 50% 40%;
       }
-      .hand .slot:nth-child(6n + 1) {
+      .hand:not(.fan) .slot:nth-child(6n + 1) {
         transform-origin: 0 40%;
       }
-      .hand .slot:nth-child(6n) {
+      .hand:not(.fan) .slot:nth-child(6n) {
         transform-origin: 100% 40%;
       }
       @media (max-width: 960px) {
-        .hand .slot {
+        .hand:not(.fan) .slot {
           --lift: 1.5;
           transform-origin: 50% 40%;
         }
-        .hand .slot:nth-child(3n + 1) {
+        .hand:not(.fan) .slot:nth-child(3n + 1) {
           transform-origin: 0 40%;
         }
-        .hand .slot:nth-child(3n) {
+        .hand:not(.fan) .slot:nth-child(3n) {
           transform-origin: 100% 40%;
         }
       }
       @media (max-width: 560px) {
-        .hand .slot {
+        .hand:not(.fan) .slot {
           --lift: 1.25;
         }
-        .hand .slot:nth-child(n) {
+        .hand:not(.fan) .slot:nth-child(n) {
           transform-origin: 0 40%;
         }
-        .hand .slot:nth-child(2n) {
+        .hand:not(.fan) .slot:nth-child(2n) {
           transform-origin: 100% 40%;
         }
       }
@@ -1815,6 +2012,8 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         max-width: 1280px;
         margin: 0 auto;
         padding: 18px 16px 0;
+        /* the phone hand fans off the sides of the screen; it must never scroll sideways */
+        overflow-x: clip;
       }
       .screen.narrow {
         max-width: 560px;
@@ -1960,6 +2159,84 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         width: auto;
         margin: 0;
         min-height: 54px;
+      }
+
+      /* ---- the phone hand: deck on top, the current card big, the rest fanned behind ---- */
+      .hand.fan {
+        display: block;
+        position: relative;
+        height: calc(var(--pw) * 1.4 + var(--gap, 10px) * 2 + var(--cw) * 1.4);
+      }
+      .hand.fan .slot {
+        position: absolute;
+        left: 50%;
+        top: calc(var(--pw) * 1.4 + var(--gap, 10px));
+        width: var(--cw);
+        margin-left: calc(var(--cw) / -2);
+        transform-origin: 50% 100%;
+        transition: none;
+        touch-action: none;
+        user-select: none;
+        -webkit-user-select: none;
+      }
+      /* the deck sits in the top-left corner, with the help text beside it */
+      .hand.fan .slot:first-child {
+        top: 0;
+        left: 0;
+        width: var(--pw);
+        margin-left: 0;
+        touch-action: manipulation;
+      }
+      .fanpos {
+        margin: 12px 0 0;
+        text-align: center;
+        color: var(--cream-mute);
+        font: 600 14px/1 Inter, sans-serif;
+        font-variant-numeric: tabular-nums;
+      }
+      .fanpos:empty {
+        display: none;
+      }
+      /* On a phone the hand is held over the bare tabletop: no felt, no title, no counter (the
+         title and counter stay for screen readers). */
+      @media (max-width: 700px) {
+        #s-cards .rail,
+        #s-cards .felt {
+          padding: 0;
+          margin: 0;
+          background: none;
+          box-shadow: none;
+          outline: none;
+          border-radius: 0;
+        }
+        #h-hand,
+        .fanpos {
+          position: absolute;
+          width: 1px;
+          height: 1px;
+          overflow: hidden;
+          clip-path: inset(50%);
+          white-space: nowrap;
+        }
+        #s-cards {
+          position: relative;
+        }
+        /* the hand already ends at the bottom bar, so this step never scrolls */
+        body[data-step='cards'] {
+          padding-bottom: 0;
+        }
+        #s-cards .hint {
+          position: absolute;
+          top: 0;
+          left: calc(var(--pw) + 14px);
+          right: 0;
+          height: calc(var(--pw) * 1.4);
+          display: flex;
+          align-items: center;
+          margin: 0;
+          font-size: 14px;
+          line-height: 1.4;
+        }
       }
 
       /* ---- a card picked up off the table to read (touch screens) ---- */

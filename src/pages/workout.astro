@@ -295,6 +295,8 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         const n = cardCount(st.type, st.len, total)
         let h = load(),
           p = pileCards()
+        // A fresh deal brings a fresh warm-up and cool-down with it.
+        if (mode !== 'fit') routines = { warm: drawRoutine('warm', routines.warm.card.id), cool: drawRoutine('cool', routines.cool.card.id) }
         if (mode === 'shuffle' || !h.length || h.length + p.length !== total) {
           // One shuffle of the whole deck: any card can land anywhere, so the hand's mix is random
           // and each deck's share follows its size on average.
@@ -587,8 +589,8 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         const offscreen = 'translate(0px, -100dvh) rotate(0deg) rotateY(180deg) scale(1)'
         let frames: Keyframe[] = leaving ? [{ transform: from }, { transform: offscreen }] : [{ transform: offscreen }, { transform: REST }]
         let duration = 360
-        // A card beyond the visible fan still flies through view before it settles into its slot.
-        if (!leaving && slot.style.opacity === '0') {
+        // A card beyond the visible fan still flies through view on its way in or out.
+        if (slot.style.opacity === '0') {
           const rect = slot.getBoundingClientRect()
           const x = (innerWidth / 2 - rect.left - rect.width / 2) * el.offsetWidth / rect.width
           frames = [
@@ -597,7 +599,14 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
             { transform: REST },
           ]
           duration = 500
-          slot.animate([{ opacity: 1 }, { opacity: 1, offset: 0.75 }, { opacity: 0 }], { duration })
+          let fade: Keyframe[] = [{ opacity: 1 }, { opacity: 1, offset: 0.75 }, { opacity: 0 }]
+          if (leaving) {
+            frames.reverse()
+            frames[0].transform = from
+            frames[1].offset = 0.45
+            fade = fade.reverse().map((f, i) => ({ ...f, offset: [0, 0.25, 1][i] }))
+          }
+          slot.animate(fade, { duration })
         }
         const flip = el.animate(frames, { duration, easing: leaving ? 'ease-in' : 'ease-out', fill: leaving ? 'forwards' : 'none' })
         el.style.transform = ''
@@ -706,12 +715,21 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         const upcomingExercises = exercises.slice(redrawAllExercises ? 0 : sameExercises)
         renderPile(upcomingExercises)
         if (animate && returning.length) {
-          returning.filter((el) => !isExercise(el)).forEach((el) => {
-            still(el)
+          // The table clears in the reverse of the deal: the cool-down (last in) flies off first,
+          // then the exercises go back under the pile, then the warm-up (first in) flies off last.
+          // One thing moves at a time, so cards never cross over each other.
+          const leave = async (kind: RoutinePhase) => {
+            const el = returning.find((x) => x.dataset.kind === kind)
+            if (!el) return true
+            await flipRoutine(el, 'out')
             el.classList.add('pending')
-          })
+            still(el)
+            return run === dealRun
+          }
+          if (!(await leave('cool'))) return
           await tuck(returning.filter(isExercise))
           if (run !== dealRun) return
+          if (!(await leave('warm'))) return
         }
         slots(h.length)
         pos = Math.min(pos, h.length - 1)
@@ -1242,12 +1260,51 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         clock()
         run.end = true
         clearInterval(tick)
-        $('#rb').textContent = 'Done.'
-        $('#rb').classList.remove('vh')
-        $('#rmain').innerHTML = `<div class="solo"><ol class="routine-card">${run.h.map((x) => `<li>${esc(x.card.name)}</li>`).join('')}</ol></div>`
+        $('#rb').textContent = 'Workout complete'
+        $('#rmain').innerHTML = celebration(run)
         $('#rbody').scrollTop = 0
         $('#rnext').textContent = 'Close workout'
         $('#run').classList.add('is-complete')
+      }
+      /**
+       * The end of a workout: the whole hand, warm-up to cool-down, is laid out face up in a fan
+       * (dealt in one after another), with the totals underneath and a shower of suits.
+       */
+      function celebration(r: NonNullable<typeof run>) {
+        const played: [Pick<Deck, 'art'>, Suit, string][] = [
+          [r.routines.warm.deck, r.routines.warm.card.suit, 'W'],
+          ...r.h.map((x, i): [Pick<Deck, 'art'>, Suit, string] => [x.deck, x.card.suit, String(i + 1)]),
+          [r.routines.cool.deck, r.routines.cool.card.suit, 'C'],
+        ]
+        const n = played.length
+        const spread = Math.min(9, 54 / n)
+        const fan = played
+          .map(([deck, suit, label], i) => {
+            const k = i - (n - 1) / 2
+            return `<div class="cheer-slot" style="--i:${i};--r:${(k * spread).toFixed(2)}deg;--y:${(k * k * 0.03).toFixed(3)}"><div class="card static">${cardFront(deck, suit, label, '')}<div class="face stock back" style="${art(deck)}"></div></div></div>`
+          })
+          .join('')
+        const syms = Object.values(SUIT)
+        const confetti = reduce
+          ? ''
+          : Array.from({ length: 34 }, (_, i) => {
+              const [sym, cls] = syms[i % syms.length]
+              const x = Math.random() * 100
+              const drift = (Math.random() - 0.5) * 30
+              return `<i class="${cls}" style="left:${x.toFixed(1)}%;--d:${drift.toFixed(1)}vw;--t:${(2.4 + Math.random() * 1.8).toFixed(2)}s;--w:${(0.2 + Math.random() * 1.2).toFixed(2)}s;--s:${(0.8 + Math.random() * 0.9).toFixed(2)};--spin:${Math.round((Math.random() - 0.5) * 720)}deg">${sym}</i>`
+            }).join('')
+        const stats: [string, string][] = [
+          [mmss(Math.max(0, (Date.now() - r.t0) / 1000)), 'Total time'],
+          [String(r.h.length), r.h.length === 1 ? 'Exercise' : 'Exercises'],
+          [String(r.steps.length), 'Steps'],
+        ]
+        return `<div class="cheer" style="--hand-time:${(0.4 + n * 0.09).toFixed(2)}s">
+          <div class="cheer-confetti" aria-hidden="true">${confetti}</div>
+          <div class="cheer-hand" aria-hidden="true" style="--n:${n}">${fan}</div>
+          <p class="cheer-kicker">Workout complete</p>
+          <p class="cheer-title">Every card played.</p>
+          <dl class="cheer-stats">${stats.map(([v, k]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join('')}</dl>
+        </div>`
       }
       async function startRun() {
         const p = plan()
@@ -2050,9 +2107,6 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
           sans-serif;
         color: var(--cream-mute);
       }
-      .run.is-complete .workout-progress {
-        margin-top: 8px;
-      }
       .workout-progress progress {
         appearance: none;
         display: block;
@@ -2120,26 +2174,155 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         font-variant-numeric: tabular-nums;
         white-space: nowrap;
       }
-      .routine-card {
+      /* ---- the end of a workout: the played hand fanned out, the totals, a shower of suits ---- */
+      .cheer {
         display: flex;
         flex-direction: column;
-        justify-content: center;
-        gap: 0.65em;
-        margin: 0;
-        padding: 8cqw 9cqw 8cqw 15cqw;
-        aspect-ratio: 4 / 5;
-        font-size: clamp(1rem, 5.6cqw, 1.5rem);
-        background:
-          var(--noise-soft),
-          linear-gradient(150deg, var(--paper), #eee1c7);
-        color: var(--paper-ink);
-        border: 2.4cqw solid #f8edda;
-        border-radius: 6cqw;
-        box-shadow: inset 0 0 0 1px #a8997b, 0 7px 18px #0006;
+        align-items: center;
+        width: min(100%, 34rem);
+        text-align: center;
+        color: var(--cream);
       }
-      .routine-card li::marker {
-        color: var(--pen);
-        font-weight: 700;
+      /* The shower of suits falls behind the hand and the totals. */
+      .cheer {
+        isolation: isolate;
+      }
+      .cheer > :not(.cheer-confetti) {
+        position: relative;
+        z-index: 1;
+      }
+      .cheer-hand {
+        --cw: clamp(40px, calc(min(74cqw, 30rem) / (var(--n) * 0.58 + 0.42)), 112px);
+        display: flex;
+        justify-content: center;
+        padding: calc(var(--cw) * 0.12) 0 calc(var(--cw) * 0.45);
+        perspective: 1100px;
+      }
+      .cheer-slot {
+        flex: none;
+        width: var(--cw);
+        margin-inline: calc(var(--cw) * -0.21);
+        container-type: inline-size;
+        transform-origin: 50% 120%;
+        transform: translateY(calc(var(--y) * var(--cw))) rotate(var(--r));
+        animation: cheer-deal 0.62s cubic-bezier(0.2, 0.8, 0.2, 1) calc(0.15s + var(--i) * 0.09s) both;
+      }
+      .cheer-slot .card {
+        animation: cheer-flip 0.62s ease-out calc(0.15s + var(--i) * 0.09s) both;
+      }
+      .cheer-slot .pip {
+        font-size: 34cqw;
+      }
+      @keyframes cheer-deal {
+        from {
+          opacity: 0;
+          transform: translateY(calc(var(--cw) * 1.6)) rotate(0deg) scale(0.8);
+        }
+        30% {
+          opacity: 1;
+        }
+      }
+      @keyframes cheer-flip {
+        from,
+        45% {
+          transform: rotateY(180deg);
+        }
+        to {
+          transform: rotateY(0deg);
+        }
+      }
+      .cheer-kicker {
+        margin: 0;
+        font: 600 13px/1.4 Inter, sans-serif;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--cream-mute);
+        animation: cheer-rise 0.5s ease-out calc(0.3s + var(--hand-time, 0.6s)) both;
+      }
+      .cheer-title {
+        margin: 4px 0 0;
+        font:
+          800 clamp(40px, 12vw, 64px) / 1 'Big Shoulders Display',
+          sans-serif;
+        color: #f0c779;
+        text-shadow: 0 3px 0 #0006;
+        animation: cheer-rise 0.5s ease-out calc(0.4s + var(--hand-time, 0.6s)) both;
+      }
+      .cheer-stats {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        width: 100%;
+        margin: 22px 0 0;
+        border-block: 1px solid #f4e8cf33;
+        animation: cheer-rise 0.5s ease-out calc(0.5s + var(--hand-time, 0.6s)) both;
+      }
+      .cheer-stats div {
+        display: flex;
+        flex-direction: column-reverse;
+        padding: 12px 4px;
+      }
+      .cheer-stats div + div {
+        border-left: 1px solid #f4e8cf33;
+      }
+      .cheer-stats dt {
+        font: 500 13px/1.4 Inter, sans-serif;
+        color: var(--cream-mute);
+      }
+      .cheer-stats dd {
+        margin: 0;
+        font:
+          800 clamp(28px, 8vw, 40px) / 1 'Big Shoulders Display',
+          sans-serif;
+        font-variant-numeric: tabular-nums;
+      }
+      @keyframes cheer-rise {
+        from {
+          opacity: 0;
+          transform: translateY(14px);
+        }
+      }
+      .cheer-confetti {
+        position: fixed;
+        inset: 0;
+        overflow: hidden;
+        pointer-events: none;
+      }
+      .cheer-confetti i {
+        position: absolute;
+        top: -8vh;
+        font: normal 700 calc(22px * var(--s)) / 1 Inter, sans-serif;
+        color: #f0c779;
+        text-shadow: 0 2px 3px #0005;
+        opacity: 0;
+        animation: cheer-fall var(--t) cubic-bezier(0.3, 0.1, 0.7, 1) calc(0.6s + var(--w)) forwards;
+      }
+      .cheer-confetti i.red {
+        color: #e0574f;
+      }
+      .cheer-confetti i.joker {
+        color: var(--cream);
+      }
+      @keyframes cheer-fall {
+        0% {
+          opacity: 1;
+          transform: translate(0, 0) rotate(0deg);
+        }
+        85% {
+          opacity: 1;
+        }
+        100% {
+          opacity: 0;
+          transform: translate(var(--d), 112vh) rotate(var(--spin));
+        }
+      }
+      body:has(.run.is-complete) .workout-clock {
+        display: none;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .cheer *,
+        .cheer-slot .card {
+          animation: none !important;
+        }
       }
       .rfoot {
         flex: none;
@@ -2165,7 +2348,10 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         outline-offset: 3px;
       }
       .run.is-complete #rback {
-        visibility: hidden;
+        display: none;
+      }
+      .run.is-complete .rbtns {
+        grid-template-columns: minmax(0, 1fr);
       }
       .btn {
         min-height: 50px;

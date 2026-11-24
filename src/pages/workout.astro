@@ -110,6 +110,7 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         hidden
       >
         <h1 id="h-decks">Open your decks</h1>
+        <p class="hint">Pick one or both.</p>
         <div
           class="shelf"
           id="decks"
@@ -240,14 +241,20 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         pile: [string, string][] | null
         routines?: Partial<Record<RoutinePhase, string>>
       }
-      let st: State = { len: 30, type: 'circuit', decks: { [DECKS[0].id]: 1 }, hand: null, pile: null }
+      let st: State = { len: 30, type: 'circuit', decks: {}, hand: null, pile: null }
       try {
         const s = JSON.parse(localStorage.getItem(KEY) || 'null')
-        if (s) st = { len: s.len || st.len, type: s.type || st.type, decks: s.decks || st.decks, hand: s.hand || null, pile: s.pile || null, routines: s.routines }
+        if (s) {
+          // Older saves opened the first deck automatically. Treat that old default as no selection.
+          const chosen = s.manualDeckSelection || DECKS.slice(1).some((deck) => deck.id in (s.decks ?? {}))
+          st = {
+            len: s.len || st.len, type: s.type || st.type, decks: chosen ? (s.decks ?? {}) : {},
+            hand: chosen ? (s.hand ?? null) : null, pile: chosen ? (s.pile ?? null) : null, routines: s.routines,
+          }
+        }
       } catch (e) {}
       const deckById = (id: string) => DECKS.find((d) => d.id === id)
       for (const id of Object.keys(st.decks)) if (!deckById(id)) delete st.decks[id]
-      if (!Object.keys(st.decks).length) st.decks = { [DECKS[0].id]: 1 }
       if (!LENGTHS[st.len]) st.len = 30
       if (!TYPES.some((t) => t.id === st.type)) st.type = 'circuit'
       let routines = {
@@ -257,12 +264,13 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
       const save = () => {
         try {
           st.routines = { warm: routines.warm.card.id, cool: routines.cool.card.id }
-          localStorage.setItem(KEY, JSON.stringify(st))
+          localStorage.setItem(KEY, JSON.stringify({ ...st, manualDeckSelection: true }))
         } catch (e) {}
       }
       const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches
 
       const picked = () => DECKS.filter((d) => d.id in st.decks)
+      const hasDecks = () => Object.keys(st.decks).length > 0
       /** Every card in the open decks is equally likely, so a deck's share follows its size. */
       const mix = () => picked().map((deck) => ({ deck, weight: deck.cards.length }))
 
@@ -289,14 +297,21 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
        *               together; each deck's share of the hand follows its size.
        */
       function setHand(mode: 'fit' | 'cycle' | 'shuffle') {
-        const total = uniqueCards(mix())
+        const decks = mix()
+        const total = uniqueCards(decks)
+        if (!total) {
+          st.hand = null
+          st.pile = null
+          save()
+          return
+        }
         const n = cardCount(st.type, st.len, total)
         let h = load(),
           p = pileCards()
         if (mode === 'shuffle' || !h.length || h.length + p.length !== total) {
           // One shuffle of the whole deck: any card can land anywhere, so the hand's mix is random
           // and each deck's share follows its size on average.
-          const order = dealHand(mix(), total)
+          const order = dealHand(decks, total)
           h = order.slice(0, n)
           p = order.slice(n)
         } else if (mode === 'cycle') {
@@ -309,7 +324,7 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         save()
       }
       function hand(): Dealt[] {
-        if (!load().length) setHand('fit')
+        if (hasDecks() && !load().length) setHand('fit')
         return load()
       }
       type TableCard =
@@ -384,14 +399,9 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         const b = (e.target as HTMLElement).closest<HTMLButtonElement>('.tuck')
         if (!b) return
         const id = b.dataset.id as string
-        if (id in st.decks) {
-          if (picked().length === 1) {
-            b.animate?.([{ transform: 'translateX(0)' }, { transform: 'translateX(-5px)' }, { transform: 'translateX(5px)' }, { transform: 'translateX(0)' }], { duration: 260 })
-            return
-          }
-          delete st.decks[id]
-        } else st.decks[id] = 1
-        renderDecks()
+        if (id in st.decks) delete st.decks[id]
+        else st.decks[id] = 1
+        b.setAttribute('aria-pressed', String(id in st.decks))
         setHand('shuffle')
         schedule()
       })
@@ -483,6 +493,24 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
       /** Time into the workout, e.g. 0:00, 4:00, 6:30. */
       const fmt = (secs: number) => `${Math.floor(secs / 60)}:${String(Math.round(secs % 60)).padStart(2, '0')}`
       function schedule() {
+        const available = uniqueCards(mix())
+        const how: Record<WorkoutType, (n: number) => string> = {
+          circuit: (n) => `${LAPS} laps through ${n} cards`,
+          sets: (n) => `${SETS} sets of each of ${n} cards`,
+          variety: (n) => `${n} cards, each one once`,
+        }
+        document.querySelectorAll<HTMLElement>('[data-how]').forEach((el) => {
+          const t = el.dataset.how as WorkoutType
+          el.textContent = how[t](cardCount(t, st.len, available || undefined))
+        })
+        document.querySelectorAll<HTMLButtonElement>('#len button').forEach((b) => b.setAttribute('aria-pressed', String(Number(b.dataset.v) === st.len)))
+        document.querySelectorAll<HTMLButtonElement>('#type button').forEach((b) => b.setAttribute('aria-checked', String(b.dataset.v === st.type)))
+        $<HTMLButtonElement>('#next').disabled = document.body.dataset.step === 'decks' && !available
+        if (!available) {
+          $('#times').replaceChildren()
+          renderPile()
+          return
+        }
         const p = plan()
         const h = hand()
         const n = h.length
@@ -503,21 +531,7 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         })
         rows.push([t, 'Done', ''])
         $('#times').innerHTML = rows.map(([at, h, p]) => `<li><span class="t">${fmt(at)}</span><div><h3>${h}</h3>${p ? `<p>${p}</p>` : ''}</div></li>`).join('')
-        // Each workout type says exactly what it means at this length with these decks.
-        const available = uniqueCards(mix())
-        const how: Record<WorkoutType, (n: number) => string> = {
-          circuit: (n) => `${LAPS} laps through ${n} cards`,
-          sets: (n) => `${SETS} sets of each of ${n} cards`,
-          variety: (n) => `${n} cards, each one once`,
-        }
-        document.querySelectorAll<HTMLElement>('[data-how]').forEach((el) => {
-          const t = el.dataset.how as WorkoutType
-          el.textContent = how[t](cardCount(t, st.len, available))
-        })
-        document.querySelectorAll<HTMLButtonElement>('#len button').forEach((b) => b.setAttribute('aria-pressed', String(Number(b.dataset.v) === st.len)))
-        document.querySelectorAll<HTMLButtonElement>('#type button').forEach((b) => b.setAttribute('aria-checked', String(b.dataset.v === st.type)))
         renderPile()
-        return p
       }
 
       // ---- dealing: cards come off the top of the pile and go back onto it ----
@@ -1187,8 +1201,11 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
       type StepId = (typeof STEPS)[number]
       const NEXT: Record<StepId, string> = { workout: 'Next', decks: 'Deal', cards: 'Next', start: 'Start' }
       let step: StepId | null = null
+      const availableStep = (to: StepId): StepId => !hasDecks() && (to === 'cards' || to === 'start') ? 'decks' : to
       function go(to: string) {
-        const next = (STEPS as readonly string[]).includes(to) ? (to as StepId) : 'workout'
+        const requested = (STEPS as readonly string[]).includes(to) ? (to as StepId) : 'workout'
+        const next = availableStep(requested)
+        if (next !== requested) history.replaceState(null, '', `#${next}`)
         const dir = step && STEPS.indexOf(next) < STEPS.indexOf(step) ? -1 : 1
         step = next
         document.querySelectorAll<HTMLElement>('.screen').forEach((el) => (el.hidden = el.dataset.step !== next))
@@ -1213,8 +1230,9 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
       // Steps change the address with pushState rather than location.hash, so the browser
       // doesn't jump to an element that happens to share the step's name (like #decks).
       const goTo = (to: StepId) => {
-        if (location.hash !== `#${to}`) history.pushState(null, '', `#${to}`)
-        go(to)
+        const next = availableStep(to)
+        if (location.hash !== `#${next}`) history.pushState(null, '', `#${next}`)
+        go(next)
       }
       addEventListener('popstate', () => go(location.hash.slice(1)))
       document.querySelectorAll<HTMLAnchorElement>('.steps a').forEach((a) =>
@@ -1939,7 +1957,11 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
           0 6px 0 var(--go-edge),
           0 12px 18px #0005;
       }
-      .go:active {
+      .go:disabled {
+        opacity: 0.5;
+        cursor: default;
+      }
+      .go:active:not(:disabled) {
         transform: translateY(4px);
         box-shadow:
           0 2px 0 var(--go-edge),

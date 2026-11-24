@@ -23,19 +23,16 @@ export const LENGTHS: Record<number, { warm: number; cool: number }> = {
 export const SETS = 2
 export const LAPS = 2
 
-/**
- * Seconds for one set plus the rest after it. There's no rest timer: you rest when a
- * set is done, and that rest is counted here. Calibrated so a 30-minute workout is
- * 5 cards × 2 sets: (30 − 4 warm-up − 2 cool-down) min ÷ 10 sets = 144 sec.
- */
-export const SLOT = 144
+/** Target seconds per set, including rest, used to decide how many cards to deal. */
+const TARGET_SET_SECONDS = 144
+const INTERVAL_SECONDS = 30
 
 const repeatsFor = (type: WorkoutType) => (type === 'sets' ? SETS : type === 'circuit' ? LAPS : 1)
 
 /** How many cards fill a length for this type (never more than the decks hold). */
 export function cardCount(type: WorkoutType, len: number, available = Infinity): number {
   const L = LENGTHS[len] ?? LENGTHS[30]
-  const slots = ((len - L.warm - L.cool) * 60) / SLOT
+  const slots = ((len - L.warm - L.cool) * 60) / TARGET_SET_SECONDS
   return Math.max(1, Math.min(available, Math.round(slots / repeatsFor(type))))
 }
 
@@ -55,22 +52,32 @@ export interface Plan {
 }
 
 export function buildPlan(type: WorkoutType, len: number, cards: Card[]): Plan {
-  const L = LENGTHS[len] ?? LENGTHS[30]
+  const length = LENGTHS[len] ? len : 30
+  const L = LENGTHS[length]
   const n = cards.length
   const repeat = repeatsFor(type)
   const steps: Step[] = [{ kind: 'warm', secs: L.warm * 60 }]
+  const workSteps = n * repeat
+  const workIntervals = Math.max(workSteps, ((length - L.warm - L.cool) * 60) / INTERVAL_SECONDS)
+  // Round cumulative boundaries so each set gets a whole interval and the rounding doesn't add up.
+  const addWork = (card: number, label: string) => {
+    const index = steps.length - 1
+    const start = Math.round((index * workIntervals) / workSteps)
+    const end = Math.round(((index + 1) * workIntervals) / workSteps)
+    steps.push({ kind: 'work', secs: (end - start) * INTERVAL_SECONDS, card, label })
+  }
   let summary = ''
 
   if (type === 'circuit') {
-    for (let r = 0; r < repeat; r++) cards.forEach((_, i) => steps.push({ kind: 'work', secs: SLOT, card: i, label: `Lap ${r + 1} of ${repeat} · card ${i + 1} of ${n}` }))
+    for (let r = 0; r < repeat; r++) cards.forEach((_, i) => addWork(i, `Lap ${r + 1} of ${repeat} · card ${i + 1} of ${n}`))
     summary = `${repeat} laps through all ${n} cards, one set each.`
   } else if (type === 'sets') {
     cards.forEach((_, i) => {
-      for (let k = 0; k < repeat; k++) steps.push({ kind: 'work', secs: SLOT, card: i, label: `Set ${k + 1} of ${repeat}` })
+      for (let k = 0; k < repeat; k++) addWork(i, `Set ${k + 1} of ${repeat}`)
     })
     summary = `${repeat} sets of each card before moving on.`
   } else {
-    cards.forEach((_, i) => steps.push({ kind: 'work', secs: SLOT, card: i, label: `Card ${i + 1} of ${n}` }))
+    cards.forEach((_, i) => addWork(i, `Card ${i + 1} of ${n}`))
     summary = `${n} cards, one set each.`
   }
 

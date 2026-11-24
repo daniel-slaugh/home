@@ -61,6 +61,10 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
           aria-label="Byte Garden home">←</a
         >
         <span class="brand">Workout decks</span>
+        <div class="workout-clock">
+          <span id="rtotal-label">Total time</span>
+          <div id="rtotal" role="timer" aria-labelledby="rtotal-label">0:00</div>
+        </div>
       </div>
       <nav
         class="steps"
@@ -169,7 +173,7 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
 
     <div class="navbar">
       <div class="navin">
-        <button class="btn" id="back">Back</button>
+        <button class="btn back-button" id="back">Back</button>
         <button class="go" id="next">Next</button>
       </div>
     </div>
@@ -181,18 +185,10 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
       </div>
     </div>
 
-    <div class="run" id="run" role="dialog" aria-modal="true" aria-labelledby="rb">
+    <section class="run" id="run" role="main" aria-labelledby="rb">
       <div class="rtop">
         <div class="rwrap">
-          <h2 id="rb">Warm-up</h2>
-          <div class="clock clock-step">
-            <span class="clock-label" id="rclock-label">Time left</span>
-            <div id="rclock" role="timer" aria-labelledby="rclock-label">0:00</div>
-          </div>
-          <div class="clock clock-total">
-            <span class="clock-label" id="rtotal-label">Total time</span>
-            <div id="rtotal" role="timer" aria-labelledby="rtotal-label">0:00</div>
-          </div>
+          <h2 class="vh" id="rb">Warm-up</h2>
           <div class="workout-progress">
             <progress id="rprogress" value="0" aria-label="Workout progress"></progress>
           </div>
@@ -203,12 +199,11 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
       </div>
       <div class="rfoot">
         <div class="rbtns">
-          <button class="btn" id="rback">Back</button>
+          <button class="btn back-button" id="rback" aria-label="Back to workout confirmation">Back</button>
           <button class="btn main" id="rnext">Next</button>
-          <button class="rend" id="rend" aria-label="End workout">End</button>
         </div>
       </div>
-    </div>
+    </section>
 
     <script>
       import { DECKS } from '../workout/decks'
@@ -476,13 +471,14 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
       }
       function tableFace(x: TableCard) {
         if (x.kind === 'work') return face(x.exercise, x.number)
-        return routineFace(x.routine, x.kind, true)
+        return routineFace(x.routine, x.kind)
       }
+      const routineDuration = (secs: number) => secs % 60 === 0 ? `${secs / 60} min` : `${secs} sec`
       function fill(i: number, x: TableCard) {
         const { deck } = x.kind === 'work' ? x.exercise : x.routine
         const description = x.kind === 'work'
           ? `Card ${x.number}, ${x.exercise.card.name}, ${x.exercise.card.reps}. ${x.exercise.card.cue}`
-          : `${ROUTINE_LABELS[x.kind]}, ${x.routine.card.name}. ${x.routine.card.moves.map(([move, secs]) => `${move}, ${secs} seconds`).join('. ')}.`
+          : `${ROUTINE_LABELS[x.kind]}, ${x.routine.card.name}. ${x.routine.card.moves.map(([move, secs]) => `${move}, ${routineDuration(secs)}`).join('. ')}.`
         cards[i].innerHTML = tableFace(x) + `<div class="face stock back" style="${art(deck)}"></div>`
         cards[i].setAttribute('aria-label', `${description} Swap card.`)
         cards[i].dataset.kind = x.kind
@@ -1062,7 +1058,7 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
 
       // ---- run mode: one tap per exercise in Sets and Variety, one per set in Circuit ----
       let run: {
-        steps: Step[]; i: number; completed: number; t0: number; ts: number; end?: boolean; h: Dealt[]
+        steps: Step[]; i: number; completed: number; t0: number; end?: boolean; h: Dealt[]
         routines: Record<RoutinePhase, ReturnType<typeof drawRoutine>>
       } | null = null
       let tick: number | undefined
@@ -1083,33 +1079,22 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         progress.value = done
         progress.setAttribute('aria-valuetext', label)
       }
-      function routineFace({ deck, card }: ReturnType<typeof drawRoutine>, phase: RoutinePhase, showPhase = false) {
-        const moves = card.moves.map(([move, secs]) => `<li><span>${esc(move)}</span><b>${secs} sec</b></li>`).join('')
-        const label = showPhase ? `<p class="routine-phase">${ROUTINE_LABELS[phase]}</p>` : ''
+      function routineFace({ deck, card }: ReturnType<typeof drawRoutine>, phase: RoutinePhase) {
+        const moves = card.moves.map(([move, secs]) => `<li><span>${esc(move)}</span><b>${routineDuration(secs)}</b></li>`).join('')
+        const label = `<p class="routine-phase">${ROUTINE_LABELS[phase]}</p>`
         return cardFront(deck, card.suit, ROUTINE_LABELS[phase][0], `${label}<h3>${esc(card.name)}</h3><ol class="routine-moves">${moves}</ol>`)
       }
       function show() {
         if (!run) return
         const s = run.steps[run.i]
-        run.ts = Date.now()
-        let title = '',
-          html = '',
-          clockLabel = 'Time left'
-        if (s.kind === 'work') {
-          const x = run.h[s.card]
-          title = s.label
-          if (s.sets > 1) clockLabel = s.sets === 2 ? 'Both sets' : 'All sets'
-          html = `<div class="solo"><div class="card static">${face(x, s.card + 1)}</div></div>`
-        } else {
-          title = ROUTINE_LABELS[s.kind]
-          html = `<div class="solo"><div class="card static">${routineFace(run.routines[s.kind], s.kind)}</div></div>`
-        }
-        $('#rb').textContent = title
-        $('#rclock-label').textContent = clockLabel
-        $('#rmain').innerHTML = html
+        const card: TableCard = s.kind === 'work'
+          ? { kind: 'work', exercise: run.h[s.card], number: s.card + 1 }
+          : { kind: s.kind, routine: run.routines[s.kind] }
+        $('#rb').textContent = card.kind === 'work' ? card.exercise.card.name : ROUTINE_LABELS[card.kind]
+        $('#rmain').innerHTML = `<div class="solo"><div class="card static">${tableFace(card)}</div></div>`
+        $('#rback').setAttribute('aria-label', run.i === 0 ? 'Back to workout confirmation' : 'Back to previous workout step')
         $('#rbody').scrollTop = 0
         fit($('#rmain'))
-        $<HTMLButtonElement>('#rback').disabled = run.i === 0
         clock()
       }
       function advance() {
@@ -1128,10 +1113,7 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
       }
       function clock() {
         if (!run || run.end) return
-        const now = Date.now()
-        const left = run.steps[run.i].secs - (now - run.ts) / 1000
-        $('#rclock').textContent = mmss(Math.max(0, Math.ceil(left)))
-        $('#rtotal').textContent = mmss(Math.max(0, (now - run.t0) / 1000))
+        $('#rtotal').textContent = mmss(Math.max(0, (Date.now() - run.t0) / 1000))
       }
       function finish() {
         if (!run) return
@@ -1139,25 +1121,24 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         run.end = true
         clearInterval(tick)
         $('#rb').textContent = 'Done.'
+        $('#rb').classList.remove('vh')
         $('#rmain').innerHTML = `<div class="solo"><ol class="routine-card">${run.h.map((x) => `<li>${esc(x.card.name)}</li>`).join('')}</ol></div>`
         $('#rbody').scrollTop = 0
         $('#rnext').textContent = 'Close workout'
-        $<HTMLButtonElement>('#rback').disabled = true
         $('#run').classList.add('is-complete')
       }
       async function startRun() {
         const p = plan()
-        const now = Date.now()
         run = {
-          steps: p.steps, i: 0, completed: 0, t0: now, ts: now, h: hand(),
+          steps: p.steps, i: 0, completed: 0, t0: Date.now(), h: hand(),
           routines: { ...routines },
         }
         const activeRun = run
+        $('#rb').classList.add('vh')
         $('#rnext').textContent = 'Next'
         showProgress()
         $('#run').classList.remove('is-complete')
         $('#run').classList.add('on')
-        document.body.style.overflow = 'hidden'
         show()
         tick = window.setInterval(clock, 250)
         $('#rnext').focus({ preventScroll: true })
@@ -1169,10 +1150,10 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
       }
       $('#rnext').addEventListener('click', advance)
       $('#rback').addEventListener('click', () => {
-        if (run && !run.end && run.i > 0) {
-          run.i--
-          show()
-        }
+        if (!run || run.end) return
+        if (run.i === 0) return closeRun()
+        run.i--
+        show()
       })
       function closeRun() {
         clearInterval(tick)
@@ -1182,14 +1163,12 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         }
         run = null
         $('#run').classList.remove('on')
-        document.body.style.overflow = ''
         if (lock) {
           lock.release().catch(() => {})
           lock = null
         }
         $('#next').focus({ preventScroll: true })
       }
-      $('#rend').addEventListener('click', closeRun)
       document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && held >= 0) putDown()
         else if (e.key === 'Escape' && run) closeRun()
@@ -1203,6 +1182,7 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
       let step: StepId | null = null
       const availableStep = (to: StepId): StepId => !hasDecks() && (to === 'cards' || to === 'start') ? 'decks' : to
       function go(to: string) {
+        if (run) closeRun()
         const requested = (STEPS as readonly string[]).includes(to) ? (to as StepId) : 'workout'
         const next = availableStep(requested)
         if (next !== requested) history.replaceState(null, '', `#${next}`)
@@ -1274,6 +1254,7 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         --pen: #22307a;
         --go: #1f3fb4;
         --go-edge: #13286f;
+        --card-aspect: 5 / 7;
       }
       * {
         box-sizing: border-box;
@@ -1555,7 +1536,7 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         position: relative;
         display: grid;
         width: 100%;
-        aspect-ratio: 5 / 7;
+        aspect-ratio: var(--card-aspect);
         transform-style: preserve-3d;
         border-radius: 6cqw;
         cursor: pointer;
@@ -1608,7 +1589,7 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         position: relative;
         display: block;
         width: 100%;
-        aspect-ratio: 5 / 7;
+        aspect-ratio: var(--card-aspect);
         border: 0;
         padding: 0;
         background: none;
@@ -1987,39 +1968,31 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
 
       /* ---- run mode: the timer and controls frame the card ---- */
       .run {
-        position: fixed;
-        inset: 0;
-        z-index: 20;
         display: none;
+        flex: 1 1 0;
+        min-height: 0;
         flex-direction: column;
         overflow: hidden;
-        color: #fff;
-        background:
-          var(--noise),
-          radial-gradient(120% 90% at 50% 0%, var(--felt), var(--felt-deep));
       }
       .run.on {
         display: flex;
       }
-      body:has(.run.on) > astro-dev-toolbar {
+      body:has(.run.on) {
+        display: flex;
+        flex-direction: column;
+        height: 100dvh;
+        padding-bottom: 0;
+        overflow: hidden;
+      }
+      body:has(.run.on) > :is(main, .navbar, astro-dev-toolbar),
+      body:has(.run.on) .top > .steps {
         display: none;
       }
       .rtop {
         flex: none;
-        z-index: 1;
-        padding: 10px max(4vw, 14px) 12px;
-        background:
-          var(--noise),
-          linear-gradient(180deg, #4a2b1c, var(--leather));
-        box-shadow:
-          0 6px 16px #0007,
-          inset 0 -2px 0 #0006;
+        padding: 10px 16px 0;
       }
       .rwrap {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) auto auto;
-        align-items: center;
-        gap: 8px 12px;
         max-width: 560px;
         margin: 0 auto;
       }
@@ -2029,41 +2002,35 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
           sans-serif;
         color: var(--cream);
       }
-      .clock {
-        text-align: right;
+      .workout-clock {
+        display: none;
+        align-items: baseline;
+        gap: 8px;
+        margin-left: auto;
         font:
-          800 clamp(36px, 10vw, 60px) / 1 'Big Shoulders Display',
+          800 clamp(32px, 8.8vw, 52px) / 1 'Big Shoulders Display',
           sans-serif;
         font-variant-numeric: tabular-nums;
         white-space: nowrap;
-        color: var(--cream);
-      }
-      .clock-total {
-        font-size: clamp(32px, 8.8vw, 52px);
         color: #f0c779;
       }
-      .clock-label {
-        display: block;
-        margin-bottom: 2px;
+      body:has(.run.on) .workout-clock {
+        display: flex;
+      }
+      .workout-clock span {
         font:
           500 14px/1.4 Inter,
           sans-serif;
         color: var(--cream-mute);
       }
-      .workout-progress {
-        grid-column: 1 / -1;
-      }
-      .run.is-complete .rwrap {
-        grid-template-columns: minmax(0, 1fr) auto;
-      }
-      .run.is-complete .clock-step {
-        display: none;
+      .run.is-complete .workout-progress {
+        margin-top: 8px;
       }
       .workout-progress progress {
         appearance: none;
         display: block;
         width: 100%;
-        height: 8px;
+        height: 5px;
         overflow: hidden;
         border: 0;
         border-radius: 999px;
@@ -2096,17 +2063,7 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         padding: 12px;
       }
       .solo {
-        width: min(100%, 29rem, max(16rem, calc((100cqh - 24px) * 4 / 5)));
-      }
-      .solo .card {
-        aspect-ratio: 4 / 5;
-      }
-      .solo .front {
-        gap: 2cqw;
-        padding-block: 10cqw;
-      }
-      .solo .pip {
-        width: calc(18cqw * var(--fit));
+        width: min(100%, 29rem, max(16rem, calc((100cqh - 24px) * var(--card-aspect))));
       }
       .routine-phase {
         order: -1;
@@ -2166,7 +2123,7 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
       }
       .rbtns {
         display: grid;
-        grid-template-columns: 3.625rem minmax(0, 1fr) 3.625rem;
+        grid-template-columns: auto minmax(0, 1fr);
         align-items: center;
         gap: 8px;
         max-width: 560px;
@@ -2176,27 +2133,11 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         min-height: 58px;
         padding-inline: 8px;
       }
-      .rbtns #rback {
-        min-height: 44px;
-        padding-inline: 4px;
-      }
-      .rend {
-        min-height: 44px;
-        padding: 0;
-        border: 0;
-        border-radius: 6px;
-        background: none;
-        color: var(--cream-mute);
-        font: 500 0.875rem Inter, sans-serif;
-        text-decoration: underline;
-        text-underline-offset: 0.2em;
-        cursor: pointer;
-      }
       .rbtns button:focus-visible {
         outline: 2px solid var(--cream);
         outline-offset: 3px;
       }
-      .run.is-complete :is(#rback, #rend) {
+      .run.is-complete #rback {
         visibility: hidden;
       }
       .btn {
@@ -2217,6 +2158,11 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         box-shadow:
           0 1px 0 #b8a57f,
           0 3px 6px #0005;
+      }
+      .btn.back-button {
+        flex: none;
+        width: 96px;
+        height: 54px;
       }
       .btn.main {
         background: linear-gradient(180deg, #2f52cc, var(--go));
@@ -2250,6 +2196,7 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         padding-bottom: calc(96px + env(safe-area-inset-bottom));
       }
       .top {
+        flex: none;
         position: sticky;
         top: 0;
         z-index: 12;
@@ -2497,10 +2444,6 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         max-width: 560px;
         margin: 0 auto;
       }
-      .navin .btn {
-        min-width: 96px;
-        min-height: 54px;
-      }
       .navin .go {
         flex: 1;
         width: auto;
@@ -2610,7 +2553,7 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         gap: 18px;
       }
       .iwrap {
-        width: min(86vw, 380px, calc((100dvh - 150px) * 5 / 7));
+        width: min(86vw, 380px, calc((100dvh - 150px) * var(--card-aspect)));
         container-type: inline-size;
       }
       .ibtns {

@@ -40,7 +40,7 @@ export function cardCount(type: WorkoutType, len: number, available = Infinity):
 }
 
 /** A workout step. Work time accounts for all sets in the step and their rest. */
-export type Step = { kind: 'warm' | 'cool'; secs: number } | { kind: 'work'; secs: number; card: number; sets: number; label: string }
+export type Step = { kind: 'warm' | 'cool'; secs: number } | { kind: 'work'; secs: number; card: number; sets: number }
 
 export interface Plan {
   steps: Step[]
@@ -64,22 +64,22 @@ export function buildPlan(type: WorkoutType, len: number, cards: Card[]): Plan {
   const workIntervals = Math.max(workSets, exerciseSeconds(length) / INTERVAL_SECONDS)
   let scheduledSets = 0
   // Round cumulative boundaries so each set gets a whole interval and the rounding doesn't add up.
-  const addWork = (card: number, label: string, sets = 1) => {
+  const addWork = (card: number, sets = 1) => {
     const start = Math.round((scheduledSets * workIntervals) / workSets)
     scheduledSets += sets
     const end = Math.round((scheduledSets * workIntervals) / workSets)
-    steps.push({ kind: 'work', secs: (end - start) * INTERVAL_SECONDS, card, sets, label })
+    steps.push({ kind: 'work', secs: (end - start) * INTERVAL_SECONDS, card, sets })
   }
   let summary = ''
 
   if (type === 'circuit') {
-    for (let r = 0; r < repeat; r++) cards.forEach((_, i) => addWork(i, `Lap ${r + 1} of ${repeat} · card ${i + 1} of ${n}`))
+    for (let r = 0; r < repeat; r++) cards.forEach((_, i) => addWork(i))
     summary = `${repeat} laps through all ${n} cards, one set each.`
   } else if (type === 'sets') {
-    cards.forEach((_, i) => addWork(i, `Exercise ${i + 1} of ${n}`, repeat))
+    cards.forEach((_, i) => addWork(i, repeat))
     summary = `${repeat} sets of each card before moving on.`
   } else {
-    cards.forEach((_, i) => addWork(i, `Card ${i + 1} of ${n}`))
+    cards.forEach((_, i) => addWork(i))
     summary = `${n} cards, one set each.`
   }
 

@@ -103,7 +103,7 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
               <button
                 class="pile"
                 id="deck"
-                aria-label="Shuffle and deal a new hand. Tap any card to redraw just that card."
+                aria-label="Deal a new hand: the cards on the table go to the bottom of the deck and the next ones come off the top. Tap any card to swap just that card."
               ></button>
             </div>
           </div>
@@ -139,7 +139,7 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
     <script>
       import { DECKS } from '../workout/decks'
       import type { Deck, Suit } from '../workout/types'
-      import { dealHand, redrawFrom, uniqueCards, type Dealt } from '../workout/deal'
+      import { dealHand, uniqueCards, type Dealt } from '../workout/deal'
       import { buildPlan, cardCount, LENGTHS, TYPES, type Plan, type Step, type WorkoutType } from '../workout/plan'
 
       const $ = <T extends HTMLElement = HTMLElement>(s: string) => document.querySelector(s) as T
@@ -159,12 +159,15 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         len: number
         type: WorkoutType
         decks: Record<string, number>
+        /** Cards on the table, in order. */
         hand: [string, string][] | null
+        /** The rest of the deck, top card first. Dealing takes from the top; a swapped card goes to the bottom. */
+        pile: [string, string][] | null
       }
-      let st: State = { start: '06:30', len: 30, type: 'circuit', decks: { [DECKS[0].id]: 100 }, hand: null }
+      let st: State = { start: '06:30', len: 30, type: 'circuit', decks: { [DECKS[0].id]: 100 }, hand: null, pile: null }
       try {
         const s = JSON.parse(localStorage.getItem(KEY) || 'null')
-        if (s) st = { start: s.start || st.start, len: s.len || st.len, type: s.type || st.type, decks: s.decks || st.decks, hand: s.hand || null }
+        if (s) st = { start: s.start || st.start, len: s.len || st.len, type: s.type || st.type, decks: s.decks || st.decks, hand: s.hand || null, pile: s.pile || null }
       } catch (e) {}
       const deckById = (id: string) => DECKS.find((d) => d.id === id)
       for (const id of Object.keys(st.decks)) if (!deckById(id)) delete st.decks[id]
@@ -181,26 +184,63 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
       const picked = () => DECKS.filter((d) => d.id in st.decks)
       const mix = () => picked().map((deck) => ({ deck, weight: st.decks[deck.id] }))
 
-      // ---- the hand: 5 cards for Circuit and Sets, as many as fit the time for Variety ----
-      const load = (): Dealt[] =>
-        (st.hand || []).flatMap(([d, c]) => {
+      // ---- the deck: one real ordered deck of every card in the open decks ----
+      // The hand is dealt off the top, the pile is what's left (top first), and the pile
+      // on the table shows the backs of its actual top cards.
+      const ids = (list: Dealt[]): [string, string][] => list.map((x) => [x.deck.id, x.card.id])
+      const resolve = (list: [string, string][] | null): Dealt[] =>
+        (list || []).flatMap(([d, c]) => {
           const deck = deckById(d)
           const card = deck?.cards.find((x) => x.id === c)
           return deck && card && d in st.decks ? [{ deck, card }] : []
         })
+      const load = () => resolve(st.hand)
+      const pileCards = () => resolve(st.pile)
       /**
-       * Deal (or top up / trim) the hand to the number of cards this type and length call for.
-       * Cards already on the table stay put unless `fresh` starts over.
+       * Size the hand. Like a real deck, cards that leave the table always go to the bottom of
+       * the pile, so the card on top never changes underneath you.
+       *  - 'fit':     type or length changed. Cards on the table stay; extra cards come off the
+       *               top; cards no longer needed go to the bottom.
+       *  - 'cycle':   a new hand. Every card on the table goes to the bottom (rightmost first,
+       *               the way they're tucked under) and the next cards come off the top.
+       *  - 'shuffle': the decks or the mix changed. Everything is shuffled except the cards
+       *               showing on top of the pile, which stay on top.
        */
-      function setHand(fresh: boolean) {
-        const n = cardCount(st.type, st.len, uniqueCards(mix()))
-        const h = dealHand(mix(), n, Math.random, fresh ? [] : load().slice(0, n))
-        st.hand = h.map((x) => [x.deck.id, x.card.id])
+      function setHand(mode: 'fit' | 'cycle' | 'shuffle') {
+        const total = uniqueCards(mix())
+        const n = cardCount(st.type, st.len, total)
+        let h = load(),
+          p = pileCards()
+        if (mode === 'shuffle' || !h.length || h.length + p.length !== total) {
+          const keep = p.slice(0, 3)
+          const key = (x: Dealt) => `${x.deck.id}/${x.card.id}`
+          const kept = new Set(keep.map(key))
+          const order = keep.concat(dealHand(mix(), total, Math.random, dealHand(mix(), n)).filter((x) => !kept.has(key(x))))
+          h = order.slice(0, n)
+          p = order.slice(n)
+        } else if (mode === 'cycle') {
+          p = p.concat(h.reverse())
+          h = p.splice(0, n)
+        } else if (h.length < n) h = h.concat(p.splice(0, n - h.length))
+        else if (h.length > n) p = p.concat(h.splice(n).reverse())
+        st.hand = ids(h)
+        st.pile = ids(p)
         save()
       }
       function hand(): Dealt[] {
-        if (!load().length) setHand(false)
+        if (!load().length) setHand('fit')
         return load()
+      }
+      /** Swap card `i`: it goes to the bottom of the pile and the top card takes its place. */
+      function swap(i: number): Dealt {
+        const h = load(),
+          p = pileCards()
+        p.push(h[i])
+        h[i] = p.shift() as Dealt
+        st.hand = ids(h)
+        st.pile = ids(p)
+        save()
+        return h[i]
       }
       const plan = (): Plan =>
         buildPlan(
@@ -270,14 +310,15 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
           )
           .join('')
       }
+      /** The pile shows the backs of its real top three cards, top card last (on top). */
       function renderPile() {
-        const p = picked()
-        const layers = [0, 1, 2].map((i) => p[i % p.length])
+        const top = pileCards().slice(0, 3)
+        $('#deck').classList.toggle('empty', !top.length)
         $('#deck').innerHTML =
-          layers
+          top
+            .map((x, i) => `<span class="stock back l${i}" style="${art(x.deck)}"></span>`)
             .reverse()
-            .map((d, i) => `<span class="stock back l${2 - i}" style="${art(d)}"></span>`)
-            .join('') + `<span class="lab">Shuffle</span>`
+            .join('') + `<span class="lab">Deal</span>`
       }
       $('#decks').addEventListener('click', (e) => {
         const b = (e.target as HTMLElement).closest<HTMLButtonElement>('.tuck')
@@ -296,7 +337,7 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         }
         renderDecks()
         renderMix()
-        setHand(true)
+        setHand('shuffle')
         deal(true)
       })
       $('#mix').addEventListener('input', (e) => {
@@ -312,7 +353,7 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
       })
       $('#mix').addEventListener('change', (e) => {
         if (!(e.target as HTMLInputElement).dataset.id) return
-        setHand(true)
+        setHand('shuffle')
         deal(true)
       })
 
@@ -406,61 +447,189 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         return p
       }
 
-      function deal(animate: boolean) {
+      // ---- dealing: cards come off the top of the pile and go back onto it ----
+      /** From a card's resting place to the pile, in px. */
+      function toPile(el: HTMLElement) {
+        const d = $('#deck').getBoundingClientRect(),
+          r = el.getBoundingClientRect()
+        return { dx: d.left + d.width / 2 - (r.left + r.width / 2), dy: d.top + d.height / 2 - (r.top + r.height / 2) }
+      }
+      /**
+       * The deal: the top card is pushed off the pile at a slight angle, travels face down in a
+       * low arc while turning toward where it lands, flips over just before it lands, and settles.
+       */
+      function dealKeys(el: HTMLElement): Keyframe[] {
+        const { dx, dy } = toPile(el)
+        const arc = Math.min(70, Math.hypot(dx, dy) * 0.12)
+        const turn = Math.max(-9, Math.min(9, -dx / 60))
+        const at = (p: number) => `translate(${dx * (1 - p)}px, ${dy * (1 - p) - Math.sin(Math.PI * p) * arc}px)`
+        return [
+          { offset: 0, transform: `${at(0)} rotate(0deg) rotateY(180deg) scale(1)`, easing: 'ease-out' },
+          { offset: 0.14, transform: `${at(0.05)} rotate(-1.5deg) rotateY(180deg) scale(1.035)`, easing: 'cubic-bezier(.45,0,.4,1)' },
+          { offset: 0.62, transform: `${at(0.82)} rotate(${turn}deg) rotateY(180deg) scale(1.06)`, easing: 'ease-in' },
+          { offset: 0.8, transform: `${at(0.97)} rotate(${turn * 0.4}deg) rotateY(90deg) scale(1.08)`, easing: 'ease-out' },
+          { offset: 1, transform: 'translate(0, 0) rotate(0deg) rotateY(0deg) scale(1)' },
+        ]
+      }
+      /**
+       * Returning a card to the bottom of the deck, at its normal size: it flips face down where
+       * it lies, slides flat across the felt to the edge of the pile, and slips under it.
+       */
+      function tuckKeys(el: HTMLElement): Keyframe[] {
+        const { dx, dy } = toPile(el)
+        const w = el.offsetWidth
+        const side = dx < 0 ? 1 : -1
+        return [
+          { offset: 0, transform: 'translate(0, 0) rotate(0deg) rotateY(0deg)', easing: 'ease-in-out' },
+          { offset: 0.3, transform: `translate(${dx * 0.03}px, ${dy * 0.03}px) rotate(0deg) rotateY(180deg)`, easing: 'cubic-bezier(.4,0,.2,1)' },
+          { offset: 0.72, transform: `translate(${dx + side * w * 0.5}px, ${dy + 4}px) rotate(${side * 3}deg) rotateY(180deg)`, easing: 'ease-in-out' },
+          { offset: 1, transform: `translate(${dx + w * 0.04}px, ${dy + w * 0.04}px) rotate(1deg) rotateY(180deg)` },
+        ]
+      }
+      const DEAL_MS = 760
+      const motion = () => !reduce && !!document.body.animate
+      /** Stack order while cards are on the move: higher `z` sits on top; 0 clears it. */
+      const lift = (el: HTMLElement, z: number) => ((el.parentElement as HTMLElement).style.zIndex = z ? String(z) : '')
+      const still = (el: HTMLElement) => el.getAnimations().forEach((a) => a.cancel())
+      /**
+       * Cards in motion ignore the hover lift. A card that's lifted under the pointer eases back to
+       * its normal size first, so it never moves around the table enlarged.
+       */
+      async function unzoom(list: HTMLElement[]) {
+        const slotsOf = list.map((el) => el.parentElement as HTMLElement)
+        const zoomed = slotsOf.some((s) => getComputedStyle(s).transform !== 'none')
+        slotsOf.forEach((s) => s.classList.add('moving'))
+        if (zoomed) await new Promise((r) => setTimeout(r, 240))
+      }
+      const settled = (el: HTMLElement) => (el.parentElement as HTMLElement).classList.remove('moving')
+      /**
+       * Return cards to the deck: each one flips face down, slides over to the pile and tucks
+       * underneath it. The rightmost goes first, so the leftmost ends up at the very bottom.
+       */
+      async function tuck(list: HTMLElement[]) {
+        if (!list.length) return
+        await unzoom(list)
+        const pileSlot = $('#deck').parentElement as HTMLElement
+        pileSlot.style.zIndex = '400'
+        const gap = Math.min(110, 700 / list.length)
+        await Promise.all(
+          list.map((el, i) => {
+            lift(el, 300 + i)
+            return el.animate(tuckKeys(el), { duration: 640, delay: (list.length - 1 - i) * gap, fill: 'forwards' }).finished.catch(() => {})
+          })
+        )
+        pileSlot.style.zIndex = ''
+      }
+      /** Do two boxes overlap (with a little margin)? */
+      const overlaps = (a: DOMRect, b: DOMRect, m = 4) => a.left < b.right + m && a.right > b.left - m && a.top < b.bottom + m && a.bottom > b.top - m
+      /**
+       * How long after a card leaves the pile until it's completely clear of it, found by
+       * stepping through its real deal motion and measuring where it is.
+       */
+      function clearOfPile(el: HTMLElement, keys: Keyframe[]): number {
+        const pile = $('#deck').getBoundingClientRect()
+        const probe = el.animate(keys, { duration: DEAL_MS, fill: 'both' })
+        probe.pause()
+        let t = 0
+        for (; t < DEAL_MS; t += 16) {
+          probe.currentTime = t
+          if (!overlaps(el.getBoundingClientRect(), pile)) break
+        }
+        probe.cancel()
+        return t
+      }
+      /**
+       * Deal these cards in order. They wait face down on the pile, the first one on top. Like a
+       * real dealer, the next card only leaves the pile once the previous one is completely clear
+       * of it, so a card is never lifted above another card it's touching: it starts on top of
+       * the pile and stays above everything already on the table.
+       */
+      function dealOut(list: HTMLElement[]) {
+        let delay = 120
+        list.forEach((el) => (el.parentElement as HTMLElement).classList.add('moving'))
+        list.forEach((el, i) => {
+          still(el)
+          const keys = dealKeys(el)
+          // Waiting on the pile, the first card to be dealt is on top...
+          lift(el, 100 + list.length - i)
+          // ...and once it leaves (by then the card before it has cleared the pile), it stays
+          // above everything already dealt until it lands.
+          const start = delay
+          setTimeout(() => lift(el, 300 + i), start)
+          el.animate(keys, { duration: DEAL_MS, delay: start, fill: 'backwards' })
+            .finished.then(() => {
+              lift(el, 0)
+              settled(el)
+            })
+            .catch(() => {})
+          delay = start + Math.max(90, clearOfPile(el, keys))
+        })
+      }
+
+      let dealRun = 0
+      /**
+       * Lay the hand out. With `animate`, cards already on the table are tucked back under first and
+       * the hand is dealt off the top of the pile. `from` deals only the cards from that index on,
+       * leaving the earlier ones where they are (used when the hand grows).
+       */
+      async function deal(animate: boolean, from = 0) {
+        const run = ++dealRun
         const h = hand()
+        const shown = cards.filter((c) => !c.classList.contains('pending'))
+        if (animate && motion() && shown.length) {
+          await tuck(from ? shown.slice(Math.min(from, h.length)) : shown)
+          if (run !== dealRun) return
+        }
         slots(h.length)
         schedule()
         h.forEach((x, i) => fill(i, x))
         cards.forEach((el) => el.classList.remove('pending'))
-        if (!animate || reduce || !cards[0]?.animate) return
-        const deck = $('#deck'),
-          dr = deck.getBoundingClientRect()
-        const stagger = Math.min(170, 1100 / cards.length)
-        deck.animate([{ transform: 'rotate(0)' }, { transform: 'rotate(-4deg) translateY(-4px)' }, { transform: 'rotate(3deg)' }, { transform: 'rotate(0)' }], { duration: 380, easing: 'ease-in-out' })
-        cards.forEach((el, i) => {
-          const r = el.getBoundingClientRect()
-          const dx = dr.left + dr.width / 2 - (r.left + r.width / 2),
-            dy = dr.top + dr.height / 2 - (r.top + r.height / 2)
-          el.animate([{ transform: `translate(${dx}px,${dy}px) rotateY(180deg) rotate(-6deg)` }, { transform: `translate(${dx * 0.35}px,${dy * 0.35 - 36}px) rotateY(150deg) rotate(4deg)`, offset: 0.5 }, { transform: 'none' }], { duration: 720, delay: 380 + i * stagger, easing: 'cubic-bezier(.2,.75,.25,1)', fill: 'backwards' })
-        })
-      }
-      function redraw(i: number) {
-        const h = hand()
-        const cur = h[i]
-        if (!cur) return
-        const card = redrawFrom(cur.deck, cur.card, h)
-        const x = { deck: cur.deck, card }
-        ;(st.hand as [string, string][])[i] = [cur.deck.id, card.id]
-        save()
-        const el = cards[i]
-        const update = () => {
-          schedule()
-          fill(i, x)
+        if (!animate || !motion()) {
+          cards.forEach(still)
+          return cards.forEach(settled)
         }
-        if (reduce || !el.animate) return update()
-        el.animate([{ transform: 'none' }, { transform: 'rotateY(90deg)' }], { duration: 170, easing: 'ease-in' }).finished.then(() => {
-          update()
-          el.animate([{ transform: 'rotateY(-90deg)' }, { transform: 'none' }], { duration: 240, easing: 'ease-out' })
-        })
+        dealOut(cards.slice(from))
+      }
+      const busy = new Set<number>()
+      /**
+       * Swap a card: it flips face down, slides along the felt to the pile and tucks underneath
+       * it (the bottom of the deck), then the card on top of the pile is dealt into its place,
+       * whichever deck that card is from.
+       */
+      async function redraw(i: number) {
+        if (busy.has(i) || !hand()[i]) return
+        const el = cards[i]
+        const next = swap(i)
+        if (!motion()) {
+          schedule()
+          return fill(i, next)
+        }
+        busy.add(i)
+        await tuck([el])
+        schedule()
+        fill(i, next)
+        dealOut([el])
+        setTimeout(() => busy.delete(i), DEAL_MS + 150)
       }
       $('#deck').addEventListener('click', () => {
-        setHand(true)
+        setHand('cycle')
         deal(true)
       })
       $('#len').addEventListener('click', (e) => {
         const b = (e.target as HTMLElement).closest('button')
         if (!b) return
+        const before = hand().length
         st.len = Number(b.dataset.v)
-        setHand(false)
-        deal(false)
+        setHand('fit')
+        deal(true, before)
       })
       $('#type').addEventListener('click', (e) => {
         const b = (e.target as HTMLElement).closest('button')
         if (!b || b.dataset.v === st.type) return
         const before = hand().length
         st.type = b.dataset.v as WorkoutType
-        setHand(false)
-        deal(hand().length > before)
+        setHand('fit')
+        deal(true, before)
       })
       const startIn = $<HTMLInputElement>('#start')
       startIn.value = st.start
@@ -580,7 +749,7 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
       balance()
       renderDecks()
       renderMix()
-      setHand(false)
+      setHand('fit')
       requestAnimationFrame(() => deal(true))
     </script>
 
@@ -1101,6 +1270,10 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
           sans-serif;
         text-shadow: 0 1px 3px #0009;
       }
+      .pile.empty {
+        border: 0.6cqw dashed #ffffff55;
+        border-radius: 6cqw;
+      }
       .pile:focus-visible {
         outline: 3px solid #fff;
         outline-offset: 6px;
@@ -1233,6 +1406,9 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
       .hand .slot:has(.card:focus-visible) {
         z-index: 5;
         transform: scale(var(--lift, 1.9));
+      }
+      .hand .slot.moving {
+        transform: none !important;
       }
       /* Cards in the outer columns grow inward so they stay on screen. */
       .hand .slot {

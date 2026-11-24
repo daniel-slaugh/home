@@ -94,10 +94,3 @@ export function dealHand(mix: Mix, count = SUITS.length, rand: Rand = Math.rando
   }
   return out
 }
-
-/** A different card of the same suit from the same deck that isn't already in the hand, when there is one. */
-export function redrawFrom(deck: Deck, current: Card, hand: Dealt[] = [], rand: Rand = Math.random): Card {
-  const inHand = new Set(hand.map(key))
-  const pool = deck.cards.filter((c) => c.suit === current.suit && c.id !== current.id && !inHand.has(`${deck.id}/${c.id}`))
-  return pool.length ? pick(pool, rand) : current
-}

@@ -136,7 +136,7 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
                 <button
                   class="pile"
                   id="deck"
-                  aria-label="Deal a new hand: the cards on the table go to the bottom of the deck and the next ones come off the top."
+                  aria-label="Deal a new exercise hand."
                 ></button>
               </div>
             </div>
@@ -181,15 +181,37 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
     </div>
 
     <div class="run" id="run" role="dialog" aria-modal="true" aria-labelledby="rb">
-      <div class="rtop"><div class="rwrap"><div><h2 id="rb">Warm-up</h2><p id="rs"></p></div><div class="clock" id="rclock">0:00<small id="rleft"></small></div></div></div>
-      <div class="rbody">
+      <div class="rtop">
+        <div class="rwrap">
+          <h2 id="rb">Warm-up</h2>
+          <div class="clock clock-step">
+            <span class="clock-label" id="rclock-label">Time left</span>
+            <div id="rclock" role="timer" aria-labelledby="rclock-label">0:00</div>
+          </div>
+          <div class="clock clock-total">
+            <span class="clock-label" id="rtotal-label">Total time</span>
+            <div id="rtotal" role="timer" aria-labelledby="rtotal-label">0:00</div>
+          </div>
+          <div class="workout-progress">
+            <progress id="rprogress" value="0" aria-label="Workout progress"></progress>
+          </div>
+        </div>
+      </div>
+      <div class="rbody" id="rbody">
         <div id="rmain"></div>
-        <div class="rbtns"><button class="btn main" id="rnext">Next</button><button class="btn" id="rback">Back</button><button class="btn" id="rend">End</button></div>
+      </div>
+      <div class="rfoot">
+        <div class="rbtns">
+          <button class="btn" id="rback">Back</button>
+          <button class="btn main" id="rnext">Next</button>
+          <button class="rend" id="rend" aria-label="End workout">End</button>
+        </div>
       </div>
     </div>
 
     <script>
       import { DECKS } from '../workout/decks'
+      import { drawRoutine, findRoutine, type RoutinePhase } from '../workout/decks/routines'
       import type { Deck, Suit } from '../workout/types'
       import { dealHand, uniqueCards, type Dealt } from '../workout/deal'
       import { buildPlan, cardCount, LAPS, LENGTHS, SETS, TYPES, type Plan, type Step, type WorkoutType } from '../workout/plan'
@@ -198,10 +220,11 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
       const esc = (s: string) => s.replace(/[&<>"]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[ch] as string)
 
       const SUIT: Record<Suit, [string, string]> = { legs: ['♠', ''], push: ['♥', 'red'], pull: ['♦', 'red'], hinge: ['♣', ''], core: ['★', 'joker'] }
+      const ROUTINE_LABELS: Record<RoutinePhase, string> = { warm: 'Warm-up', cool: 'Cool-down' }
       const KEY = 'workoutdecks.v1'
 
       /** A deck's art as CSS custom properties, for its box, card backs and card faces. */
-      const art = (d: Deck) => {
+      const art = (d: Pick<Deck, 'art'>) => {
         const a = d.art
         return esc(`--back:${a.back.background};--back-border:${a.back.border};--box:${a.box.color};--box-ink:${a.box.ink};--box-label:${a.box.label};--letter:${a.lettering.font};--letter-scale:${a.lettering.scale ?? 1};--face:${a.face.background};--face-text:${a.face.text};--face-muted:${a.face.muted};--face-line:${a.face.line};--face-accent:${a.face.accent};--red:${a.suits.red};--black:${a.suits.black};--star:${a.suits.star}`)
       }
@@ -215,19 +238,25 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         hand: [string, string][] | null
         /** The rest of the deck, top card first. Dealing takes from the top; a swapped card goes to the bottom. */
         pile: [string, string][] | null
+        routines?: Partial<Record<RoutinePhase, string>>
       }
       let st: State = { len: 30, type: 'circuit', decks: { [DECKS[0].id]: 1 }, hand: null, pile: null }
       try {
         const s = JSON.parse(localStorage.getItem(KEY) || 'null')
-        if (s) st = { len: s.len || st.len, type: s.type || st.type, decks: s.decks || st.decks, hand: s.hand || null, pile: s.pile || null }
+        if (s) st = { len: s.len || st.len, type: s.type || st.type, decks: s.decks || st.decks, hand: s.hand || null, pile: s.pile || null, routines: s.routines }
       } catch (e) {}
       const deckById = (id: string) => DECKS.find((d) => d.id === id)
       for (const id of Object.keys(st.decks)) if (!deckById(id)) delete st.decks[id]
       if (!Object.keys(st.decks).length) st.decks = { [DECKS[0].id]: 1 }
       if (!LENGTHS[st.len]) st.len = 30
       if (!TYPES.some((t) => t.id === st.type)) st.type = 'circuit'
+      let routines = {
+        warm: findRoutine('warm', st.routines?.warm) ?? drawRoutine('warm'),
+        cool: findRoutine('cool', st.routines?.cool) ?? drawRoutine('cool'),
+      }
       const save = () => {
         try {
+          st.routines = { warm: routines.warm.card.id, cool: routines.cool.card.id }
           localStorage.setItem(KEY, JSON.stringify(st))
         } catch (e) {}
       }
@@ -282,6 +311,16 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
       function hand(): Dealt[] {
         if (!load().length) setHand('fit')
         return load()
+      }
+      type TableCard =
+        | { kind: 'work'; exercise: Dealt; number: number }
+        | { kind: RoutinePhase; routine: ReturnType<typeof drawRoutine> }
+      function tableHand(exercises = hand()): TableCard[] {
+        return [
+          { kind: 'warm', routine: routines.warm },
+          ...exercises.map((exercise, i) => ({ kind: 'work' as const, exercise, number: i + 1 })),
+          { kind: 'cool', routine: routines.cool },
+        ]
       }
       /** Swap card `i`: it goes to the bottom of the pile and the top card takes its place. */
       function swap(i: number): Dealt {
@@ -358,11 +397,14 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
       })
 
       // ---- cards ----
-      function face(x: Dealt, label: number | string) {
-        const [sym, cls] = SUIT[x.card.suit]
-        const c = x.card
+      function cardFront(deck: Pick<Deck, 'art'>, suit: Suit, label: number | string, content: string) {
+        const [sym, cls] = SUIT[suit]
         const corner = (pos: string) => `<span class="corner ${pos}" aria-hidden="true"><b>${label}</b><i>${sym}</i></span>`
-        return `<div class="face stock front ${cls}" style="${art(x.deck)}">${corner('tl')}${corner('br')}<span class="pip" aria-hidden="true">${sym}</span><div class="fbody"><h3>${esc(c.name)}</h3><p class="reps">${esc(c.reps)}</p><p class="cue">${esc(c.cue)}</p><p class="alt"><span><span class="vh">Easier: </span><i aria-hidden="true">−</i>${esc(c.easier)}</span><span><span class="vh">Harder: </span><i aria-hidden="true">+</i>${esc(c.harder)}</span></p></div></div>`
+        return `<div class="face stock front ${cls}" style="${art(deck)}">${corner('tl')}${corner('br')}<span class="pip" aria-hidden="true">${sym}</span><div class="fbody">${content}</div></div>`
+      }
+      function face(x: Dealt, label: number | string) {
+        const c = x.card
+        return cardFront(x.deck, c.suit, label, `<h3>${esc(c.name)}</h3><p class="reps">${esc(c.reps)}</p><p class="cue">${esc(c.cue)}</p><p class="alt"><span><span class="vh">Easier: </span><i aria-hidden="true">−</i>${esc(c.easier)}</span><span><span class="vh">Harder: </span><i aria-hidden="true">+</i>${esc(c.harder)}</span></p>`)
       }
       /**
        * Shrink a card's text a little when its content won't fit the card. Sizes are relative to
@@ -387,9 +429,9 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
       let fanOn = false
       /** The help text on the Cards step, for each way of handling the cards. */
       const HINT = {
-        phone: 'Swipe to look through your cards. Flick one up to swap it. Tap the deck for a new hand.',
-        touch: 'Tap a card to read it or swap it. Tap the deck for a new hand.',
-        mouse: 'Hover over a card to read it. Click one to swap it. Click the deck for a new hand.',
+        phone: 'Swipe from warm-up to cool-down. Flick a card up to swap it. Tap the deck for new exercises.',
+        touch: 'Tap a card to read it or swap it. Tap the deck for new exercises.',
+        mouse: 'Hover over a card to read it. Click one to swap it. Click the deck for new exercises.',
       }
       /** Match the help text to how the cards work right now; it changes with the layout. */
       const setHint = () => ($('#hint').textContent = phone.matches ? HINT.phone : touch.matches ? HINT.touch : HINT.mouse)
@@ -422,9 +464,17 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         while (box.children.length - 1 > n) box.lastElementChild?.remove()
         cards = [...box.querySelectorAll<HTMLElement>('.card')]
       }
-      function fill(i: number, x: Dealt) {
-        cards[i].innerHTML = face(x, i + 1) + `<div class="face stock back" style="${art(x.deck)}"></div>`
-        cards[i].setAttribute('aria-label', `Card ${i + 1}, ${x.card.name}, ${x.card.reps}. ${x.card.cue} Tap to redraw.`)
+      function tableFace(x: TableCard) {
+        if (x.kind === 'work') return face(x.exercise, x.number)
+        return routineFace(x.routine, x.kind, LENGTHS[st.len][x.kind] * 60, true)
+      }
+      function fill(i: number, x: TableCard) {
+        const { deck } = x.kind === 'work' ? x.exercise : x.routine
+        const description = x.kind === 'work'
+          ? `Card ${x.number}, ${x.exercise.card.name}, ${x.exercise.card.reps}. ${x.exercise.card.cue}`
+          : `${ROUTINE_LABELS[x.kind]}, ${x.routine.card.name}. ${x.routine.card.moves.join(', ')}.`
+        cards[i].innerHTML = tableFace(x) + `<div class="face stock back" style="${art(deck)}"></div>`
+        cards[i].setAttribute('aria-label', `${description} Swap card.`)
         fit(cards[i])
       }
 
@@ -444,7 +494,7 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
           if (s.kind === 'work') {
             const x = h[s.card]
             if (st.type === 'circuit' && s.card === 0) rows.push([t, `Lap ${Math.floor(workIndex / n) + 1}`, `All ${n} cards, one set each`])
-            if (st.type === 'sets' && workIndex % p.repeat === 0) rows.push([t, esc(x.card.name), `${p.repeat} sets of ${esc(x.card.reps)}`])
+            if (st.type === 'sets') rows.push([t, esc(x.card.name), `${s.sets} sets of ${esc(x.card.reps)}`])
             if (st.type === 'variety') rows.push([t, esc(x.card.name), esc(x.card.reps)])
             workIndex++
           }
@@ -616,20 +666,21 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
       let dealRun = 0
       /** What's lying on the table right now, in order. */
       let laid: string[] = []
-      const cardKey = (x: Dealt) => `${x.deck.id}/${x.card.id}`
+      const cardKey = (x: TableCard) => x.kind === 'work' ? `${x.exercise.deck.id}/${x.exercise.card.id}` : `${x.kind}/${x.routine.card.id}`
       /**
        * Make the table match the hand. Cards that are already in the right place stay put; the
        * rest are tucked back under the deck and the new ones are dealt off the top.
        */
       async function deal(animate: boolean) {
         const run = ++dealRun
-        const h = hand()
+        const exercises = hand()
+        const h = tableHand(exercises)
         const want = h.map(cardKey)
         let same = 0
         while (same < laid.length && same < want.length && laid[same] === want[same]) same++
         const shown = cards.filter((c) => !c.classList.contains('pending'))
         // Until they're dealt, the new cards are the top of the pile, so that's what it shows.
-        renderPile(h.slice(same))
+        renderPile(exercises.slice(Math.max(0, same - 1)))
         if (animate && motion() && shown.length > same) {
           await tuck(shown.slice(same))
           if (run !== dealRun) return
@@ -649,21 +700,36 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
       }
       const busy = new Set<number>()
       /**
-       * Swap a card: it flips face down, slides along the felt to the pile and tucks underneath
-       * it (the bottom of the deck), then the card on top of the pile is dealt into its place,
-       * whichever deck that card is from.
+       * Swap a card in place. Exercises come off the exercise pile and routine cards are drawn
+       * from their own decks.
        */
       async function redraw(i: number, from?: string) {
-        if (busy.has(i) || !hand()[i]) return
+        const current = tableHand()[i]
         const el = cards[i]
-        const next = swap(i)
-        laid[i] = cardKey(next)
+        if (busy.has(i) || !current || !el || el.parentElement?.classList.contains('moving')) return
+        let next: TableCard
+        if (current.kind === 'work') {
+          next = { ...current, exercise: swap(current.number - 1) }
+        } else {
+          const routine = drawRoutine(current.kind, current.routine.card.id)
+          routines[current.kind] = routine
+          next = { ...current, routine }
+          save()
+        }
         if (!motion()) {
+          laid[i] = cardKey(next)
+          el.style.transform = ''
           schedule()
           return fill(i, next)
         }
         busy.add(i)
+        const version = dealRun
         await tuck([el], from)
+        if (version !== dealRun) {
+          busy.delete(i)
+          return
+        }
+        laid[i] = cardKey(next)
         schedule()
         fill(i, next)
         dealOut([el])
@@ -725,6 +791,7 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         const cw = Math.max(170, Math.min(box.clientWidth * 0.8, 360, (room - 12) / 2.124))
         const gap = Math.max(10, Math.min(96, (room - cw * 1.82) / 2))
         const screen = $('#s-cards')
+        screen.classList.toggle('fan-scroll', room < cw * 1.82 + gap + Math.max(gap, cw * 0.15))
         screen.style.setProperty('--cw', `${cw}px`)
         screen.style.setProperty('--pw', `${cw * 0.3}px`)
         screen.style.setProperty('--gap', `${gap}px`)
@@ -790,7 +857,7 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         drag.ly = e.clientY
         drag.lt = e.timeStamp
         if (!drag.axis && Math.hypot(dx, dy) > 8) {
-          const top = drag.i === Math.round(pos) && !busy.has(drag.i)
+          const top = drag.i === Math.round(pos) && !busy.has(drag.i) && !cards[drag.i].parentElement?.classList.contains('moving')
           drag.axis = Math.abs(dx) > Math.abs(dy) ? 'x' : dy < 0 && top ? 'y' : 'none'
         }
         if (drag.axis === 'x') {
@@ -857,10 +924,10 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
       }
       function inspect(i: number) {
         if (busy.has(i) || held >= 0) return
-        const x = hand()[i]
+        const x = tableHand()[i]
         if (!x) return
         held = i
-        icard.innerHTML = face(x, i + 1)
+        icard.innerHTML = tableFace(x)
         $('#inspect').hidden = false
         fit(icard)
         if (motion()) {
@@ -895,44 +962,71 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         if (e.target === $('#inspect')) putDown()
       })
 
-      // ---- run mode: one step at a time. Tap Done after each set (and rest as long as you need). ----
-      let run: { steps: Step[]; i: number; t0: number; ts: number; end?: boolean; h: Dealt[]; p: Plan } | null = null
+      // ---- run mode: one tap per exercise in Sets and Variety, one per set in Circuit ----
+      let run: {
+        steps: Step[]; i: number; completed: number; t0: number; ts: number; end?: boolean; h: Dealt[]
+        routines: Record<RoutinePhase, ReturnType<typeof drawRoutine>>
+      } | null = null
       let tick: number | undefined
       let lock: WakeLockSentinel | null = null
       const mmss = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`
-      const rclock = () => $('#rclock').firstChild as Text
+      function showProgress() {
+        if (!run) return
+        const total = run.steps.length
+        const done = run.completed
+        const left = total - done
+        let label = `${done} of ${total} steps complete`
+        if (done === 0) label = `${total} steps planned`
+        else if (left === 0) label = `All ${total} steps complete`
+        else if (left < done) label = left === 1 ? '1 step to go' : `${left} steps to go`
+
+        const progress = $<HTMLProgressElement>('#rprogress')
+        progress.max = total
+        progress.value = done
+        progress.setAttribute('aria-valuetext', label)
+      }
+      function routineFace({ deck, card, number }: ReturnType<typeof drawRoutine>, phase: RoutinePhase, secs: number, showPhase = false) {
+        const rounds = phase === 'cool' ? secs / (card.moves.length * 30) : 1
+        const moves = card.moves.map((move, i) => {
+          const duration = phase === 'cool' ? 30 : i === 0 ? secs - (card.moves.length - 1) * 60 : 60
+          return `<li><span>${esc(move)}</span><b>${mmss(duration)}</b></li>`
+        }).join('')
+        const repeat = rounds > 1 ? `<p class="routine-rounds">${rounds} rounds</p>` : ''
+        const label = showPhase ? `<p class="routine-phase">${ROUTINE_LABELS[phase]}</p>` : ''
+        return cardFront(deck, card.suit, number, `${label}<h3>${esc(card.name)}</h3>${repeat}<ol class="routine-moves">${moves}</ol>`)
+      }
       function show() {
         if (!run) return
         const s = run.steps[run.i]
-        const nx = run.steps[run.i + 1]
         run.ts = Date.now()
         let title = '',
-          sub = '',
-          html = ''
-        if (s.kind === 'warm') {
-          title = 'Warm-up'
-          html = '<ol class="list"><li>2 min marching or jumping jacks</li><li>10 squats</li><li>5 push-ups</li><li>10 glute bridges</li><li>20 arm circles each way</li></ol>'
-        }
-        if (s.kind === 'cool') {
-          title = 'Cool-down'
-          html = "<ol class=\"list\"><li>Hamstring stretch, 30 sec each side</li><li>Hip flexor stretch, 30 sec each side</li><li>Child's pose, 30 sec</li></ol>"
-        }
+          html = '',
+          clockLabel = 'Time left'
         if (s.kind === 'work') {
           const x = run.h[s.card]
-          title = x.card.name
-          sub = s.label
+          title = s.label
+          if (s.sets > 1) clockLabel = s.sets === 2 ? 'Both sets' : 'All sets'
           html = `<div class="solo"><div class="card static">${face(x, s.card + 1)}</div></div>`
+        } else {
+          title = ROUTINE_LABELS[s.kind]
+          html = `<div class="solo"><div class="card static">${routineFace(run.routines[s.kind], s.kind, s.secs)}</div></div>`
         }
         $('#rb').textContent = title
-        $('#rs').textContent = sub
+        $('#rclock-label').textContent = clockLabel
         $('#rmain').innerHTML = html
+        $('#rbody').scrollTop = 0
         fit($('#rmain'))
-        $('#rnext').textContent = !nx ? 'Finish' : s.kind === 'work' ? 'Done' : 'Next'
         $<HTMLButtonElement>('#rback').disabled = run.i === 0
         clock()
       }
       function advance() {
-        if (!run || run.end) return
+        if (!run) return
+        if (run.end) {
+          closeRun()
+          return
+        }
+        run.completed = Math.max(run.completed, run.i + 1)
+        showProgress()
         if (run.i === run.steps.length - 1) finish()
         else {
           run.i++
@@ -941,43 +1035,44 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
       }
       function clock() {
         if (!run || run.end) return
-        const s = run.steps[run.i]
-        const t = (Date.now() - run.ts) / 1000
-        if (s.kind === 'work') rclock().textContent = mmss(t)
-        else {
-          const left = s.secs - t
-          rclock().textContent = left >= 0 ? mmss(Math.ceil(left)) : `+${mmss(-left)}`
-        }
-        $('#rleft').textContent = `${mmss((Date.now() - run.t0) / 1000)} of ~${run.p.minutes}:00`
+        const now = Date.now()
+        const left = run.steps[run.i].secs - (now - run.ts) / 1000
+        $('#rclock').textContent = mmss(Math.max(0, Math.ceil(left)))
+        $('#rtotal').textContent = mmss(Math.max(0, (now - run.t0) / 1000))
       }
       function finish() {
         if (!run) return
+        clock()
         run.end = true
         clearInterval(tick)
         $('#rb').textContent = 'Done.'
-        $('#rs').textContent = 'Nice work, both of you.'
-        rclock().textContent = mmss((Date.now() - run.t0) / 1000)
-        $('#rleft').textContent = 'total'
-        $('#rmain').innerHTML = '<ol class="list">' + run.h.map((x) => `<li>${esc(x.card.name)}</li>`).join('') + '</ol>'
-        $('#rnext').style.display = 'none'
+        $('#rmain').innerHTML = `<div class="solo"><ol class="routine-card">${run.h.map((x) => `<li>${esc(x.card.name)}</li>`).join('')}</ol></div>`
+        $('#rbody').scrollTop = 0
+        $('#rnext').textContent = 'Close workout'
         $<HTMLButtonElement>('#rback').disabled = true
-        $('#rend').textContent = 'Close'
+        $('#run').classList.add('is-complete')
       }
       async function startRun() {
         const p = plan()
-        run = { steps: p.steps, i: 0, t0: Date.now(), ts: Date.now(), h: hand(), p }
-        $('#rnext').style.display = ''
-        $('#rend').textContent = 'End'
+        const now = Date.now()
+        run = {
+          steps: p.steps, i: 0, completed: 0, t0: now, ts: now, h: hand(),
+          routines: { ...routines },
+        }
+        const activeRun = run
+        $('#rnext').textContent = 'Next'
+        showProgress()
+        $('#run').classList.remove('is-complete')
         $('#run').classList.add('on')
         document.body.style.overflow = 'hidden'
         show()
         tick = window.setInterval(clock, 250)
-        $('#rnext').focus()
+        $('#rnext').focus({ preventScroll: true })
         try {
-          lock = await navigator.wakeLock.request('screen')
-        } catch (e) {
-          lock = null
-        }
+          const acquired = await navigator.wakeLock.request('screen')
+          if (run === activeRun) lock = acquired
+          else await acquired.release()
+        } catch {}
       }
       $('#rnext').addEventListener('click', advance)
       $('#rback').addEventListener('click', () => {
@@ -986,8 +1081,12 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
           show()
         }
       })
-      $('#rend').addEventListener('click', () => {
+      function closeRun() {
         clearInterval(tick)
+        if (run?.end) {
+          routines = { warm: drawRoutine('warm'), cool: drawRoutine('cool') }
+          save()
+        }
         run = null
         $('#run').classList.remove('on')
         document.body.style.overflow = ''
@@ -995,10 +1094,12 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
           lock.release().catch(() => {})
           lock = null
         }
-      })
+        $('#next').focus({ preventScroll: true })
+      }
+      $('#rend').addEventListener('click', closeRun)
       document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && held >= 0) putDown()
-        else if (e.key === 'Escape' && run) $('#rend').click()
+        else if (e.key === 'Escape' && run) closeRun()
       })
 
       renderDecks()
@@ -1783,14 +1884,14 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         padding-inline: 4px;
       }
 
-      /* ---- run mode: the card on the felt ---- */
+      /* ---- run mode: the timer and controls frame the card ---- */
       .run {
         position: fixed;
         inset: 0;
         z-index: 20;
         display: none;
         flex-direction: column;
-        overflow: auto;
+        overflow: hidden;
         color: #fff;
         background:
           var(--noise),
@@ -1799,8 +1900,13 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
       .run.on {
         display: flex;
       }
+      body:has(.run.on) > astro-dev-toolbar {
+        display: none;
+      }
       .rtop {
-        padding: 16px max(4vw, 16px);
+        flex: none;
+        z-index: 1;
+        padding: 10px max(4vw, 14px) 12px;
         background:
           var(--noise),
           linear-gradient(180deg, #4a2b1c, var(--leather));
@@ -1809,71 +1915,193 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
           inset 0 -2px 0 #0006;
       }
       .rwrap {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: space-between;
-        align-items: end;
-        gap: 8px 20px;
-        max-width: 900px;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto auto;
+        align-items: center;
+        gap: 8px 12px;
+        max-width: 560px;
         margin: 0 auto;
       }
       .rtop h2 {
         font:
-          800 clamp(34px, 6vw, 48px) / 1.05 'Big Shoulders Display',
+          800 clamp(24px, 6.5vw, 36px) / 1.05 'Big Shoulders Display',
           sans-serif;
         color: var(--cream);
-      }
-      .rtop p {
-        margin: 2px 0 0;
-        color: var(--cream-mute);
       }
       .clock {
         text-align: right;
         font:
-          800 clamp(40px, 8vw, 64px) / 1 'Big Shoulders Display',
+          800 clamp(36px, 10vw, 60px) / 1 'Big Shoulders Display',
           sans-serif;
         font-variant-numeric: tabular-nums;
         white-space: nowrap;
         color: var(--cream);
       }
-      .clock small {
+      .clock-total {
+        font-size: clamp(32px, 8.8vw, 52px);
+        color: #f0c779;
+      }
+      .clock-label {
         display: block;
+        margin-bottom: 2px;
         font:
           500 14px/1.4 Inter,
           sans-serif;
         color: var(--cream-mute);
       }
-      .rbody {
-        flex: 1;
+      .workout-progress {
+        grid-column: 1 / -1;
+      }
+      .run.is-complete .rwrap {
+        grid-template-columns: minmax(0, 1fr) auto;
+      }
+      .run.is-complete .clock-step {
+        display: none;
+      }
+      .workout-progress progress {
+        appearance: none;
+        display: block;
         width: 100%;
-        max-width: 900px;
-        margin: 0 auto;
-        padding: 24px max(4vw, 16px) 28px;
+        height: 8px;
+        overflow: hidden;
+        border: 0;
+        border-radius: 999px;
+        background: #2c1a12;
+        accent-color: #f0c779;
+      }
+      .workout-progress progress::-webkit-progress-bar {
+        background: #2c1a12;
+        box-shadow: inset 0 1px 2px #0008;
+      }
+      .workout-progress progress::-webkit-progress-value {
+        border-radius: 999px;
+        background: #f0c779;
+      }
+      .workout-progress progress::-moz-progress-bar {
+        border-radius: 999px;
+        background: #f0c779;
+      }
+      .rbody {
+        flex: 1 1 0;
+        min-height: 0;
+        overflow: auto;
+        overscroll-behavior: contain;
+        container-type: size;
+      }
+      #rmain {
+        display: grid;
+        place-items: center;
+        min-height: 100%;
+        padding: 12px;
       }
       .solo {
-        width: min(360px, 100%);
+        width: min(100%, 29rem, max(16rem, calc((100cqh - 24px) * 4 / 5)));
       }
-      .list {
+      .solo .card {
+        aspect-ratio: 4 / 5;
+      }
+      .solo .front {
+        gap: 2cqw;
+        padding-block: 10cqw;
+      }
+      .solo .pip {
+        width: calc(18cqw * var(--fit));
+      }
+      .routine-phase {
+        order: -1;
         margin: 0;
-        padding: 18px 20px 18px 2.4em;
-        font-size: 18px;
-        max-width: 560px;
+        color: var(--face-accent);
+        font: 800 calc(6cqw * var(--fit)) / 1.1 var(--letter);
+      }
+      .routine-rounds {
+        order: 2;
+        margin: 0;
+        color: var(--face-accent);
+        font: 800 calc(7cqw * var(--fit)) / 1.1 var(--letter);
+      }
+      .routine-moves {
+        order: 3;
+        width: 100%;
+        margin: 2cqw 0 0;
+        padding: 0;
+        list-style: none;
+        text-align: left;
+        font-size: calc(5.3cqw * var(--fit));
+        line-height: 1.35;
+      }
+      .routine-moves li {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 2cqw;
+        padding-block: 2cqw;
+        border-top: 1px solid var(--face-line);
+      }
+      .routine-moves b {
+        color: var(--face-accent);
+        font-variant-numeric: tabular-nums;
+      }
+      .routine-card {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 0.65em;
+        margin: 0;
+        padding: 8cqw 9cqw 8cqw 15cqw;
+        aspect-ratio: 4 / 5;
+        font-size: clamp(1rem, 5.6cqw, 1.5rem);
         background:
           var(--noise-soft),
-          var(--paper);
+          linear-gradient(150deg, var(--paper), #eee1c7);
         color: var(--paper-ink);
-        border-radius: 3px;
-        box-shadow: 0 10px 22px #0007;
-        transform: rotate(-0.5deg);
+        border: 2.4cqw solid #f8edda;
+        border-radius: 6cqw;
+        box-shadow: inset 0 0 0 1px #a8997b, 0 7px 18px #0006;
       }
-      .list li {
-        margin: 6px 0;
+      .routine-card li::marker {
+        color: var(--pen);
+        font-weight: 700;
+      }
+      .rfoot {
+        flex: none;
+        z-index: 1;
+        padding: 8px max(4vw, 12px) calc(12px + env(safe-area-inset-bottom));
+        background: var(--noise), linear-gradient(#4a2b1c, var(--leather));
+        box-shadow: 0 -4px 12px #0005;
       }
       .rbtns {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 12px;
-        margin-top: 26px;
+        display: grid;
+        grid-template-columns: 3.625rem minmax(0, 1fr) 3.625rem;
+        align-items: center;
+        gap: 8px;
+        max-width: 560px;
+        margin: 0 auto;
+      }
+      .rbtns #rnext {
+        min-height: 58px;
+        padding-inline: 8px;
+      }
+      .rbtns #rback {
+        min-height: 44px;
+        padding-inline: 4px;
+      }
+      .rend {
+        min-height: 44px;
+        padding: 0;
+        border: 0;
+        border-radius: 6px;
+        background: none;
+        color: var(--cream-mute);
+        font: 500 0.875rem Inter, sans-serif;
+        text-decoration: underline;
+        text-underline-offset: 0.2em;
+        cursor: pointer;
+      }
+      .rbtns button:focus-visible {
+        outline: 2px solid var(--cream);
+        outline-offset: 3px;
+      }
+      .run.is-complete :is(#rback, #rend) {
+        visibility: hidden;
       }
       .btn {
         min-height: 50px;
@@ -2244,9 +2472,12 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         #s-cards {
           position: relative;
         }
-        /* the hand already ends at the bottom bar, so this step never scrolls */
+        /* Let the hand scroll clear of the fixed bar when its minimum size exceeds the available room. */
         body[data-step='cards'] {
           padding-bottom: 0;
+        }
+        #s-cards.fan-scroll {
+          padding-bottom: calc(96px + env(safe-area-inset-bottom));
         }
         #s-cards .hint {
           position: absolute;

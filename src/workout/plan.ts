@@ -36,8 +36,8 @@ export function cardCount(type: WorkoutType, len: number, available = Infinity):
   return Math.max(1, Math.min(available, Math.round(slots / repeatsFor(type))))
 }
 
-/** A step of the workout. A set's `secs` covers doing it and resting afterwards. */
-export type Step = { kind: 'warm' | 'cool'; secs: number } | { kind: 'work'; secs: number; card: number; label: string }
+/** A workout step. Work time accounts for all sets in the step and their rest. */
+export type Step = { kind: 'warm' | 'cool'; secs: number } | { kind: 'work'; secs: number; card: number; sets: number; label: string }
 
 export interface Plan {
   steps: Step[]
@@ -57,14 +57,15 @@ export function buildPlan(type: WorkoutType, len: number, cards: Card[]): Plan {
   const n = cards.length
   const repeat = repeatsFor(type)
   const steps: Step[] = [{ kind: 'warm', secs: L.warm * 60 }]
-  const workSteps = n * repeat
-  const workIntervals = Math.max(workSteps, ((length - L.warm - L.cool) * 60) / INTERVAL_SECONDS)
+  const workSets = n * repeat
+  const workIntervals = Math.max(workSets, ((length - L.warm - L.cool) * 60) / INTERVAL_SECONDS)
+  let scheduledSets = 0
   // Round cumulative boundaries so each set gets a whole interval and the rounding doesn't add up.
-  const addWork = (card: number, label: string) => {
-    const index = steps.length - 1
-    const start = Math.round((index * workIntervals) / workSteps)
-    const end = Math.round(((index + 1) * workIntervals) / workSteps)
-    steps.push({ kind: 'work', secs: (end - start) * INTERVAL_SECONDS, card, label })
+  const addWork = (card: number, label: string, sets = 1) => {
+    const start = Math.round((scheduledSets * workIntervals) / workSets)
+    scheduledSets += sets
+    const end = Math.round((scheduledSets * workIntervals) / workSets)
+    steps.push({ kind: 'work', secs: (end - start) * INTERVAL_SECONDS, card, sets, label })
   }
   let summary = ''
 
@@ -72,9 +73,7 @@ export function buildPlan(type: WorkoutType, len: number, cards: Card[]): Plan {
     for (let r = 0; r < repeat; r++) cards.forEach((_, i) => addWork(i, `Lap ${r + 1} of ${repeat} · card ${i + 1} of ${n}`))
     summary = `${repeat} laps through all ${n} cards, one set each.`
   } else if (type === 'sets') {
-    cards.forEach((_, i) => {
-      for (let k = 0; k < repeat; k++) addWork(i, `Set ${k + 1} of ${repeat}`)
-    })
+    cards.forEach((_, i) => addWork(i, `Exercise ${i + 1} of ${n}`, repeat))
     summary = `${repeat} sets of each card before moving on.`
   } else {
     cards.forEach((_, i) => addWork(i, `Card ${i + 1} of ${n}`))

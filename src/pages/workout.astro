@@ -293,21 +293,20 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
     <script>
       import { DECKS } from '../workout/decks'
       import { drawRoutine, findRoutine, type RoutinePhase } from '../workout/decks/routines'
-      import type { Deck, Suit } from '../workout/types'
+      import type { Deck } from '../workout/types'
       import { dealHand, uniqueCards, type Dealt } from '../workout/deal'
       import { buildPlan, cardCount, LAPS, LENGTHS, SETS, TYPES, type Step, type WorkoutType } from '../workout/plan'
 
       const $ = <T extends HTMLElement = HTMLElement>(s: string) => document.querySelector(s) as T
       const esc = (s: string) => s.replace(/[&<>"]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[ch] as string)
 
-      const SUIT: Record<Suit, [string, string]> = { legs: ['♠', ''], push: ['♥', 'red'], pull: ['♦', 'red'], hinge: ['♣', ''], core: ['★', 'joker'] }
       const ROUTINE_LABELS: Record<RoutinePhase, string> = { warm: 'Warm-up', cool: 'Cool-down' }
       const KEY = 'workoutdecks.v1'
 
       /** A deck's art as CSS custom properties, for its box, card backs and card faces. */
       const art = (d: Pick<Deck, 'art'>) => {
         const a = d.art
-        return esc(`--back:${a.back.background};--back-border:${a.back.border};--box:${a.box.color};--box-ink:${a.box.ink};--box-label:${a.box.label};--letter:${a.lettering.font};--letter-scale:${a.lettering.scale ?? 1};--face:${a.face.background};--face-text:${a.face.text};--face-muted:${a.face.muted};--face-line:${a.face.line};--face-accent:${a.face.accent};--red:${a.suits.red};--black:${a.suits.black};--star:${a.suits.star}`)
+        return esc(`--back:${a.back.background};--back-border:${a.back.border};--box:${a.box.color};--box-ink:${a.box.ink};--box-label:${a.box.label};--letter:${a.lettering.font};--letter-scale:${a.lettering.scale ?? 1};--face:${a.face.background};--face-text:${a.face.text};--face-muted:${a.face.muted};--face-line:${a.face.line};--face-accent:${a.face.accent};--icon:${a.icon.color}`)
       }
 
       interface State {
@@ -441,7 +440,7 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
                   <span class="cards"><i class="c-rear"></i><i class="c-left"></i><i class="c-top"></i><i class="c-right"></i><i class="c-face"></i></span>
                   <span class="tongue"></span>
                   <span class="wall right"><span class="dust"></span></span>
-                  <span class="bface"><span class="art"></span><span class="plate"><b>${esc(d.name)}</b></span><span class="suits">♠ ♥ ♦ ♣ ★</span></span>
+                  <span class="bface"><span class="art"></span><span class="plate"><b>${esc(d.name)}</b></span><span class="emblem">${d.art.icon.svg}</span></span>
                   <span class="seal"></span>
                   <span class="lid">
                     <span class="ply out"><span class="seal"></span></span><span class="ply in"></span>
@@ -487,14 +486,15 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
       })
 
       // ---- cards ----
-      function cardFront(deck: Pick<Deck, 'art'>, suit: Suit, label: number | string, content: string) {
-        const [sym, cls] = SUIT[suit]
-        const corner = (pos: string) => `<span class="corner ${pos}" aria-hidden="true"><b>${label}</b><i>${sym}</i></span>`
-        return `<div class="face stock front ${cls}" style="${art(deck)}">${corner('tl')}${corner('br')}<span class="pip" aria-hidden="true">${sym}</span><div class="fbody">${content}</div></div>`
+      /** A card face. Where a playing card prints its suit, these print the deck's icon. */
+      function cardFront(deck: Pick<Deck, 'art'>, label: number | string, content: string) {
+        const icon = deck.art.icon.svg
+        const corner = (pos: string) => `<span class="corner ${pos}" aria-hidden="true"><b>${label}</b><i>${icon}</i></span>`
+        return `<div class="face stock front" style="${art(deck)}">${corner('tl')}${corner('br')}<span class="pip" aria-hidden="true">${icon}</span><div class="fbody">${content}</div></div>`
       }
       function face(x: Dealt, label: number | string) {
         const c = x.card
-        return cardFront(x.deck, c.suit, label, `<h3>${esc(c.name)}</h3><p class="reps">${esc(c.reps)}</p><p class="cue">${esc(c.cue)}</p><p class="alt"><span><span class="vh">Easier: </span><i aria-hidden="true">−</i>${esc(c.easier)}</span><span><span class="vh">Harder: </span><i aria-hidden="true">+</i>${esc(c.harder)}</span></p>`)
+        return cardFront(x.deck, label, `<h3>${esc(c.name)}</h3><p class="reps">${esc(c.reps)}</p><p class="cue">${esc(c.cue)}</p><p class="alt"><span><span class="vh">Easier: </span><i aria-hidden="true">−</i>${esc(c.easier)}</span><span><span class="vh">Harder: </span><i aria-hidden="true">+</i>${esc(c.harder)}</span></p>`)
       }
       /**
        * Shrink a card's text a little when its content won't fit the card. Sizes are relative to
@@ -1302,7 +1302,7 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
       function routineFace({ deck, card }: ReturnType<typeof drawRoutine>, phase: RoutinePhase) {
         const total = card.moves.reduce((s, [, secs]) => s + secs, 0)
         const moves = card.moves.map(([move, secs]) => `<li><span>${esc(move)}</span><b>${routineDuration(secs)}</b></li>`).join('')
-        return cardFront(deck, card.suit, ROUTINE_LABELS[phase][0], `<h3>${esc(card.name)}</h3><p class="reps">${routineDuration(total)}</p><ol class="routine-moves">${moves}</ol>`)
+        return cardFront(deck, ROUTINE_LABELS[phase][0], `<h3>${esc(card.name)}</h3><p class="reps">${routineDuration(total)}</p><ol class="routine-moves">${moves}</ol>`)
       }
       function show() {
         if (!run) return
@@ -1346,26 +1346,27 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
       }
       /**
        * The end of a workout: the whole hand, warm-up to cool-down, is laid out face up in a fan
-       * (dealt in one after another), with the totals underneath and a shower of suits.
+       * (dealt in one after another), with the totals underneath and a shower of deck icons.
        */
       function celebration(r: NonNullable<typeof run>) {
-        const played: [Pick<Deck, 'art'>, Suit, string][] = [[r.routines.warm.deck, r.routines.warm.card.suit, 'W'], ...r.h.map((x, i): [Pick<Deck, 'art'>, Suit, string] => [x.deck, x.card.suit, String(i + 1)]), [r.routines.cool.deck, r.routines.cool.card.suit, 'C']]
+        const played: [Pick<Deck, 'art'>, string][] = [[r.routines.warm.deck, 'W'], ...r.h.map((x, i): [Pick<Deck, 'art'>, string] => [x.deck, String(i + 1)]), [r.routines.cool.deck, 'C']]
         const n = played.length
         const spread = Math.min(9, 54 / n)
         const fan = played
-          .map(([deck, suit, label], i) => {
+          .map(([deck, label], i) => {
             const k = i - (n - 1) / 2
-            return `<div class="cheer-slot" style="--i:${i};--r:${(k * spread).toFixed(2)}deg;--y:${(k * k * 0.03).toFixed(3)}"><div class="card static">${cardFront(deck, suit, label, '')}<div class="face stock back" style="${art(deck)}"></div></div></div>`
+            return `<div class="cheer-slot" style="--i:${i};--r:${(k * spread).toFixed(2)}deg;--y:${(k * k * 0.03).toFixed(3)}"><div class="card static">${cardFront(deck, label, '')}<div class="face stock back" style="${art(deck)}"></div></div></div>`
           })
           .join('')
-        const syms = Object.values(SUIT)
+        // The shower is made of the icons of the decks that were played, in their own colours.
+        const icons = [...new Map(played.map(([deck]) => [deck.art.icon.svg, deck.art.icon.color])).entries()]
         const confetti = reduce
           ? ''
           : Array.from({ length: 34 }, (_, i) => {
-              const [sym, cls] = syms[i % syms.length]
+              const [sym, color] = icons[i % icons.length]
               const x = Math.random() * 100
               const drift = (Math.random() - 0.5) * 30
-              return `<i class="${cls}" style="left:${x.toFixed(1)}%;--d:${drift.toFixed(1)}vw;--t:${(2.4 + Math.random() * 1.8).toFixed(2)}s;--w:${(0.2 + Math.random() * 1.2).toFixed(2)}s;--s:${(0.8 + Math.random() * 0.9).toFixed(2)};--spin:${Math.round((Math.random() - 0.5) * 720)}deg">${sym}</i>`
+              return `<i style="color:${color};left:${x.toFixed(1)}%;--d:${drift.toFixed(1)}vw;--t:${(2.4 + Math.random() * 1.8).toFixed(2)}s;--w:${(0.2 + Math.random() * 1.2).toFixed(2)}s;--s:${(0.8 + Math.random() * 0.9).toFixed(2)};--spin:${Math.round((Math.random() - 0.5) * 720)}deg">${sym}</i>`
             }).join('')
         const stats: [string, string][] = [
           [mmss(Math.max(0, (Date.now() - r.t0) / 1000)), 'Total time'],
@@ -1807,15 +1808,17 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         text-transform: uppercase;
         letter-spacing: 0.02em;
       }
-      .bface .suits {
+      /* the deck's icon, printed under the label */
+      .bface .emblem {
         position: absolute;
         left: 0;
         right: 0;
         bottom: 13%;
+        display: flex;
+        justify-content: center;
         color: var(--back-border);
-        font-size: 11px;
-        letter-spacing: 0.2em;
-        text-shadow: 0 1px 1px #0006;
+        font-size: 13cqw;
+        filter: drop-shadow(0 1px 1px #0006);
       }
       /* the lid: hinged on the back edge, lying flat on top when closed */
       .lid {
@@ -2052,15 +2055,23 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         flex-direction: column;
         align-items: center;
         gap: 0.6cqw;
-        color: var(--black);
+        color: var(--face-text);
       }
       .corner b {
         font: 800 calc(9cqw * var(--letter-scale, 1)) / 1 var(--letter);
       }
       .corner i {
-        font:
-          normal 6.5cqw/1 system-ui,
-          sans-serif;
+        font-size: 6.5cqw;
+        color: var(--icon);
+      }
+      /* Deck icons are sized by font-size, like the suit symbols they replace. */
+      .corner i svg,
+      .pip svg,
+      .emblem svg,
+      .cheer-confetti svg {
+        display: block;
+        width: 1em;
+        height: 1em;
       }
       .corner.tl {
         top: 6cqw;
@@ -2095,18 +2106,8 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         box-shadow:
           inset 0 0 0 1.4cqw #0000,
           inset 0 0 0 1.8cqw color-mix(in srgb, var(--face-line) 45%, #0000);
-        color: var(--black);
-        font:
-          calc(13cqw * var(--fit)) / 1 system-ui,
-          sans-serif;
-      }
-      .red .corner,
-      .red .pip {
-        color: var(--red);
-      }
-      .joker .corner,
-      .joker .pip {
-        color: var(--star);
+        color: var(--icon);
+        font-size: calc(13cqw * var(--fit));
       }
       .reps {
         order: 2;
@@ -2358,7 +2359,7 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         font-variant-numeric: tabular-nums;
         white-space: nowrap;
       }
-      /* ---- the end of a workout: the played hand fanned out, the totals, a shower of suits ---- */
+      /* ---- the end of a workout: the played hand fanned out, the totals, a shower of icons ---- */
       .cheer {
         display: flex;
         flex-direction: column;
@@ -2367,7 +2368,7 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         text-align: center;
         color: var(--cream);
       }
-      /* The shower of suits falls behind the hand and the totals. */
+      /* The shower of icons falls behind the hand and the totals. */
       .cheer {
         isolation: isolate;
       }
@@ -2485,12 +2486,6 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         text-shadow: 0 2px 3px #0005;
         opacity: 0;
         animation: cheer-fall var(--t) cubic-bezier(0.3, 0.1, 0.7, 1) calc(0.6s + var(--w)) forwards;
-      }
-      .cheer-confetti i.red {
-        color: #e0574f;
-      }
-      .cheer-confetti i.joker {
-        color: var(--cream);
       }
       @keyframes cheer-fall {
         0% {

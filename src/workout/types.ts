@@ -1,6 +1,7 @@
 /**
  * Every deck uses the same five suits, so cards from different decks can be
- * mixed into one hand: one card per suit, in this order.
+ * mixed into one hand: one card per suit, in this order. Suits are only used to deal a
+ * balanced hand; a card shows its deck's icon, not its suit.
  */
 export const SUITS = ['legs', 'push', 'pull', 'hinge', 'core'] as const
 export type Suit = (typeof SUITS)[number]
@@ -62,12 +63,13 @@ export interface DeckArt {
     /** Reps. */
     accent: string
   }
-  /** Suit colours on the card faces (indices and the big centre pip). */
-  suits: {
-    red: string
-    black: string
-    /** The core (★) suit. */
-    star: string
+  /**
+   * The deck's icon, printed on every card in place of a suit (the corners and the big centre
+   * pip) and on the deck's box. One of ICONS in ../icons.ts, or any SVG drawn in currentColor.
+   */
+  icon: {
+    svg: string
+    color: string
   }
 }
 

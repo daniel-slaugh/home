@@ -1,4 +1,5 @@
 import type { DeckArt, Suit } from '../types'
+import { ICONS } from '../icons'
 
 export type RoutinePhase = 'warm' | 'cool'
 export const ROUTINE_MINUTES = 5
@@ -23,7 +24,7 @@ export const ROUTINE_DECKS = {
         line: '#e0bc71',
         accent: '#ffda83',
       },
-      suits: { red: '#ffbc96', black: '#fff6df', star: '#ffda83' },
+      icon: { svg: ICONS.flame, color: '#ffda83' },
     },
     /*
       Each warm-up follows the RAMP pattern (Jeffreys): Raise heart rate and muscle temperature,
@@ -75,7 +76,7 @@ export const ROUTINE_DECKS = {
         line: '#87beb3',
         accent: '#aff0db',
       },
-      suits: { red: '#f7ceaf', black: '#f0f9f1', star: '#aff0db' },
+      icon: { svg: ICONS.snowflake, color: '#aff0db' },
     },
     /*
       Each cool-down lets the heart rate come down gradually with easy movement, then holds

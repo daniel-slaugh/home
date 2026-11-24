@@ -1,4 +1,5 @@
 import type { Card, Deck, Suit } from '../types'
+import { ICONS } from '../icons'
 
 const c = (id: string, suit: Suit, name: string, reps: string, cue: string, easier: string, harder: string): Card => ({ id, suit, name, reps, cue, easier, harder })
 
@@ -24,7 +25,7 @@ export const cardio: Deck = {
       line: '#ffc98a',
       accent: '#ffe08a',
     },
-    suits: { red: '#ffe08a', black: '#fff6ec', star: '#8ff0e4' },
+    icon: { svg: ICONS.pulse, color: '#ffe08a' },
   },
   cards: [
     c('hk', 'legs', 'High knees', '30–40 sec', 'Run in place, driving each knee to hip height. Stay on the balls of your feet and pump your arms.', 'March with high knees', 'Go as fast as you can'),

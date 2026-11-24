@@ -1,4 +1,5 @@
 import type { Card, Deck, Suit } from '../types'
+import { ICONS } from '../icons'
 
 const c = (id: string, suit: Suit, name: string, reps: string, cue: string, easier: string, harder: string): Card => ({ id, suit, name, reps, cue, easier, harder })
 
@@ -24,7 +25,7 @@ export const mobility: Deck = {
       line: '#c9dc8f',
       accent: '#e6f29a',
     },
-    suits: { red: '#ffb59a', black: '#f4f7e8', star: '#e6f29a' },
+    icon: { svg: ICONS.rotate, color: '#e6f29a' },
   },
   cards: [
     c('dsq', 'legs', 'Deep squat hold', '30–45 sec', 'Sink as low as you can with heels down, chest up, elbows gently pushing the knees out.', 'Hold a doorframe', 'Shift side to side slowly'),

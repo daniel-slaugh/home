@@ -1080,19 +1080,24 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
       /** Desktop hover from a pointer position (also used to pick the hover back up after a swap). */
       let mouseAt: { x: number; y: number } | null = null
       function hoverAt(x: number, y: number) {
-        // The pointer counts as over the hand when it's on a card, or anywhere in the band the cards
-        // and a popped card take up (a popped card rises above the resting row).
+        // Sweep across the resting row. Above it, only the actual card under the pointer counts.
+        const hand = $('#hand').getBoundingClientRect()
         const onCard = document.elementFromPoint(x, y)?.closest('#hand .card')
-        const rects = cards.map((c) => (c.parentElement as HTMLElement).getBoundingClientRect())
-        const inBand = rects.length && x >= Math.min(...rects.map((r) => r.left)) && x <= Math.max(...rects.map((r) => r.right)) && y >= Math.min(...rects.map((r) => r.top)) - cardWidth() * 0.5 && y <= Math.max(...rects.map((r) => r.bottom))
-        if (!onCard && !inBand) return
+        const slots = cards.map((c) => c.parentElement as HTMLElement)
+        const rects = slots.map((slot) => slot.getBoundingClientRect())
+        const rowTop = hand.top + (slots[0]?.offsetTop ?? 0)
+        const inBand = rects.length && y >= rowTop && y <= Math.max(...rects.map((r) => r.bottom)) &&
+          x >= Math.min(...rects.map((r) => r.left)) && x <= Math.max(...rects.map((r) => r.right))
+        if (!onCard && !inBand) {
+          if (liftTo) dropHover()
+          return
+        }
         // Nothing lifts while cards are being dealt, tucked or swapped.
         if (cards.some((c) => c.parentElement?.classList.contains('moving'))) return dropHover()
         // Which card is hovered comes from where the cards lie at rest, not where they've moved to:
         // each card owns the strip of the hand it shows at rest, from its left edge to the next
         // card's left edge (the last card owns its whole width). Sweeping across the hand steps
         // through every card in order, and the popping and parting can't pull it off course.
-        const hand = $('#hand').getBoundingClientRect()
         const cw = cardWidth()
         const spacing = desktopSpacing(hand.width, cw, cards.length)
         const firstLeft = hand.left + hand.width / 2 - ((cards.length - 1) / 2) * spacing - cw / 2

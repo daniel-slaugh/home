@@ -1,4 +1,4 @@
-import { SUITS, type Card, type Deck, type Suit } from './types'
+import { SUITS, type Card, type Deck } from './types'
 
 export interface Dealt {
   deck: Deck
@@ -6,6 +6,7 @@ export interface Dealt {
 }
 
 type Rand = () => number
+type Mix = { deck: Deck; weight: number }[]
 
 const pick = <T>(a: T[], rand: Rand): T => a[Math.floor(rand() * a.length)]
 
@@ -25,12 +26,6 @@ export function exactShares(weights: number[], slots: number): number[] {
   return weights.map((w) => (Math.max(0, w) / total) * slots)
 }
 
-/** For labels: '3' when a deck always gets 3 cards, '2–3' when it depends on the deal. */
-export const shareLabel = (exact: number) => {
-  const r = Math.round(exact * 1e6) / 1e6
-  return Number.isInteger(r) ? String(r) : `${Math.floor(r)}–${Math.ceil(r)}`
-}
-
 /** Whole-card shares of `slots` that best match the weights (largest remainder, ties broken at random). */
 export function shares(weights: number[], slots: number, rand: Rand = Math.random): number[] {
   const exact = exactShares(weights, slots)
@@ -45,34 +40,64 @@ export function shares(weights: number[], slots: number, rand: Rand = Math.rando
   return out
 }
 
-export const cardsIn = (deck: Deck, suit: Suit) => deck.cards.filter((c) => c.suit === suit)
+const key = (x: Dealt) => `${x.deck.id}/${x.card.id}`
 
-/** A different card of the same suit from the same deck, when there is one. */
-export function redrawFrom(deck: Deck, current: Card, rand: Rand = Math.random): Card {
-  const pool = cardsIn(deck, current.suit).filter((c) => c.id !== current.id)
-  return pool.length ? pick(pool, rand) : current
-}
+/** How many different cards the decks hold between them. A hand can't be bigger than this. */
+export const uniqueCards = (mix: Mix) => mix.reduce((s, m) => s + m.deck.cards.length, 0)
 
 /**
- * One card per suit. Each deck gets a share of the five suits that matches its
- * weight; which suits land with which deck is random. A deck with no card in a
- * suit hands that suit to a deck that has one.
+ * Deal `count` cards with no repeats. Suits come round in order (legs, push, pull,
+ * hinge, core, legs, …). Each deck gets a share of the cards that matches its weight;
+ * which positions land with which deck is random. When a deck has run out of a suit,
+ * another deck covers it, and when every deck has, the next suit that still has cards
+ * is used instead.
  */
-export function dealHand(mix: { deck: Deck; weight: number }[], rand: Rand = Math.random): Dealt[] {
+export function dealHand(mix: Mix, count = SUITS.length, rand: Rand = Math.random, keep: Dealt[] = []): Dealt[] {
   const used = mix.filter((m) => m.weight > 0)
   const list = used.length ? used : mix.slice(0, 1)
+  const decks = list.map((m) => m.deck)
+  const total = Math.min(count, uniqueCards(list))
+  const out = keep.slice(0, total)
+  const taken = new Set(out.map(key))
   const counts = shares(
     list.map((m) => m.weight),
-    SUITS.length,
+    total,
     rand
   )
+  // Positions still to fill, shared out between the decks.
   const owners = shuffle(
     list.flatMap((m, i) => Array(counts[i]).fill(m.deck) as Deck[]),
     rand
-  )
-  return SUITS.map((suit, i) => {
-    let deck = owners[i]
-    if (!cardsIn(deck, suit).length) deck = list.map((m) => m.deck).find((d) => cardsIn(d, suit).length) ?? deck
-    return { deck, card: pick(cardsIn(deck, suit), rand) }
-  })
+  ).slice(out.length)
+  const free = (d: Deck, suit?: string) => d.cards.filter((c) => (!suit || c.suit === suit) && !taken.has(`${d.id}/${c.id}`))
+
+  for (let i = out.length; i < total; i++) {
+    const want = SUITS[i % SUITS.length]
+    const owner = owners[i - keep.length] ?? decks[0]
+    let deck = owner
+    let pool = free(owner, want)
+    if (!pool.length) {
+      deck = decks.find((d) => free(d, want).length) ?? owner
+      pool = free(deck, want)
+    }
+    if (!pool.length) {
+      // No deck has this suit left: take the next suit that still has cards.
+      for (let k = 1; k < SUITS.length && !pool.length; k++) {
+        const s = SUITS[(i + k) % SUITS.length]
+        deck = [owner, ...decks].find((d) => free(d, s).length) ?? owner
+        pool = free(deck, s)
+      }
+    }
+    const card = pick(pool, rand)
+    out.push({ deck, card })
+    taken.add(`${deck.id}/${card.id}`)
+  }
+  return out
+}
+
+/** A different card of the same suit from the same deck that isn't already in the hand, when there is one. */
+export function redrawFrom(deck: Deck, current: Card, hand: Dealt[] = [], rand: Rand = Math.random): Card {
+  const inHand = new Set(hand.map(key))
+  const pool = deck.cards.filter((c) => c.suit === current.suit && c.id !== current.id && !inHand.has(`${deck.id}/${c.id}`))
+  return pool.length ? pick(pool, rand) : current
 }

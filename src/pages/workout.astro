@@ -95,7 +95,10 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
           >
             Your hand
           </h2>
-          <div class="hand">
+          <div
+            class="hand"
+            id="hand"
+          >
             <div class="slot">
               <button
                 class="pile"
@@ -103,11 +106,6 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
                 aria-label="Shuffle and deal a new hand. Tap any card to redraw just that card."
               ></button>
             </div>
-            <div class="slot"><div class="card pending" role="button" tabindex="0"></div></div>
-            <div class="slot"><div class="card pending" role="button" tabindex="0"></div></div>
-            <div class="slot"><div class="card pending" role="button" tabindex="0"></div></div>
-            <div class="slot"><div class="card pending" role="button" tabindex="0"></div></div>
-            <div class="slot"><div class="card pending" role="button" tabindex="0"></div></div>
           </div>
         </div>
       </div>
@@ -119,10 +117,13 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         <ol class="times" id="times"></ol>
       </div>
       <aside class="icard">
+        <label id="typeLab">Type</label>
+        <div class="seg" id="type" role="group" aria-labelledby="typeLab"><button data-v="circuit">Circuit</button><button data-v="sets">Sets</button><button data-v="variety">Variety</button></div>
+        <p class="how" id="how" aria-live="polite"></p>
+        <label id="lenLab">Length</label>
+        <div class="seg" id="len" role="group" aria-labelledby="lenLab"><button data-v="20">20 min</button><button data-v="30">30 min</button><button data-v="45">45 min</button></div>
         <label for="start">Time</label>
         <input type="time" id="start" />
-        <label id="lenLab">Length</label>
-        <div class="seg" role="group" aria-labelledby="lenLab"><button data-v="20">20 min</button><button data-v="30">30 min</button><button data-v="45">45 min</button></div>
         <button class="go" id="go">Start</button>
       </aside>
     </section>
@@ -137,14 +138,14 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
 
     <script>
       import { DECKS } from '../workout/decks'
-      import { SUITS, type Deck, type Suit } from '../workout/types'
-      import { dealHand, redrawFrom, type Dealt } from '../workout/deal'
+      import type { Deck, Suit } from '../workout/types'
+      import { dealHand, redrawFrom, uniqueCards, type Dealt } from '../workout/deal'
+      import { buildPlan, cardCount, LENGTHS, TYPES, type Plan, type Step, type WorkoutType } from '../workout/plan'
 
       const $ = <T extends HTMLElement = HTMLElement>(s: string) => document.querySelector(s) as T
       const esc = (s: string) => s.replace(/[&<>"]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[ch] as string)
 
-      const SUIT: Record<Suit, [string, string, string]> = { legs: ['♠', 'Legs', ''], push: ['♥', 'Push', 'red'], pull: ['♦', 'Pull', 'red'], hinge: ['♣', 'Hinge', ''], core: ['★', 'Core', 'joker'] }
-      const LEN: Record<number, { warm: number; card: number; core: number; cool: number }> = { 20: { warm: 3, card: 3, core: 4, cool: 1 }, 30: { warm: 5, card: 5, core: 4, cool: 1 }, 45: { warm: 5, card: 8, core: 6, cool: 2 } }
+      const SUIT: Record<Suit, [string, string]> = { legs: ['♠', ''], push: ['♥', 'red'], pull: ['♦', 'red'], hinge: ['♣', ''], core: ['★', 'joker'] }
       const KEY = 'workoutdecks.v1'
 
       /** A deck's art as CSS custom properties, for its box, card backs and card faces. */
@@ -156,18 +157,20 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
       interface State {
         start: string
         len: number
+        type: WorkoutType
         decks: Record<string, number>
         hand: [string, string][] | null
       }
-      let st: State = { start: '06:30', len: 30, decks: { [DECKS[0].id]: 100 }, hand: null }
+      let st: State = { start: '06:30', len: 30, type: 'circuit', decks: { [DECKS[0].id]: 100 }, hand: null }
       try {
         const s = JSON.parse(localStorage.getItem(KEY) || 'null')
-        if (s) st = { start: s.start || st.start, len: s.len || st.len, decks: s.decks || st.decks, hand: s.hand || null }
+        if (s) st = { start: s.start || st.start, len: s.len || st.len, type: s.type || st.type, decks: s.decks || st.decks, hand: s.hand || null }
       } catch (e) {}
       const deckById = (id: string) => DECKS.find((d) => d.id === id)
       for (const id of Object.keys(st.decks)) if (!deckById(id)) delete st.decks[id]
       if (!Object.keys(st.decks).length) st.decks = { [DECKS[0].id]: 100 }
-      if (!LEN[st.len]) st.len = 30
+      if (!LENGTHS[st.len]) st.len = 30
+      if (!TYPES.some((t) => t.id === st.type)) st.type = 'circuit'
       const save = () => {
         try {
           localStorage.setItem(KEY, JSON.stringify(st))
@@ -178,22 +181,33 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
       const picked = () => DECKS.filter((d) => d.id in st.decks)
       const mix = () => picked().map((deck) => ({ deck, weight: st.decks[deck.id] }))
 
-      function newHand() {
-        st.hand = dealHand(mix()).map((x) => [x.deck.id, x.card.id])
+      // ---- the hand: 5 cards for Circuit and Sets, as many as fit the time for Variety ----
+      const load = (): Dealt[] =>
+        (st.hand || []).flatMap(([d, c]) => {
+          const deck = deckById(d)
+          const card = deck?.cards.find((x) => x.id === c)
+          return deck && card && d in st.decks ? [{ deck, card }] : []
+        })
+      /**
+       * Deal (or top up / trim) the hand to the number of cards this type and length call for.
+       * Cards already on the table stay put unless `fresh` starts over.
+       */
+      function setHand(fresh: boolean) {
+        const n = cardCount(st.type, st.len, uniqueCards(mix()))
+        const h = dealHand(mix(), n, Math.random, fresh ? [] : load().slice(0, n))
+        st.hand = h.map((x) => [x.deck.id, x.card.id])
         save()
       }
       function hand(): Dealt[] {
-        const out = (st.hand || []).map(([d, c], i) => {
-          const deck = deckById(d)
-          const card = deck?.cards.find((x) => x.id === c)
-          return deck && card && card.suit === SUITS[i] ? { deck, card } : null
-        })
-        if (out.length !== SUITS.length || out.some((x) => !x)) {
-          newHand()
-          return hand()
-        }
-        return out as Dealt[]
+        if (!load().length) setHand(false)
+        return load()
       }
+      const plan = (): Plan =>
+        buildPlan(
+          st.type,
+          st.len,
+          hand().map((x) => x.card)
+        )
 
       // ---- deck shelf and mix ----
       function renderDecks() {
@@ -282,7 +296,7 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         }
         renderDecks()
         renderMix()
-        newHand()
+        setHand(true)
         deal(true)
       })
       $('#mix').addEventListener('input', (e) => {
@@ -298,22 +312,16 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
       })
       $('#mix').addEventListener('change', (e) => {
         if (!(e.target as HTMLInputElement).dataset.id) return
-        newHand()
+        setHand(true)
         deal(true)
       })
 
-      // ---- the hand ----
-      function face(x: Dealt, label: number | string, extra = '') {
-        const [sym, , cls] = SUIT[x.card.suit]
+      // ---- cards ----
+      function face(x: Dealt, label: number | string) {
+        const [sym, cls] = SUIT[x.card.suit]
         const c = x.card
         const corner = (pos: string) => `<span class="corner ${pos}" aria-hidden="true"><b>${label}</b><i>${sym}</i></span>`
-        return `<div class="face stock front ${cls} ${extra}" style="${art(x.deck)}">${corner('tl')}${corner('br')}<span class="pip" aria-hidden="true">${sym}</span><div class="fbody"><h3>${esc(c.name)}</h3><p class="reps">${esc(c.reps)}</p><p class="cue">${esc(c.cue)}</p><p class="alt"><span><span class="vh">Easier: </span><i aria-hidden="true">−</i>${esc(c.easier)}</span><span><span class="vh">Harder: </span><i aria-hidden="true">+</i>${esc(c.harder)}</span></p></div></div>`
-      }
-      const cards = [...document.querySelectorAll<HTMLElement>('.card')]
-      function fill(i: number, x: Dealt) {
-        cards[i].innerHTML = face(x, i + 1) + `<div class="face stock back" style="${art(x.deck)}"></div>`
-        cards[i].setAttribute('aria-label', `Card ${i + 1}, ${x.card.name}, ${x.card.reps}. ${x.card.cue} Tap to redraw.`)
-        fit(cards[i])
+        return `<div class="face stock front ${cls}" style="${art(x.deck)}">${corner('tl')}${corner('br')}<span class="pip" aria-hidden="true">${sym}</span><div class="fbody"><h3>${esc(c.name)}</h3><p class="reps">${esc(c.reps)}</p><p class="cue">${esc(c.cue)}</p><p class="alt"><span><span class="vh">Easier: </span><i aria-hidden="true">−</i>${esc(c.easier)}</span><span><span class="vh">Harder: </span><i aria-hidden="true">+</i>${esc(c.harder)}</span></p></div></div>`
       }
       /**
        * Shrink a card's text a little when its content won't fit the card. Sizes are relative to
@@ -331,139 +339,193 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
       }
       document.fonts?.ready.then(() => fit(document))
 
+      let cards: HTMLElement[] = []
+      /** Make one slot per card in the hand (the pile is always the first slot). */
+      function slots(n: number) {
+        const box = $('#hand')
+        while (box.children.length - 1 < n) {
+          const s = document.createElement('div')
+          s.className = 'slot'
+          s.innerHTML = '<div class="card pending" role="button" tabindex="0"></div>'
+          const i = box.children.length - 1
+          const c = s.firstElementChild as HTMLElement
+          c.addEventListener('click', () => redraw(i))
+          c.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault()
+              redraw(i)
+            }
+          })
+          box.appendChild(s)
+        }
+        while (box.children.length - 1 > n) box.lastElementChild?.remove()
+        cards = [...box.querySelectorAll<HTMLElement>('.card')]
+      }
+      function fill(i: number, x: Dealt) {
+        cards[i].innerHTML = face(x, i + 1) + `<div class="face stock back" style="${art(x.deck)}"></div>`
+        cards[i].setAttribute('aria-label', `Card ${i + 1}, ${x.card.name}, ${x.card.reps}. ${x.card.cue} Tap to redraw.`)
+        fit(cards[i])
+      }
+
       // ---- schedule ----
       const toMin = (t: string) => {
         const [h, m] = (t || '06:30').split(':').map(Number)
         return h * 60 + m
       }
-      const fmt = (m: number) => {
-        m = (m + 1440) % 1440
+      const fmt = (secs: number) => {
+        const m = Math.round(secs / 60 + 1440) % 1440
         const h = Math.floor(m / 60) % 12 || 12
         return `${h}:${String(m % 60).padStart(2, '0')}`
       }
-      type Block = { type: 'warm' | 'cool'; name: string; dur: number } | { type: 'card'; x: Dealt; i: number; name: string; dur: number }
-      function blocks(): Block[] {
-        const L = LEN[st.len]
-        const out: Block[] = [{ type: 'warm', name: 'Warm-up', dur: L.warm }]
-        hand().forEach((x, i) => out.push({ type: 'card', x, i, name: x.card.name, dur: x.card.suit === 'core' ? L.core : L.card }))
-        out.push({ type: 'cool', name: 'Cool-down', dur: L.cool })
-        return out
-      }
-      function plan() {
-        let t = toMin(st.start)
-        const rows = blocks().map((b) => {
-          const at = t
-          t += b.dur
-          if (b.type === 'warm') return [at, 'Warm-up', '']
-          if (b.type === 'cool') return [at, 'Cool-down', '']
-          const [sym, , cls] = SUIT[b.x.card.suit]
-          return [at, `<span class="s ${cls}">${sym}</span>${esc(b.x.card.name)}`, esc(b.x.card.reps)]
-        }) as [number, string, string][]
+      function schedule() {
+        const p = plan()
+        const h = hand()
+        const n = h.length
+        let t = toMin(st.start) * 60
+        const rows: [number, string, string][] = []
+        const head = (x: Dealt) => `<span class="s ${SUIT[x.card.suit][1]}">${SUIT[x.card.suit][0]}</span>${esc(x.card.name)}`
+        let workIndex = 0
+        p.steps.forEach((s) => {
+          if (s.kind === 'warm') rows.push([t, 'Warm-up', `${s.secs / 60} min`])
+          if (s.kind === 'cool') rows.push([t, 'Cool-down', `${s.secs / 60} min`])
+          if (s.kind === 'work') {
+            const x = h[s.card]
+            if (st.type === 'circuit' && s.card === 0) rows.push([t, `Lap ${Math.floor(workIndex / n) + 1}`, `All ${n} cards, one set each`])
+            if (st.type === 'sets' && workIndex % p.repeat === 0) rows.push([t, head(x), `${p.repeat} sets of ${esc(x.card.reps)}`])
+            if (st.type === 'variety') rows.push([t, head(x), esc(x.card.reps)])
+            workIndex++
+          }
+          t += s.secs
+        })
         rows.push([t, 'Done', ''])
         $('#times').innerHTML = rows.map(([at, h, p]) => `<li><span class="t">${fmt(at)}</span><div><h3>${h}</h3>${p ? `<p>${p}</p>` : ''}</div></li>`).join('')
-        document.querySelectorAll<HTMLButtonElement>('.seg button').forEach((b) => b.setAttribute('aria-pressed', String(Number(b.dataset.v) === st.len)))
+        $('#how').textContent = p.summary
+        document.querySelectorAll<HTMLButtonElement>('#len button').forEach((b) => b.setAttribute('aria-pressed', String(Number(b.dataset.v) === st.len)))
+        document.querySelectorAll<HTMLButtonElement>('#type button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.v === st.type)))
         renderPile()
+        return p
       }
 
       function deal(animate: boolean) {
-        hand().forEach((x, i) => fill(i, x))
-        plan()
+        const h = hand()
+        slots(h.length)
+        schedule()
+        h.forEach((x, i) => fill(i, x))
         cards.forEach((el) => el.classList.remove('pending'))
-        if (!animate || reduce || !cards[0].animate) return
+        if (!animate || reduce || !cards[0]?.animate) return
         const deck = $('#deck'),
           dr = deck.getBoundingClientRect()
+        const stagger = Math.min(170, 1100 / cards.length)
         deck.animate([{ transform: 'rotate(0)' }, { transform: 'rotate(-4deg) translateY(-4px)' }, { transform: 'rotate(3deg)' }, { transform: 'rotate(0)' }], { duration: 380, easing: 'ease-in-out' })
         cards.forEach((el, i) => {
           const r = el.getBoundingClientRect()
           const dx = dr.left + dr.width / 2 - (r.left + r.width / 2),
-            dy = dr.top + dr.height / 2 - (r.top + r.height / 2),
-            sc = dr.width / r.width
-          el.animate([{ transform: `translate(${dx}px,${dy}px) scale(${sc}) rotateY(180deg) rotate(-6deg)` }, { transform: `translate(${dx * 0.35}px,${dy * 0.35 - 36}px) rotateY(150deg) rotate(4deg)`, offset: 0.5 }, { transform: 'none' }], { duration: 720, delay: 380 + i * 170, easing: 'cubic-bezier(.2,.75,.25,1)', fill: 'backwards' })
+            dy = dr.top + dr.height / 2 - (r.top + r.height / 2)
+          el.animate([{ transform: `translate(${dx}px,${dy}px) rotateY(180deg) rotate(-6deg)` }, { transform: `translate(${dx * 0.35}px,${dy * 0.35 - 36}px) rotateY(150deg) rotate(4deg)`, offset: 0.5 }, { transform: 'none' }], { duration: 720, delay: 380 + i * stagger, easing: 'cubic-bezier(.2,.75,.25,1)', fill: 'backwards' })
         })
       }
       function redraw(i: number) {
-        const cur = hand()[i]
-        const card = redrawFrom(cur.deck, cur.card)
+        const h = hand()
+        const cur = h[i]
+        if (!cur) return
+        const card = redrawFrom(cur.deck, cur.card, h)
         const x = { deck: cur.deck, card }
         ;(st.hand as [string, string][])[i] = [cur.deck.id, card.id]
         save()
         const el = cards[i]
-        if (reduce || !el.animate) {
+        const update = () => {
+          schedule()
           fill(i, x)
-          plan()
-          return
         }
+        if (reduce || !el.animate) return update()
         el.animate([{ transform: 'none' }, { transform: 'rotateY(90deg)' }], { duration: 170, easing: 'ease-in' }).finished.then(() => {
-          fill(i, x)
-          plan()
+          update()
           el.animate([{ transform: 'rotateY(-90deg)' }, { transform: 'none' }], { duration: 240, easing: 'ease-out' })
         })
       }
-      cards.forEach((el, i) => {
-        el.addEventListener('click', () => redraw(i))
-        el.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault()
-            redraw(i)
-          }
-        })
-      })
-      const reshuffle = () => {
-        newHand()
+      $('#deck').addEventListener('click', () => {
+        setHand(true)
         deal(true)
-      }
-      $('#deck').addEventListener('click', reshuffle)
-      document.querySelectorAll<HTMLButtonElement>('.seg button').forEach((b) =>
-        b.addEventListener('click', () => {
-          st.len = Number(b.dataset.v)
-          save()
-          plan()
-        })
-      )
+      })
+      $('#len').addEventListener('click', (e) => {
+        const b = (e.target as HTMLElement).closest('button')
+        if (!b) return
+        st.len = Number(b.dataset.v)
+        setHand(false)
+        deal(false)
+      })
+      $('#type').addEventListener('click', (e) => {
+        const b = (e.target as HTMLElement).closest('button')
+        if (!b || b.dataset.v === st.type) return
+        const before = hand().length
+        st.type = b.dataset.v as WorkoutType
+        setHand(false)
+        deal(hand().length > before)
+      })
       const startIn = $<HTMLInputElement>('#start')
       startIn.value = st.start
       startIn.addEventListener('input', () => {
         if (startIn.value) {
           st.start = startIn.value
           save()
-          plan()
+          schedule()
         }
       })
 
-      // ---- run mode ----
-      let run: { steps: Block[]; i: number; t0: number; bs: number; end?: boolean } | null = null
+      // ---- run mode: one step at a time. Tap Done after each set (and rest as long as you need). ----
+      let run: { steps: Step[]; i: number; t0: number; ts: number; end?: boolean; h: Dealt[]; p: Plan } | null = null
       let tick: number | undefined
       let lock: WakeLockSentinel | null = null
       const mmss = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`
       const rclock = () => $('#rclock').firstChild as Text
       function show() {
         if (!run) return
-        const b = run.steps[run.i],
-          nx = run.steps[run.i + 1]
-        run.bs = Date.now()
-        $('#rb').textContent = b.name
-        let html = '',
-          sub = ''
-        if (b.type === 'warm') html = '<ol class="list"><li>2 min marching or jumping jacks</li><li>10 squats</li><li>5 push-ups</li><li>10 glute bridges</li><li>20 arm circles each way</li></ol>'
-        if (b.type === 'card') {
-          html = `<div class="solo"><div class="card static">${face(b.x, b.i + 1)}</div></div>`
-          sub = 'Set, rest 45 sec, repeat'
+        const s = run.steps[run.i]
+        const nx = run.steps[run.i + 1]
+        run.ts = Date.now()
+        let title = '',
+          sub = '',
+          html = ''
+        if (s.kind === 'warm') {
+          title = 'Warm-up'
+          html = '<ol class="list"><li>2 min marching or jumping jacks</li><li>10 squats</li><li>5 push-ups</li><li>10 glute bridges</li><li>20 arm circles each way</li></ol>'
         }
-        if (b.type === 'cool') html = "<ol class=\"list\"><li>Hamstring stretch, 30 sec each side</li><li>Hip flexor stretch, 30 sec each side</li><li>Child's pose, 30 sec</li></ol>"
+        if (s.kind === 'cool') {
+          title = 'Cool-down'
+          html = "<ol class=\"list\"><li>Hamstring stretch, 30 sec each side</li><li>Hip flexor stretch, 30 sec each side</li><li>Child's pose, 30 sec</li></ol>"
+        }
+        if (s.kind === 'work') {
+          const x = run.h[s.card]
+          title = x.card.name
+          sub = s.label
+          html = `<div class="solo"><div class="card static">${face(x, s.card + 1)}</div></div>`
+        }
+        $('#rb').textContent = title
         $('#rs').textContent = sub
-        $('#rleft').textContent = `${run.i + 1} / ${run.steps.length}`
         $('#rmain').innerHTML = html
         fit($('#rmain'))
-        $('#rnext').textContent = nx ? 'Next: ' + nx.name : 'Finish'
+        $('#rnext').textContent = !nx ? 'Finish' : s.kind === 'work' ? 'Done' : 'Next'
         $<HTMLButtonElement>('#rback').disabled = run.i === 0
         clock()
       }
+      function advance() {
+        if (!run || run.end) return
+        if (run.i === run.steps.length - 1) finish()
+        else {
+          run.i++
+          show()
+        }
+      }
       function clock() {
         if (!run || run.end) return
-        const b = run.steps[run.i],
-          t = Date.now(),
-          left = b.dur * 60 - (t - run.bs) / 1000
-        rclock().textContent = left >= 0 ? mmss(left) : `+${mmss(-left)}`
+        const s = run.steps[run.i]
+        const t = (Date.now() - run.ts) / 1000
+        if (s.kind === 'work') rclock().textContent = mmss(t)
+        else {
+          const left = s.secs - t
+          rclock().textContent = left >= 0 ? mmss(Math.ceil(left)) : `+${mmss(-left)}`
+        }
+        $('#rleft').textContent = `${mmss((Date.now() - run.t0) / 1000)} of ~${run.p.minutes}:00`
       }
       function finish() {
         if (!run) return
@@ -473,13 +535,14 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         $('#rs').textContent = 'Nice work, both of you.'
         rclock().textContent = mmss((Date.now() - run.t0) / 1000)
         $('#rleft').textContent = 'total'
-        $('#rmain').innerHTML = '<ol class="list">' + hand().map((x) => `<li>${esc(x.card.name)}</li>`).join('') + '</ol>'
+        $('#rmain').innerHTML = '<ol class="list">' + run.h.map((x) => `<li>${esc(x.card.name)}</li>`).join('') + '</ol>'
         $('#rnext').style.display = 'none'
         $<HTMLButtonElement>('#rback').disabled = true
         $('#rend').textContent = 'Close'
       }
       $('#go').addEventListener('click', async () => {
-        run = { steps: blocks(), i: 0, t0: Date.now(), bs: Date.now() }
+        const p = plan()
+        run = { steps: p.steps, i: 0, t0: Date.now(), ts: Date.now(), h: hand(), p }
         $('#rnext').style.display = ''
         $('#rend').textContent = 'End'
         $('#run').classList.add('on')
@@ -493,14 +556,7 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
           lock = null
         }
       })
-      $('#rnext').addEventListener('click', () => {
-        if (!run || run.end) return
-        if (run.i === run.steps.length - 1) finish()
-        else {
-          run.i++
-          show()
-        }
-      })
+      $('#rnext').addEventListener('click', advance)
       $('#rback').addEventListener('click', () => {
         if (run && !run.end && run.i > 0) {
           run.i--
@@ -524,6 +580,7 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
       balance()
       renderDecks()
       renderMix()
+      setHand(false)
       requestAnimationFrame(() => deal(true))
     </script>
 
@@ -931,7 +988,7 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
       .hand {
         display: grid;
         grid-template-columns: repeat(6, minmax(0, 1fr));
-        gap: 14px;
+        gap: 18px 14px;
       }
       @media (max-width: 960px) {
         .hand {
@@ -1177,21 +1234,25 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         z-index: 5;
         transform: scale(var(--lift, 1.9));
       }
+      /* Cards in the outer columns grow inward so they stay on screen. */
       .hand .slot {
         transform-origin: 50% 40%;
       }
-      .hand .slot:nth-child(6) {
+      .hand .slot:nth-child(6n + 1) {
+        transform-origin: 0 40%;
+      }
+      .hand .slot:nth-child(6n) {
         transform-origin: 100% 40%;
       }
       @media (max-width: 960px) {
         .hand .slot {
           --lift: 1.5;
+          transform-origin: 50% 40%;
         }
-        .hand .slot:nth-child(4) {
+        .hand .slot:nth-child(3n + 1) {
           transform-origin: 0 40%;
         }
-        .hand .slot:nth-child(3),
-        .hand .slot:nth-child(6) {
+        .hand .slot:nth-child(3n) {
           transform-origin: 100% 40%;
         }
       }
@@ -1199,10 +1260,10 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         .hand .slot {
           --lift: 1.25;
         }
-        .hand .slot:nth-child(odd) {
+        .hand .slot:nth-child(n) {
           transform-origin: 0 40%;
         }
-        .hand .slot:nth-child(even) {
+        .hand .slot:nth-child(2n) {
           transform-origin: 100% 40%;
         }
       }
@@ -1412,6 +1473,18 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
       .btn:focus-visible {
         outline: 3px solid var(--go);
         outline-offset: 4px;
+      }
+
+      .how {
+        margin: 10px 0 0;
+        min-height: 3em;
+        color: var(--pen);
+        font:
+          600 21px/1.15 Caveat,
+          cursive;
+      }
+      .seg button {
+        padding-inline: 4px;
       }
 
       /* ---- run mode: the card on the felt ---- */

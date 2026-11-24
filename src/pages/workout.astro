@@ -262,7 +262,7 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         $('#deck').innerHTML =
           layers
             .reverse()
-            .map((d, i) => `<span class="b l${2 - i}" style="${art(d)}"></span>`)
+            .map((d, i) => `<span class="stock back l${2 - i}" style="${art(d)}"></span>`)
             .join('') + `<span class="lab">Shuffle</span>`
       }
       $('#decks').addEventListener('click', (e) => {
@@ -307,13 +307,29 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         const [sym, , cls] = SUIT[x.card.suit]
         const c = x.card
         const corner = (pos: string) => `<span class="corner ${pos}" aria-hidden="true"><b>${label}</b><i>${sym}</i></span>`
-        return `<div class="face front ${cls} ${extra}" style="${art(x.deck)}">${corner('tl')}${corner('br')}<span class="pip" aria-hidden="true">${sym}</span><div class="fbody"><h3>${esc(c.name)}</h3><p class="reps">${esc(c.reps)}</p><p class="cue">${esc(c.cue)}</p><p class="alt"><span><span class="vh">Easier: </span><i aria-hidden="true">−</i>${esc(c.easier)}</span><span><span class="vh">Harder: </span><i aria-hidden="true">+</i>${esc(c.harder)}</span></p></div></div>`
+        return `<div class="face stock front ${cls} ${extra}" style="${art(x.deck)}">${corner('tl')}${corner('br')}<span class="pip" aria-hidden="true">${sym}</span><div class="fbody"><h3>${esc(c.name)}</h3><p class="reps">${esc(c.reps)}</p><p class="cue">${esc(c.cue)}</p><p class="alt"><span><span class="vh">Easier: </span><i aria-hidden="true">−</i>${esc(c.easier)}</span><span><span class="vh">Harder: </span><i aria-hidden="true">+</i>${esc(c.harder)}</span></p></div></div>`
       }
       const cards = [...document.querySelectorAll<HTMLElement>('.card')]
       function fill(i: number, x: Dealt) {
-        cards[i].innerHTML = face(x, i + 1) + `<div class="face back" style="${art(x.deck)}"></div>`
-        cards[i].setAttribute('aria-label', `Card ${i + 1}, ${x.card.name}, ${x.card.reps}. Tap to redraw.`)
+        cards[i].innerHTML = face(x, i + 1) + `<div class="face stock back" style="${art(x.deck)}"></div>`
+        cards[i].setAttribute('aria-label', `Card ${i + 1}, ${x.card.name}, ${x.card.reps}. ${x.card.cue} Tap to redraw.`)
+        fit(cards[i])
       }
+      /**
+       * Shrink a card's text a little when its content won't fit the card. Sizes are relative to
+       * the card's width, so a card fits the same way at every size.
+       */
+      function fit(root: ParentNode) {
+        root.querySelectorAll<HTMLElement>('.front').forEach((f) => {
+          let k = 1
+          f.style.setProperty('--fit', '1')
+          while (f.scrollHeight > f.clientHeight + 1 && k > 0.6) {
+            k -= 0.04
+            f.style.setProperty('--fit', String(k))
+          }
+        })
+      }
+      document.fonts?.ready.then(() => fit(document))
 
       // ---- schedule ----
       const toMin = (t: string) => {
@@ -430,13 +446,14 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
           sub = ''
         if (b.type === 'warm') html = '<ol class="list"><li>2 min marching or jumping jacks</li><li>10 squats</li><li>5 push-ups</li><li>10 glute bridges</li><li>20 arm circles each way</li></ol>'
         if (b.type === 'card') {
-          html = `<div class="solo">${face(b.x, b.i + 1, 'mini')}</div>`
+          html = `<div class="solo"><div class="card static">${face(b.x, b.i + 1)}</div></div>`
           sub = 'Set, rest 45 sec, repeat'
         }
         if (b.type === 'cool') html = "<ol class=\"list\"><li>Hamstring stretch, 30 sec each side</li><li>Hip flexor stretch, 30 sec each side</li><li>Child's pose, 30 sec</li></ol>"
         $('#rs').textContent = sub
         $('#rleft').textContent = `${run.i + 1} / ${run.steps.length}`
         $('#rmain').innerHTML = html
+        fit($('#rmain'))
         $('#rnext').textContent = nx ? 'Next: ' + nx.name : 'Finish'
         $<HTMLButtonElement>('#rback').disabled = run.i === 0
         clock()
@@ -679,7 +696,10 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         border-radius: 6px;
         background: var(--back);
         border: 4px solid var(--back-border);
-        box-shadow: 0 1px 2px #0005;
+        box-shadow:
+          0 1px 2px #0005,
+          inset 0 0 0 3px #0000,
+          inset 0 0 0 4px var(--face-line);
       }
       .peek i:nth-child(2) {
         transform: rotate(6deg) translate(5%, 3%);
@@ -924,161 +944,151 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
           gap: 10px;
         }
       }
-      .slot {
-        perspective: 1100px;
-        display: grid;
-        align-items: start;
+      /*
+        Cards. Every measurement is in cqw (a percentage of the card's width), so a card is
+        the same object at any size: the hand on the table is the run-mode card scaled down.
+        Fronts, backs and the shuffle pile share one card stock: a cream edge, rounded
+        corners, a double frame in the deck's line colour and a light sheen.
+      */
+      .slot,
+      .solo {
         container-type: inline-size;
       }
+      .slot {
+        position: relative;
+        perspective: 1100px;
+        transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .card {
+        position: relative;
+        display: grid;
+        width: 100%;
+        aspect-ratio: 5 / 7;
+        transform-style: preserve-3d;
+        border-radius: 6cqw;
+        cursor: pointer;
+        outline: none;
+      }
+      .card.static {
+        cursor: default;
+      }
+      .card.pending {
+        visibility: hidden;
+      }
+      .stock {
+        position: relative;
+        overflow: hidden;
+        border-radius: 6cqw;
+        border: 2.6cqw solid var(--back-border);
+        box-shadow:
+          0 0.8cqw 0 #0004,
+          0 5cqw 10cqw #0005;
+      }
+      .stock::before {
+        content: '';
+        position: absolute;
+        inset: 2.4cqw;
+        border: 1.3cqw double var(--face-line);
+        border-radius: 3.6cqw;
+        opacity: 0.8;
+        pointer-events: none;
+      }
+      .stock.back {
+        background:
+          linear-gradient(155deg, #ffffff22, #0000 38%, #0000 70%, #00000030),
+          var(--back);
+      }
+      .card .face {
+        grid-area: 1 / 1;
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
+      }
+      .card .back {
+        transform: rotateY(180deg);
+      }
+      .card:focus-visible .front {
+        outline: 3px solid #fff;
+        outline-offset: 3px;
+      }
+
+      /* the pile: the same card stock, stacked */
       .pile {
         position: relative;
         display: block;
         width: 100%;
-        aspect-ratio: 5/7;
+        aspect-ratio: 5 / 7;
         border: 0;
         padding: 0;
         background: none;
         cursor: pointer;
         color: #fff;
       }
-      .pile .b {
+      .pile .stock {
         position: absolute;
         inset: 0;
-        border-radius: 12px;
-        background: var(--back);
-        border: 7px solid var(--back-border);
-        box-shadow: 0 2px 0 #0004;
       }
       .pile .l2 {
-        transform: translate(7px, 7px) rotate(1.5deg);
-        box-shadow: 0 6px 12px #0006;
+        transform: translate(4cqw, 4cqw) rotate(1.5deg);
       }
       .pile .l1 {
-        transform: translate(3.5px, 3.5px) rotate(-1deg);
+        transform: translate(2cqw, 2cqw) rotate(-1deg);
       }
       .pile .lab {
         position: absolute;
         left: 0;
         right: 0;
-        bottom: 14px;
-        padding-inline: 10px;
+        bottom: 10cqw;
         text-align: center;
         font:
-          800 20px/1.1 'Big Shoulders Display',
+          800 13cqw/1 'Big Shoulders Display',
           sans-serif;
-        text-shadow: 0 1px 3px #0008;
+        text-shadow: 0 1px 3px #0009;
       }
       .pile:focus-visible {
         outline: 3px solid #fff;
         outline-offset: 6px;
-        border-radius: 12px;
+        border-radius: 6cqw;
       }
-      .card {
-        position: relative;
-        display: grid;
-        transform-style: preserve-3d;
-        min-height: 140cqw;
-        align-self: stretch;
-        border-radius: 12px;
-        cursor: pointer;
-        outline: none;
-      }
-      .card.pending {
-        visibility: hidden;
-      }
-      .card:focus-visible .front {
-        outline: 3px solid #fff;
-        outline-offset: 3px;
-      }
-      .card .face,
-      .solo .face {
-        grid-area: 1/1;
-        border-radius: 12px;
-        backface-visibility: hidden;
-        -webkit-backface-visibility: hidden;
-      }
-      .card .back {
-        transform: rotateY(180deg);
-        background: var(--back);
-        border: 7px solid var(--back-border);
-        box-shadow: 0 2px 0 #0004;
-      }
-      /* The card face: the deck's own colour, a double frame, corner indices and a centre pip. */
+
+      /* the face */
       .front {
-        position: relative;
-        container-type: inline-size;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        gap: 6px;
-        padding: 30px 14px;
-        overflow: hidden;
+        gap: 2.6cqw;
+        padding: 14cqw 9cqw 13cqw;
         text-align: center;
         color: var(--face-text);
         background:
-          linear-gradient(155deg, #ffffff1c, #0000 38%, #0000 70%, #0000002e),
+          linear-gradient(155deg, #ffffff22, #0000 38%, #0000 70%, #00000030),
           var(--face);
-        box-shadow:
-          0 2px 0 #0004,
-          0 12px 22px #0005,
-          inset 0 0 0 1px #ffffff1f;
-      }
-      .front::before {
-        content: '';
-        position: absolute;
-        inset: 6px;
-        border: 3px double var(--face-line);
-        border-radius: 8px;
-        opacity: 0.75;
-        pointer-events: none;
+        --fit: 1;
       }
       .corner {
         position: absolute;
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 2px;
+        gap: 0.6cqw;
         color: var(--black);
       }
       .corner b {
-        font: 800 calc(clamp(15px, 12cqw, 24px) * var(--letter-scale, 1)) / 1 var(--letter);
+        font: 800 calc(9cqw * var(--letter-scale, 1)) / 1 var(--letter);
       }
       .corner i {
         font:
-          normal clamp(12px, 9cqw, 18px) / 1 system-ui,
+          normal 6.5cqw/1 system-ui,
           sans-serif;
       }
       .corner.tl {
-        top: 12px;
-        left: 12px;
+        top: 6cqw;
+        left: 6.5cqw;
       }
       .corner.br {
-        right: 12px;
-        bottom: 12px;
+        right: 6.5cqw;
+        bottom: 6cqw;
         transform: rotate(180deg);
-      }
-      .pip {
-        display: grid;
-        place-items: center;
-        width: 44cqw;
-        aspect-ratio: 1;
-        border-radius: 50%;
-        border: 1px solid var(--face-line);
-        box-shadow: inset 0 0 0 4px #0000, inset 0 0 0 5px color-mix(in srgb, var(--face-line) 45%, #0000);
-        color: var(--black);
-        font:
-          clamp(26px, 24cqw, 64px) / 1 system-ui,
-          sans-serif;
-        order: 1;
-      }
-      .red .corner,
-      .red .pip {
-        color: var(--red);
-      }
-      .joker .corner,
-      .joker .pip {
-        color: var(--star);
       }
       .fbody {
         display: contents;
@@ -1088,44 +1098,54 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         margin: 0;
         max-width: 100%;
         font:
-          700 clamp(14px, 9.5cqw, 24px) / 1.2 Inter,
+          700 calc(7.6cqw * var(--fit)) / 1.15 Inter,
           sans-serif;
         text-wrap: balance;
+      }
+      .pip {
+        order: 1;
+        flex: none;
+        display: grid;
+        place-items: center;
+        width: calc(24cqw * var(--fit));
+        aspect-ratio: 1;
+        border-radius: 50%;
+        border: 0.5cqw solid var(--face-line);
+        box-shadow: inset 0 0 0 1.4cqw #0000, inset 0 0 0 1.8cqw color-mix(in srgb, var(--face-line) 45%, #0000);
+        color: var(--black);
+        font:
+          calc(13cqw * var(--fit)) / 1 system-ui,
+          sans-serif;
+      }
+      .red .corner,
+      .red .pip {
+        color: var(--red);
+      }
+      .joker .corner,
+      .joker .pip {
+        color: var(--star);
       }
       .reps {
         order: 2;
         margin: 0;
         color: var(--face-accent);
-        font: 800 calc(clamp(18px, 14cqw, 36px) * var(--letter-scale, 1)) / 1.05 var(--letter);
+        font: 800 calc(10.5cqw * var(--letter-scale, 1) * var(--fit)) / 1.05 var(--letter);
         text-wrap: balance;
       }
       .cue,
       .alt {
         order: 3;
-        display: none;
+        width: 100%;
         margin: 0;
         color: var(--face-muted);
         text-align: left;
+        font-size: calc(4.7cqw * var(--fit));
+        line-height: 1.4;
       }
-      /* In run mode the card is big enough for the coaching cue and easier/harder. */
-      .solo .front {
-        aspect-ratio: 5 / 7;
-        padding: 52px 30px 56px;
-        gap: 14px;
-      }
-      .solo .pip {
-        width: 30cqw;
-      }
-      .solo .cue,
-      .solo .alt {
-        display: block;
-        width: 100%;
-        font-size: 15px;
-        line-height: 1.45;
-      }
-      .solo .alt {
-        padding-top: 10px;
-        border-top: 1px solid color-mix(in srgb, var(--face-line) 55%, #0000);
+      .alt {
+        order: 4;
+        padding-top: 2.4cqw;
+        border-top: 0.4cqw solid color-mix(in srgb, var(--face-line) 55%, #0000);
       }
       .alt > span {
         display: block;
@@ -1144,6 +1164,47 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         overflow: hidden;
         clip-path: inset(50%);
         white-space: nowrap;
+      }
+
+      /* Small cards jump out so their text is readable: on hover, or on keyboard focus. */
+      @media (hover: hover) {
+        .hand .slot:not(:first-child):hover {
+          z-index: 5;
+          transform: scale(var(--lift, 1.9));
+        }
+      }
+      .hand .slot:has(.card:focus-visible) {
+        z-index: 5;
+        transform: scale(var(--lift, 1.9));
+      }
+      .hand .slot {
+        transform-origin: 50% 40%;
+      }
+      .hand .slot:nth-child(6) {
+        transform-origin: 100% 40%;
+      }
+      @media (max-width: 960px) {
+        .hand .slot {
+          --lift: 1.5;
+        }
+        .hand .slot:nth-child(4) {
+          transform-origin: 0 40%;
+        }
+        .hand .slot:nth-child(3),
+        .hand .slot:nth-child(6) {
+          transform-origin: 100% 40%;
+        }
+      }
+      @media (max-width: 560px) {
+        .hand .slot {
+          --lift: 1.25;
+        }
+        .hand .slot:nth-child(odd) {
+          transform-origin: 0 40%;
+        }
+        .hand .slot:nth-child(even) {
+          transform-origin: 100% 40%;
+        }
       }
 
       /* chunky physical buttons */
@@ -1421,8 +1482,7 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         padding: 24px max(4vw, 16px) 28px;
       }
       .solo {
-        display: grid;
-        max-width: 360px;
+        width: min(360px, 100%);
       }
       .list {
         margin: 0;

@@ -351,11 +351,20 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
             const on = d.id in st.decks
             return `<button class="tuck" data-id="${d.id}" aria-pressed="${on}" aria-label="${esc(d.name)} deck" style="${art(d)}" title="${esc(d.blurb)} ${esc(d.gear)}.">
               <span class="box" aria-hidden="true">
-                <span class="lid"></span>
-                <span class="peek"><i></i><i></i></span>
-                <span class="side"></span>
-                <span class="bface"><span class="art"></span><span class="plate"><b>${esc(d.name)}</b></span><span class="suits">♠ ♥ ♦ ♣ ★</span></span>
-                <span class="seal"></span>
+                <span class="shadow"></span>
+                <span class="cube">
+                  <span class="wall back"></span>
+                  <span class="wall left"><span class="dust"></span></span>
+                  <span class="cards"><i class="c-rear"></i><i class="c-left"></i><i class="c-top"></i><i class="c-right"></i><i class="c-face"></i></span>
+                  <span class="tongue"></span>
+                  <span class="wall right"><span class="dust"></span></span>
+                  <span class="bface"><span class="art"></span><span class="plate"><b>${esc(d.name)}</b></span><span class="suits">♠ ♥ ♦ ♣ ★</span></span>
+                  <span class="seal"></span>
+                  <span class="lid">
+                    <span class="ply out"><span class="seal"></span></span><span class="ply in"></span>
+                    <span class="flap"><span class="ply out"><span class="seal"></span></span><span class="ply in"></span></span>
+                  </span>
+                </span>
               </span>
             </button>`
           }).join('')
@@ -1507,56 +1516,193 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         outline-offset: 6px;
         border-radius: 8px;
       }
+      /*
+        The deck box is a real 3D tuck box seen from a little above and to the left: a front,
+        a right side and a lid. The lid is hinged on the back top edge and carries the tuck flap
+        on its front edge. Opening it swings the lid up and back, the flap relaxes, the side dust
+        flaps stand up and the cards rise out. Every size is a share of the box's width (cqw).
+      */
       .box {
+        --d: 27cqw;
+        --top: color-mix(in srgb, var(--box) 84%, #fff);
+        --wall: color-mix(in srgb, var(--box) 58%, #000);
+        --inside: color-mix(in srgb, var(--box) 22%, #1b120c);
+        --board: color-mix(in srgb, var(--box) 12%, #e4d8bf);
         position: relative;
         display: block;
         aspect-ratio: 0.72;
-        margin: 30% 8% 0 0;
+        margin: 42% 14% 0 2%;
         isolation: isolate;
         container-type: inline-size;
+        perspective: 700cqw;
+        perspective-origin: 50% 20%;
         transition: transform 0.25s ease;
       }
       .tuck:hover .box {
         transform: translateY(-3px);
       }
-      .box > span {
+      .box > .shadow {
         position: absolute;
+        left: 4%;
+        right: -22%;
+        bottom: -7%;
+        height: 14%;
+        border-radius: 50%;
+        background: radial-gradient(closest-side, #000a, #0000);
       }
-      /* cards inside the box: visible through the thumb notch, and standing up when it's open */
-      .peek {
-        z-index: 1;
-        left: 9%;
-        right: 9%;
-        top: 1%;
-        height: 72%;
-        transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
-      }
-      .peek i {
+      .cube {
         position: absolute;
         inset: 0;
-        border-radius: 6px;
-        background: var(--back);
-        border: 4px solid var(--back-border);
-        box-shadow:
-          0 1px 2px #0005,
-          inset 0 0 0 3px #0000,
-          inset 0 0 0 4px var(--face-line);
+        transform-style: preserve-3d;
+        transform: rotateX(-15deg) rotateY(-27deg);
       }
-      .peek i:nth-child(2) {
-        transform: rotate(6deg) translate(5%, 3%);
+      .cube span {
+        position: absolute;
+        display: block;
+      }
+      .wall {
+        top: 0;
+        bottom: 0;
+      }
+      .wall.back {
+        left: 0;
+        right: 0;
+        transform: translateZ(calc(var(--d) / -2));
+        background: var(--inside);
+      }
+      .wall.left,
+      .wall.right {
+        left: calc(50% - var(--d) / 2);
+        width: var(--d);
+        transform-style: preserve-3d;
+      }
+      .wall.left {
+        transform: rotateY(-90deg) translateZ(50cqw);
+        background: var(--inside);
+      }
+      .wall.right {
+        transform: rotateY(90deg) translateZ(50cqw);
+        background:
+          var(--noise),
+          linear-gradient(180deg, #ffffff10, #0000 30%, #0003),
+          var(--wall);
+      }
+      /* the little flaps on top of each side, folded under the lid until it opens */
+      .dust {
+        left: 6%;
+        right: 6%;
+        bottom: 100%;
+        height: 15cqw;
+        border-radius: 45% 55% 0 0 / 100% 100% 0 0;
+        background: color-mix(in srgb, var(--wall) 80%, #000);
+        transform-origin: 50% 100%;
+        transform: rotateX(92deg);
+        transition: transform 0.3s ease-in 0s;
+      }
+      .wall.right .dust {
+        background: linear-gradient(0deg, #0004, #0000), var(--wall);
+      }
+      /*
+        The cards inside are a solid block: the back of the first card faces out, and the top
+        and sides show the cream edges of the stacked cards when they rise out of the box.
+      */
+      .cards {
+        --cd: calc(var(--d) * 0.76);
+        --cr: 3.5cqw;
+        left: 6%;
+        right: 6%;
+        top: 3.5%;
+        height: 95%;
+        transform-style: preserve-3d;
+        transition: transform 0.35s cubic-bezier(0.4, 0, 0.6, 1) 0s;
+      }
+      .cards i {
+        position: absolute;
+        display: block;
+      }
+      .c-face,
+      .c-rear {
+        inset: 0;
+        border-radius: var(--cr);
+        background: var(--back);
+        border: 2.6cqw solid var(--back-border);
+        box-shadow: inset 0 0 0 1.4cqw #0000, inset 0 0 0 2.1cqw var(--face-line);
+      }
+      .c-face {
+        transform: translateZ(calc(var(--cd) / 2));
+      }
+      .c-rear {
+        transform: rotateY(180deg) translateZ(calc(var(--cd) / 2));
+        /* Only its rounded corners show, beside the stack's edges, so it's edge-coloured. */
+        background: #dcd0b4;
+        border: 0;
+        box-shadow: none;
+      }
+      /* the edges of the stack: cream card stock, with the faint lines of the separate cards */
+      .c-top,
+      .c-left,
+      .c-right {
+        --edge: #f3ead6;
+        background:
+          repeating-linear-gradient(var(--grain), #0000 0 1.15cqw, #7a6a4a1c 1.15cqw 1.55cqw),
+          var(--edge);
+      }
+      .c-top {
+        --grain: 180deg;
+        left: var(--cr);
+        right: var(--cr);
+        top: 0;
+        height: var(--cd);
+        transform-origin: 50% 0;
+        transform: translateZ(calc(var(--cd) / -2)) rotateX(90deg);
+        background:
+          linear-gradient(90deg, #0000 80%, #0000001a),
+          repeating-linear-gradient(var(--grain), #0000 0 1.15cqw, #7a6a4a1c 1.15cqw 1.55cqw),
+          var(--edge);
+      }
+      .c-left,
+      .c-right {
+        --grain: 90deg;
+        --edge: #dcd0b4;
+        top: var(--cr);
+        bottom: var(--cr);
+        left: calc(50% - var(--cd) / 2);
+        width: var(--cd);
+      }
+      .c-right {
+        transform: rotateY(90deg) translateZ(44cqw);
+      }
+      .c-left {
+        transform: rotateY(-90deg) translateZ(44cqw);
+      }
+      /* With the box shut, the tuck flap sits just inside the front: it's what shows in the
+         thumb notch. It's drawn flat against the front, where browsers sort it reliably. */
+      .tongue {
+        left: 2.5%;
+        width: 95%;
+        top: 0;
+        height: 22cqw;
+        transform: translateZ(calc(var(--d) / 2 - 0.8cqw));
+        border-radius: 0 0 46% 46% / 0 0 60% 60%;
+        background: var(--noise), linear-gradient(180deg, #0006, #0000 55%), var(--top);
+        /* Closing, it fades in while the lid comes down, so the notch is already covered as
+           the lid lands. */
+        transition: opacity 0.22s ease 0.34s;
+      }
+      .tuck[aria-pressed='true'] .tongue {
+        opacity: 0;
+        transition: opacity 0.1s ease 0s;
       }
       .bface {
-        z-index: 2;
         inset: 0;
-        border-radius: 3px;
+        transform: translateZ(calc(var(--d) / 2));
+        border-radius: 1px;
         background:
           var(--noise),
           linear-gradient(100deg, #ffffff1f, #0000 30%, #0000 70%, #00000024),
           var(--box);
-        box-shadow:
-          inset 0 0 0 1px #ffffff26,
-          0 12px 18px #0008,
-          0 2px 0 #0005;
+        box-shadow: inset 0 0 0 1px #ffffff26;
+        /* the thumb notch */
         -webkit-mask: radial-gradient(17% 9% at 50% 0, #0000 97%, #000 100%);
         mask: radial-gradient(17% 9% at 50% 0, #0000 97%, #000 100%);
         overflow: hidden;
@@ -1599,54 +1745,133 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         letter-spacing: 0.2em;
         text-shadow: 0 1px 1px #0006;
       }
-      .side {
-        z-index: 2;
+      /* the lid: hinged on the back edge, lying flat on top when closed */
+      .lid {
+        left: 0;
         top: 0;
-        bottom: 0;
-        right: -8%;
-        width: 8%;
+        width: 100%;
+        height: var(--d);
+        transform-style: preserve-3d;
+        transform-origin: 50% 0;
+        transform: translateZ(calc(var(--d) / -2)) rotateX(90deg);
+        transition: transform 0.45s cubic-bezier(0.5, 0, 0.3, 1) 0.22s;
+      }
+      .ply {
+        inset: 0;
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
+      }
+      .lid > .ply.out {
         background:
           var(--noise),
-          color-mix(in srgb, var(--box) 55%, #000);
-        clip-path: polygon(0 0, 100% 3.5%, 100% 98%, 0 100%);
+          linear-gradient(180deg, #0000, #ffffff14),
+          var(--top);
       }
-      .lid {
-        z-index: 3;
-        left: 0;
-        right: -8%;
-        top: -4.5%;
-        height: 4.5%;
-        background: color-mix(in srgb, var(--box) 82%, #fff);
-        clip-path: polygon(0 100%, 6% 0, 100% 0, 92% 100%);
+      .ply.in {
+        transform: rotateY(180deg);
+        background:
+          var(--noise-soft),
+          linear-gradient(180deg, #0002, #0000 40%),
+          var(--board);
+      }
+      /* the tuck flap: folds down inside the front of the box */
+      .flap {
+        left: 2.5%;
+        right: 2.5%;
+        top: 100%;
+        height: 22cqw;
+        transform-style: preserve-3d;
+        transform-origin: 50% 0;
+        /* Closed, it's angled well back inside the box, kept clear of the front panel so
+           browsers draw it behind it. It isn't drawn at all once the box is shut: it shares a
+           hinge with the lid, and browsers can't tell which of the two is on top. The flat
+           .tongue stands in for it in the thumb notch. */
+        transform: rotateX(-150deg);
+        visibility: hidden;
+        /* Closing, it swings in ahead of the lid, so it clears the front edge and slips inside. */
         transition:
-          top 0.35s ease,
-          height 0.35s ease,
-          filter 0.35s ease;
+          transform 0.26s cubic-bezier(0.4, 0, 0.6, 1) 0.22s,
+          visibility 0s linear 0.5s;
       }
+      .flap .ply {
+        border-radius: 0 0 46% 46% / 0 0 60% 60%;
+      }
+      .flap .ply.out {
+        background: var(--noise), linear-gradient(180deg, #0000, #0003), var(--top);
+      }
+      /* the seal: one strip over the front edge, folded onto the lid */
       .seal {
-        z-index: 4;
-        left: 50%;
-        width: 15%;
-        top: -4.5%;
-        height: 15%;
-        transform: translateX(-50%);
         background: linear-gradient(180deg, #efe3c6, #d7c296);
+      }
+      .cube > .seal {
+        left: 43%;
+        width: 14%;
+        top: 0;
+        height: 11%;
+        transform: translateZ(calc(var(--d) / 2 + 0.4cqw));
         box-shadow: 0 1px 2px #0005;
-        border-radius: 1px;
-        transition: opacity 0.2s ease;
       }
-      .tuck[aria-pressed='true'] .peek {
-        transform: translateY(-26%);
+      .lid > .ply .seal {
+        left: 43%;
+        width: 14%;
+        /* across the whole top, from the back edge to the front, where it folds down */
+        top: 0;
+        bottom: 0;
+        background:
+          linear-gradient(0deg, #00000026, #0000 18%),
+          linear-gradient(180deg, #f8efd9, #efe3c6);
+        box-shadow:
+          0.6cqw 0 0 #00000038,
+          -0.6cqw 0 0 #00000024;
       }
+
+      /* open */
       .tuck[aria-pressed='true'] .lid {
-        z-index: 0;
-        top: -30%;
-        height: 30%;
-        filter: brightness(0.78);
-        clip-path: polygon(0 100%, 10% 8%, 18% 0, 82% 0, 90% 8%, 92% 100%);
+        transform: translateZ(calc(var(--d) / -2)) rotateX(198deg);
+        transition-delay: 0.05s;
       }
-      .tuck[aria-pressed='true'] .seal {
-        opacity: 0;
+      .tuck[aria-pressed='true'] .flap {
+        transform: rotateX(-14deg);
+        visibility: visible;
+        /* Opening, it stays tucked until the lid has lifted it clear, then swings out. */
+        transition:
+          transform 0.32s ease 0.26s,
+          visibility 0s linear 0.18s;
+      }
+      .tuck[aria-pressed='true'] .dust {
+        transform: rotateX(-16deg);
+        transition: transform 0.35s cubic-bezier(0.3, 1.4, 0.5, 1) 0.28s;
+      }
+      .tuck[aria-pressed='true'] .cards {
+        transform: translateY(-28%);
+        transition: transform 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.15) 0.36s;
+      }
+      /* Opening the box tears the tape where it folds over the edge: half stays on the lid,
+         half on the front, each with a ragged end. */
+      .tuck[aria-pressed='true'] .cube > .seal {
+        clip-path: polygon(0 9%, 14% 2%, 27% 11%, 41% 0, 56% 10%, 70% 3%, 85% 12%, 100% 4%, 100% 100%, 0 100%);
+      }
+      /* The lid's half of the tape carries on over the hinge onto the tuck flap, so it stays
+         in view as the lid swings past upright and shows its underside. */
+      .flap .seal {
+        left: 42.6%;
+        width: 14.7%;
+        top: 0;
+        height: 34%;
+        background:
+          linear-gradient(180deg, #00000024, #0000 25%),
+          linear-gradient(180deg, #efe3c6, #e2d3ae);
+        box-shadow:
+          0.6cqw 0 0 #00000038,
+          -0.6cqw 0 0 #00000024;
+        clip-path: polygon(0 0, 100% 0, 100% 92%, 86% 100%, 71% 90%, 57% 98%, 43% 88%, 29% 97%, 14% 89%, 0 96%);
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .box *,
+        .tuck[aria-pressed='true'] .box * {
+          transition-duration: 0s !important;
+          transition-delay: 0s !important;
+        }
       }
 
 

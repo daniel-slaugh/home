@@ -53,80 +53,125 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
     }
   </head>
   <body>
-    <header class="wrap top">
-      <p class="crumb"><a href="/">← Byte Garden</a></p>
-      <h1>Workout decks</h1>
+    <header class="top">
+      <div class="topbar">
+        <a
+          class="home"
+          href="/"
+          aria-label="Byte Garden home">←</a
+        >
+        <span class="brand">Workout decks</span>
+      </div>
+      <nav
+        class="steps"
+        aria-label="Steps"
+      >
+        <ol>
+          <li><a href="#workout" data-step="workout"><span class="n">1</span><span class="lbl">Workout</span></a></li>
+          <li><a href="#decks" data-step="decks"><span class="n">2</span><span class="lbl">Decks</span></a></li>
+          <li><a href="#cards" data-step="cards"><span class="n">3</span><span class="lbl">Cards</span></a></li>
+          <li><a href="#start" data-step="start"><span class="n">4</span><span class="lbl">Start</span></a></li>
+        </ol>
+      </nav>
     </header>
 
-    <section
-      class="wrap pick"
-      aria-labelledby="h-decks"
-    >
-      <div class="pick-grid">
-        <div>
-          <h2 id="h-decks">Decks</h2>
-          <div
-            class="shelf"
-            id="decks"
-          >
-          </div>
-        </div>
-        <aside
-          class="slip"
-          id="slip"
-          aria-labelledby="h-mix"
-          hidden
+    <main>
+      <section
+        class="screen narrow"
+        id="s-workout"
+        data-step="workout"
+        aria-labelledby="h-work"
+      >
+        <h1 id="h-work">Pick a workout</h1>
+        <div
+          class="types"
+          id="type"
+          role="radiogroup"
+          aria-label="Workout type"
         >
-          <h2 id="h-mix">Mix</h2>
-          <div id="mix"></div>
-        </aside>
-      </div>
-    </section>
+          <button role="radio" data-v="circuit"><b>Circuit</b><span data-how="circuit"></span></button>
+          <button role="radio" data-v="sets"><b>Sets</b><span data-how="sets"></span></button>
+          <button role="radio" data-v="variety"><b>Variety</b><span data-how="variety"></span></button>
+        </div>
+        <h2
+          class="sub-h"
+          id="lenLab"
+        >
+          How long?
+        </h2>
+        <div class="seg" id="len" role="group" aria-labelledby="lenLab"><button data-v="20">20 min</button><button data-v="30">30 min</button><button data-v="45">45 min</button></div>
+      </section>
 
-    <section
-      class="wrap"
-      aria-labelledby="h-hand"
-    >
-      <div class="rail">
-        <div class="felt">
-          <h2
-            class="vh"
-            id="h-hand"
-          >
-            Your hand
-          </h2>
-          <div
-            class="hand"
-            id="hand"
-          >
-            <div class="slot">
-              <button
-                class="pile"
-                id="deck"
-                aria-label="Deal a new hand: the cards on the table go to the bottom of the deck and the next ones come off the top. Tap any card to swap just that card."
-              ></button>
+      <section
+        class="screen narrow"
+        id="s-decks"
+        data-step="decks"
+        aria-labelledby="h-decks"
+        hidden
+      >
+        <h1 id="h-decks">Open your decks</h1>
+        <div
+          class="shelf"
+          id="decks"
+        >
+        </div>
+      </section>
+
+      <section
+        class="screen wide"
+        id="s-cards"
+        data-step="cards"
+        aria-labelledby="h-hand"
+        hidden
+      >
+        <h1 id="h-hand">Your cards</h1>
+        <p class="hint" id="hint"></p>
+        <div class="rail">
+          <div class="felt">
+            <div
+              class="hand"
+              id="hand"
+            >
+              <div class="slot">
+                <button
+                  class="pile"
+                  id="deck"
+                  aria-label="Deal a new hand: the cards on the table go to the bottom of the deck and the next ones come off the top."
+                ></button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <section class="wrap lower">
-      <div class="pad">
-        <h2>Today's schedule</h2>
-        <ol class="times" id="times"></ol>
+      <section
+        class="screen narrow"
+        id="s-start"
+        data-step="start"
+        aria-labelledby="h-start"
+        hidden
+      >
+        <h1 id="h-start">Ready?</h1>
+        <div class="pad">
+          <h2>Today's schedule</h2>
+          <ol class="times" id="times"></ol>
+        </div>
+      </section>
+    </main>
+
+    <div class="navbar">
+      <div class="navin">
+        <button class="btn" id="back">Back</button>
+        <button class="go" id="next">Next</button>
       </div>
-      <aside class="icard">
-        <label id="typeLab">Type</label>
-        <div class="seg" id="type" role="group" aria-labelledby="typeLab"><button data-v="circuit">Circuit</button><button data-v="sets">Sets</button><button data-v="variety">Variety</button></div>
-        <p class="how" id="how" aria-live="polite"></p>
-        <label id="lenLab">Length</label>
-        <div class="seg" id="len" role="group" aria-labelledby="lenLab"><button data-v="20">20 min</button><button data-v="30">30 min</button><button data-v="45">45 min</button></div>
-        <label for="start">Time</label>
-        <input type="time" id="start" />
-        <button class="go" id="go">Start</button>
-      </aside>
-    </section>
+    </div>
+
+    <div class="inspect" id="inspect" role="dialog" aria-modal="true" aria-label="Card" hidden>
+      <div class="ibox">
+        <div class="iwrap"><div class="card static" id="icard"></div></div>
+        <div class="ibtns"><button class="btn" id="iswap">Swap</button><button class="btn main" id="ikeep">Keep</button></div>
+      </div>
+    </div>
 
     <div class="run" id="run" role="dialog" aria-modal="true" aria-labelledby="rb">
       <div class="rtop"><div class="rwrap"><div><h2 id="rb">Warm-up</h2><p id="rs"></p></div><div class="clock" id="rclock">0:00<small id="rleft"></small></div></div></div>
@@ -140,7 +185,7 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
       import { DECKS } from '../workout/decks'
       import type { Deck, Suit } from '../workout/types'
       import { dealHand, uniqueCards, type Dealt } from '../workout/deal'
-      import { buildPlan, cardCount, LENGTHS, TYPES, type Plan, type Step, type WorkoutType } from '../workout/plan'
+      import { buildPlan, cardCount, LAPS, LENGTHS, SETS, TYPES, type Plan, type Step, type WorkoutType } from '../workout/plan'
 
       const $ = <T extends HTMLElement = HTMLElement>(s: string) => document.querySelector(s) as T
       const esc = (s: string) => s.replace(/[&<>"]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[ch] as string)
@@ -155,23 +200,23 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
       }
 
       interface State {
-        start: string
         len: number
         type: WorkoutType
+        /** Open decks. Their cards are shuffled together into one deck. */
         decks: Record<string, number>
         /** Cards on the table, in order. */
         hand: [string, string][] | null
         /** The rest of the deck, top card first. Dealing takes from the top; a swapped card goes to the bottom. */
         pile: [string, string][] | null
       }
-      let st: State = { start: '06:30', len: 30, type: 'circuit', decks: { [DECKS[0].id]: 100 }, hand: null, pile: null }
+      let st: State = { len: 30, type: 'circuit', decks: { [DECKS[0].id]: 1 }, hand: null, pile: null }
       try {
         const s = JSON.parse(localStorage.getItem(KEY) || 'null')
-        if (s) st = { start: s.start || st.start, len: s.len || st.len, type: s.type || st.type, decks: s.decks || st.decks, hand: s.hand || null, pile: s.pile || null }
+        if (s) st = { len: s.len || st.len, type: s.type || st.type, decks: s.decks || st.decks, hand: s.hand || null, pile: s.pile || null }
       } catch (e) {}
       const deckById = (id: string) => DECKS.find((d) => d.id === id)
       for (const id of Object.keys(st.decks)) if (!deckById(id)) delete st.decks[id]
-      if (!Object.keys(st.decks).length) st.decks = { [DECKS[0].id]: 100 }
+      if (!Object.keys(st.decks).length) st.decks = { [DECKS[0].id]: 1 }
       if (!LENGTHS[st.len]) st.len = 30
       if (!TYPES.some((t) => t.id === st.type)) st.type = 'circuit'
       const save = () => {
@@ -182,7 +227,8 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
       const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches
 
       const picked = () => DECKS.filter((d) => d.id in st.decks)
-      const mix = () => picked().map((deck) => ({ deck, weight: st.decks[deck.id] }))
+      /** Every card in the open decks is equally likely, so a deck's share follows its size. */
+      const mix = () => picked().map((deck) => ({ deck, weight: deck.cards.length }))
 
       // ---- the deck: one real ordered deck of every card in the open decks ----
       // The hand is dealt off the top, the pile is what's left (top first), and the pile
@@ -203,8 +249,8 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
        *               top; cards no longer needed go to the bottom.
        *  - 'cycle':   a new hand. Every card on the table goes to the bottom (rightmost first,
        *               the way they're tucked under) and the next cards come off the top.
-       *  - 'shuffle': the decks or the mix changed. Everything is shuffled except the cards
-       *               showing on top of the pile, which stay on top.
+       *  - 'shuffle': a deck was opened or closed. Every card in the open decks is shuffled
+       *               together; each deck's share of the hand follows its size.
        */
       function setHand(mode: 'fit' | 'cycle' | 'shuffle') {
         const total = uniqueCards(mix())
@@ -212,10 +258,9 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         let h = load(),
           p = pileCards()
         if (mode === 'shuffle' || !h.length || h.length + p.length !== total) {
-          const keep = p.slice(0, 3)
-          const key = (x: Dealt) => `${x.deck.id}/${x.card.id}`
-          const kept = new Set(keep.map(key))
-          const order = keep.concat(dealHand(mix(), total, Math.random, dealHand(mix(), n)).filter((x) => !kept.has(key(x))))
+          // One shuffle of the whole deck: any card can land anywhere, so the hand's mix is random
+          // and each deck's share follows its size on average.
+          const order = dealHand(mix(), total)
           h = order.slice(0, n)
           p = order.slice(n)
         } else if (mode === 'cycle') {
@@ -276,43 +321,12 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
       }
       document.fonts?.ready.then(fitNames)
       new ResizeObserver(fitNames).observe($('#decks'))
-      /** Keep the picked decks' weights adding up to 100. `keep` holds its value; the rest share what's left in proportion. */
-      function balance(keep?: string) {
-        const ids = picked().map((d) => d.id)
-        const fixed = keep && ids.includes(keep) ? Math.min(100, Math.max(0, st.decks[keep])) : 0
-        const others = ids.filter((id) => id !== keep)
-        const sum = others.reduce((s, id) => s + Math.max(0, st.decks[id] || 0), 0)
-        const room = 100 - fixed
-        let given = 0
-        others.forEach((id, i) => {
-          const share = i === others.length - 1 ? room - given : Math.round(sum ? (Math.max(0, st.decks[id] || 0) / sum) * room : room / others.length)
-          st.decks[id] = share
-          given += share
-        })
-        if (keep && ids.includes(keep)) st.decks[keep] = fixed
-      }
-      function mixLabel(m: { weight: number }[], i: number) {
-        const total = m.reduce((s, x) => s + x.weight, 0)
-        return `${total ? Math.round((m[i].weight / total) * 100) : i === 0 ? 100 : 0}%`
-      }
-      function renderMix() {
-        const m = mix()
-        $('#slip').hidden = m.length < 2
-        $('.pick-grid').classList.toggle('one-deck', m.length < 2)
-        if (m.length < 2) {
-          $('#mix').innerHTML = ''
-          return
-        }
-        $('#mix').innerHTML = m
-          .map(
-            (x, i) =>
-              `<div class="mx" style="${art(x.deck)}"><label for="mx-${x.deck.id}"><span>${esc(x.deck.name)}</span><output>${mixLabel(m, i)}</output></label><input type="range" id="mx-${x.deck.id}" data-id="${x.deck.id}" min="0" max="100" step="1" value="${x.weight}"></div>`
-          )
-          .join('')
-      }
-      /** The pile shows the backs of its real top three cards, top card last (on top). */
-      function renderPile() {
-        const top = pileCards().slice(0, 3)
+      /**
+       * The pile shows the backs of its real top three cards, top card last (on top). `upcoming`
+       * are cards about to be dealt off it, which sit on top until they leave.
+       */
+      function renderPile(upcoming: Dealt[] = []) {
+        const top = upcoming.concat(pileCards()).slice(0, 3)
         $('#deck').classList.toggle('empty', !top.length)
         $('#deck').innerHTML =
           top
@@ -330,31 +344,10 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
             return
           }
           delete st.decks[id]
-          balance()
-        } else {
-          st.decks[id] = Math.round(100 / (picked().length + 1))
-          balance(id)
-        }
+        } else st.decks[id] = 1
         renderDecks()
-        renderMix()
         setHand('shuffle')
-        deal(true)
-      })
-      $('#mix').addEventListener('input', (e) => {
-        const r = e.target as HTMLInputElement
-        if (!r.dataset.id) return
-        st.decks[r.dataset.id] = Number(r.value)
-        balance(r.dataset.id)
-        const m = mix()
-        document.querySelectorAll<HTMLInputElement>('#mix input').forEach((x, i) => {
-          if (x !== r) x.value = String(m[i].weight)
-        })
-        document.querySelectorAll<HTMLOutputElement>('#mix output').forEach((o, i) => (o.textContent = mixLabel(m, i)))
-      })
-      $('#mix').addEventListener('change', (e) => {
-        if (!(e.target as HTMLInputElement).dataset.id) return
-        setHand('shuffle')
-        deal(true)
+        schedule()
       })
 
       // ---- cards ----
@@ -381,6 +374,7 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
       document.fonts?.ready.then(() => fit(document))
 
       let cards: HTMLElement[] = []
+      const touch = matchMedia('(hover: none)')
       /** Make one slot per card in the hand (the pile is always the first slot). */
       function slots(n: number) {
         const box = $('#hand')
@@ -390,7 +384,9 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
           s.innerHTML = '<div class="card pending" role="button" tabindex="0"></div>'
           const i = box.children.length - 1
           const c = s.firstElementChild as HTMLElement
-          c.addEventListener('click', () => redraw(i))
+          // A mouse swaps on click (hovering already lifts the card to read it). A touch screen can't
+          // hover, so a tap picks the card up instead, with Swap and Keep.
+          c.addEventListener('click', () => (touch.matches ? inspect(i) : redraw(i)))
           c.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' || e.key === ' ') {
               e.preventDefault()
@@ -409,20 +405,13 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
       }
 
       // ---- schedule ----
-      const toMin = (t: string) => {
-        const [h, m] = (t || '06:30').split(':').map(Number)
-        return h * 60 + m
-      }
-      const fmt = (secs: number) => {
-        const m = Math.round(secs / 60 + 1440) % 1440
-        const h = Math.floor(m / 60) % 12 || 12
-        return `${h}:${String(m % 60).padStart(2, '0')}`
-      }
+      /** Time into the workout, e.g. 0:00, 4:00, 6:24. */
+      const fmt = (secs: number) => `${Math.floor(secs / 60)}:${String(Math.round(secs % 60)).padStart(2, '0')}`
       function schedule() {
         const p = plan()
         const h = hand()
         const n = h.length
-        let t = toMin(st.start) * 60
+        let t = 0
         const rows: [number, string, string][] = []
         const head = (x: Dealt) => `<span class="s ${SUIT[x.card.suit][1]}">${SUIT[x.card.suit][0]}</span>${esc(x.card.name)}`
         let workIndex = 0
@@ -440,9 +429,19 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         })
         rows.push([t, 'Done', ''])
         $('#times').innerHTML = rows.map(([at, h, p]) => `<li><span class="t">${fmt(at)}</span><div><h3>${h}</h3>${p ? `<p>${p}</p>` : ''}</div></li>`).join('')
-        $('#how').textContent = p.summary
+        // Each workout type says exactly what it means at this length with these decks.
+        const total = uniqueCards(mix())
+        const how: Record<WorkoutType, (n: number) => string> = {
+          circuit: (n) => `${LAPS} laps through ${n} cards`,
+          sets: (n) => `${SETS} sets of each of ${n} cards`,
+          variety: (n) => `${n} cards, each one once`,
+        }
+        document.querySelectorAll<HTMLElement>('[data-how]').forEach((el) => {
+          const t = el.dataset.how as WorkoutType
+          el.textContent = how[t](cardCount(t, st.len, total))
+        })
         document.querySelectorAll<HTMLButtonElement>('#len button').forEach((b) => b.setAttribute('aria-pressed', String(Number(b.dataset.v) === st.len)))
-        document.querySelectorAll<HTMLButtonElement>('#type button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.v === st.type)))
+        document.querySelectorAll<HTMLButtonElement>('#type button').forEach((b) => b.setAttribute('aria-checked', String(b.dataset.v === st.type)))
         renderPile()
         return p
       }
@@ -567,28 +566,36 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
       }
 
       let dealRun = 0
+      /** What's lying on the table right now, in order. */
+      let laid: string[] = []
+      const cardKey = (x: Dealt) => `${x.deck.id}/${x.card.id}`
       /**
-       * Lay the hand out. With `animate`, cards already on the table are tucked back under first and
-       * the hand is dealt off the top of the pile. `from` deals only the cards from that index on,
-       * leaving the earlier ones where they are (used when the hand grows).
+       * Make the table match the hand. Cards that are already in the right place stay put; the
+       * rest are tucked back under the deck and the new ones are dealt off the top.
        */
-      async function deal(animate: boolean, from = 0) {
+      async function deal(animate: boolean) {
         const run = ++dealRun
         const h = hand()
+        const want = h.map(cardKey)
+        let same = 0
+        while (same < laid.length && same < want.length && laid[same] === want[same]) same++
         const shown = cards.filter((c) => !c.classList.contains('pending'))
-        if (animate && motion() && shown.length) {
-          await tuck(from ? shown.slice(Math.min(from, h.length)) : shown)
+        // Until they're dealt, the new cards are the top of the pile, so that's what it shows.
+        renderPile(h.slice(same))
+        if (animate && motion() && shown.length > same) {
+          await tuck(shown.slice(same))
           if (run !== dealRun) return
         }
         slots(h.length)
         schedule()
         h.forEach((x, i) => fill(i, x))
         cards.forEach((el) => el.classList.remove('pending'))
+        laid = want
         if (!animate || !motion()) {
           cards.forEach(still)
           return cards.forEach(settled)
         }
-        dealOut(cards.slice(from))
+        dealOut(cards.slice(same))
       }
       const busy = new Set<number>()
       /**
@@ -600,6 +607,7 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         if (busy.has(i) || !hand()[i]) return
         const el = cards[i]
         const next = swap(i)
+        laid[i] = cardKey(next)
         if (!motion()) {
           schedule()
           return fill(i, next)
@@ -618,27 +626,65 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
       $('#len').addEventListener('click', (e) => {
         const b = (e.target as HTMLElement).closest('button')
         if (!b) return
-        const before = hand().length
         st.len = Number(b.dataset.v)
         setHand('fit')
-        deal(true, before)
+        schedule()
       })
       $('#type').addEventListener('click', (e) => {
         const b = (e.target as HTMLElement).closest('button')
         if (!b || b.dataset.v === st.type) return
-        const before = hand().length
         st.type = b.dataset.v as WorkoutType
         setHand('fit')
-        deal(true, before)
+        schedule()
       })
-      const startIn = $<HTMLInputElement>('#start')
-      startIn.value = st.start
-      startIn.addEventListener('input', () => {
-        if (startIn.value) {
-          st.start = startIn.value
-          save()
-          schedule()
+
+      // ---- picking a card up to read it (touch screens) ----
+      let held = -1
+      const icard = $('#icard')
+      /** The transform that puts the big card exactly over card `i` on the table. */
+      function overSlot(i: number) {
+        const a = cards[i].getBoundingClientRect(),
+          b = icard.getBoundingClientRect()
+        return `translate(${a.left + a.width / 2 - (b.left + b.width / 2)}px, ${a.top + a.height / 2 - (b.top + b.height / 2)}px) scale(${a.width / b.width})`
+      }
+      function inspect(i: number) {
+        if (busy.has(i) || held >= 0) return
+        const x = hand()[i]
+        if (!x) return
+        held = i
+        icard.innerHTML = face(x, i + 1)
+        $('#inspect').hidden = false
+        fit(icard)
+        if (motion()) {
+          icard.animate([{ transform: overSlot(i) }, { transform: 'none' }], { duration: 300, easing: 'cubic-bezier(.2,.8,.2,1)' })
+          $('#inspect').animate([{ backgroundColor: '#0000' }, { backgroundColor: '#0009' }], { duration: 300 })
         }
+        cards[i].style.visibility = 'hidden'
+        $('#ikeep').focus()
+      }
+      /** Put the held card back down in its place. */
+      async function putDown() {
+        const i = held
+        if (i < 0) return
+        if (motion()) {
+          $('#inspect').animate([{ backgroundColor: '#0009' }, { backgroundColor: '#0000' }], { duration: 240, fill: 'forwards' })
+          await icard.animate([{ transform: 'none' }, { transform: overSlot(i) }], { duration: 240, easing: 'cubic-bezier(.4,0,.6,1)', fill: 'forwards' }).finished.catch(() => {})
+        }
+        cards[i].style.visibility = ''
+        $('#inspect').hidden = true
+        $('#inspect').getAnimations().forEach((a) => a.cancel())
+        icard.getAnimations().forEach((a) => a.cancel())
+        held = -1
+        cards[i].focus({ preventScroll: true })
+        return i
+      }
+      $('#ikeep').addEventListener('click', putDown)
+      $('#iswap').addEventListener('click', async () => {
+        const i = await putDown()
+        if (i !== undefined) redraw(i)
+      })
+      $('#inspect').addEventListener('click', (e) => {
+        if (e.target === $('#inspect')) putDown()
       })
 
       // ---- run mode: one step at a time. Tap Done after each set (and rest as long as you need). ----
@@ -709,7 +755,7 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         $<HTMLButtonElement>('#rback').disabled = true
         $('#rend').textContent = 'Close'
       }
-      $('#go').addEventListener('click', async () => {
+      async function startRun() {
         const p = plan()
         run = { steps: p.steps, i: 0, t0: Date.now(), ts: Date.now(), h: hand(), p }
         $('#rnext').style.display = ''
@@ -724,7 +770,7 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         } catch (e) {
           lock = null
         }
-      })
+      }
       $('#rnext').addEventListener('click', advance)
       $('#rback').addEventListener('click', () => {
         if (run && !run.end && run.i > 0) {
@@ -743,14 +789,61 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         }
       })
       document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && run) $('#rend').click()
+        if (e.key === 'Escape' && held >= 0) putDown()
+        else if (e.key === 'Escape' && run) $('#rend').click()
       })
 
-      balance()
       renderDecks()
-      renderMix()
+      // ---- the steps: one screen each, with its own address so the back gesture works ----
+      const STEPS = ['workout', 'decks', 'cards', 'start'] as const
+      type StepId = (typeof STEPS)[number]
+      const NEXT: Record<StepId, string> = { workout: 'Next', decks: 'Deal', cards: 'Next', start: 'Start' }
+      let step: StepId | null = null
+      function go(to: string) {
+        const next = (STEPS as readonly string[]).includes(to) ? (to as StepId) : 'workout'
+        const dir = step && STEPS.indexOf(next) < STEPS.indexOf(step) ? -1 : 1
+        step = next
+        document.querySelectorAll<HTMLElement>('.screen').forEach((el) => (el.hidden = el.dataset.step !== next))
+        const at = STEPS.indexOf(next)
+        document.querySelectorAll<HTMLAnchorElement>('.steps a').forEach((a) => {
+          const i = STEPS.indexOf(a.dataset.step as StepId)
+          if (i === at) a.setAttribute('aria-current', 'step')
+          else a.removeAttribute('aria-current')
+          a.classList.toggle('done', i < at)
+        })
+        $('#back').hidden = at === 0
+        $('#next').textContent = NEXT[next]
+        document.body.dataset.step = next
+        $('#hint').textContent = touch.matches ? 'Tap a card to read it or swap it. Tap the deck for a new hand.' : 'Hover a card to read it, click to swap it. Click the deck for a new hand.'
+        window.scrollTo(0, 0)
+        const screen = $(`#s-${next}`)
+        if (motion()) screen.animate([{ opacity: 0, transform: `translateX(${dir * 28}px)` }, { opacity: 1, transform: 'none' }], { duration: 260, easing: 'cubic-bezier(.2,.8,.2,1)' })
+        schedule()
+        // Arriving at the table deals the hand (or just the cards that changed since last time).
+        if (next === 'cards') deal(true)
+      }
+      // Steps change the address with pushState rather than location.hash, so the browser
+      // doesn't jump to an element that happens to share the step's name (like #decks).
+      const goTo = (to: StepId) => {
+        if (location.hash !== `#${to}`) history.pushState(null, '', `#${to}`)
+        go(to)
+      }
+      addEventListener('popstate', () => go(location.hash.slice(1)))
+      document.querySelectorAll<HTMLAnchorElement>('.steps a').forEach((a) =>
+        a.addEventListener('click', (e) => {
+          e.preventDefault()
+          goTo(a.dataset.step as StepId)
+        })
+      )
+      $('#next').addEventListener('click', () => {
+        const at = STEPS.indexOf(step ?? 'workout')
+        if (at === STEPS.length - 1) startRun()
+        else goTo(STEPS[at + 1])
+      })
+      $('#back').addEventListener('click', () => goTo(STEPS[Math.max(0, STEPS.indexOf(step ?? 'workout') - 1)]))
+
       setHand('fit')
-      requestAnimationFrame(() => deal(true))
+      go(location.hash.slice(1))
     </script>
 
     <style is:global>
@@ -810,22 +903,6 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         margin: 0;
       }
 
-      /* ---- header, carved into the tabletop ---- */
-      .top {
-        padding-top: clamp(22px, 3.5vw, 40px);
-      }
-      .crumb {
-        margin: 0 0 8px;
-        font-size: 14px;
-      }
-      .crumb a {
-        color: var(--cream-mute);
-        text-decoration: none;
-      }
-      .crumb a:hover {
-        color: var(--cream);
-        text-decoration: underline;
-      }
       h1 {
         font:
           800 clamp(44px, 6vw, 68px) / 1 'Big Shoulders Display',
@@ -839,30 +916,6 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
       }
 
       /* ---- deck shelf ---- */
-      .pick {
-        margin-top: clamp(22px, 3vw, 34px);
-      }
-      .pick-grid {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) minmax(0, 360px);
-        gap: clamp(22px, 3vw, 44px);
-        align-items: start;
-      }
-      .pick-grid.one-deck {
-        grid-template-columns: minmax(0, 1fr);
-      }
-      @media (max-width: 860px) {
-        .pick-grid {
-          grid-template-columns: minmax(0, 1fr);
-        }
-      }
-      .pick h2 {
-        font:
-          800 30px/1.1 'Big Shoulders Display',
-          sans-serif;
-        color: var(--cream);
-        text-shadow: 0 2px 6px #0006;
-      }
       .shelf {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(132px, 168px));
@@ -1034,98 +1087,6 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         opacity: 0;
       }
 
-      /* ---- the mix: a slip of paper taped to the table ---- */
-      .slip {
-        position: relative;
-        margin-top: 14px;
-        padding: 26px 22px 20px;
-        background:
-          var(--noise-soft),
-          linear-gradient(180deg, #fffdf6, #f6efdf);
-        color: var(--paper-ink);
-        border-radius: 2px;
-        box-shadow:
-          0 10px 22px #0007,
-          0 1px 0 #0003;
-        transform: rotate(-0.8deg);
-      }
-      .slip::before {
-        content: '';
-        position: absolute;
-        top: -11px;
-        left: 50%;
-        width: 92px;
-        height: 24px;
-        transform: translateX(-50%) rotate(2deg);
-        background: #f3e7c2b8;
-        box-shadow: 0 1px 2px #0002;
-      }
-      .slip h2 {
-        font:
-          700 30px/1 Caveat,
-          cursive;
-        color: var(--pen);
-        text-shadow: none;
-      }
-      .mx {
-        margin-top: 14px;
-      }
-      .mx label {
-        display: flex;
-        justify-content: space-between;
-        gap: 12px;
-        margin: 0 0 4px;
-        font-size: 15px;
-        font-weight: 600;
-      }
-      .mx output {
-        color: var(--paper-mute);
-        font-weight: 500;
-        font-variant-numeric: tabular-nums;
-      }
-      .mx input {
-        -webkit-appearance: none;
-        appearance: none;
-        width: 100%;
-        height: 32px;
-        background: none;
-        cursor: pointer;
-      }
-      .mx input::-webkit-slider-runnable-track {
-        height: 8px;
-        border-radius: 4px;
-        background: linear-gradient(90deg, var(--box), color-mix(in srgb, var(--box) 70%, #fff));
-        box-shadow: inset 0 1px 2px #0006;
-      }
-      .mx input::-moz-range-track {
-        height: 8px;
-        border-radius: 4px;
-        background: linear-gradient(90deg, var(--box), color-mix(in srgb, var(--box) 70%, #fff));
-        box-shadow: inset 0 1px 2px #0006;
-      }
-      .mx input::-webkit-slider-thumb {
-        -webkit-appearance: none;
-        width: 24px;
-        height: 24px;
-        margin-top: -8px;
-        border-radius: 50%;
-        border: 0;
-        background: radial-gradient(circle at 35% 30%, #fff6d8, #d6ab4a 45%, #8a6418);
-        box-shadow: 0 2px 3px #0007;
-      }
-      .mx input::-moz-range-thumb {
-        width: 24px;
-        height: 24px;
-        border-radius: 50%;
-        border: 0;
-        background: radial-gradient(circle at 35% 30%, #fff6d8, #d6ab4a 45%, #8a6418);
-        box-shadow: 0 2px 3px #0007;
-      }
-      .mx input:focus-visible {
-        outline: 3px solid var(--pen);
-        outline-offset: 2px;
-        border-radius: 6px;
-      }
 
       /* ---- the card table ---- */
       .rail {
@@ -1454,20 +1415,6 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
       }
 
       /* ---- notepad and index card ---- */
-      .lower {
-        display: grid;
-        grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
-        grid-template-areas: 'pad card';
-        gap: clamp(24px, 4vw, 56px);
-        align-items: start;
-        margin-top: clamp(34px, 4vw, 52px);
-      }
-      @media (max-width: 900px) {
-        .lower {
-          grid-template-columns: minmax(0, 1fr);
-          grid-template-areas: 'card' 'pad';
-        }
-      }
       .pad {
         grid-area: pad;
         position: relative;
@@ -1503,8 +1450,7 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         width: 2px;
         background: #e8a3a3;
       }
-      .pad h2,
-      .icard h2 {
+      .pad h2 {
         font:
           700 40px/1 Caveat,
           cursive;
@@ -1546,52 +1492,6 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
       .times p {
         margin: 3px 0 0;
         color: var(--paper-mute);
-      }
-      .icard {
-        grid-area: card;
-        position: relative;
-        padding: 18px 22px 22px;
-        background:
-          var(--noise-soft),
-          linear-gradient(#0000 52px, #e58c8c 52px 54px, #0000 54px),
-          repeating-linear-gradient(#0000 0 29px, #c9d8ec 29px 30px) 0 54px / 100% calc(100% - 54px) no-repeat,
-          #fffefa;
-        color: var(--paper-ink);
-        border-radius: 4px;
-        box-shadow:
-          0 14px 28px #0008,
-          0 1px 0 #0003;
-      }
-      @media (min-width: 901px) {
-        .icard {
-          position: sticky;
-          top: 16px;
-          transform: rotate(0.7deg);
-        }
-      }
-      .icard h2 {
-        line-height: 34px;
-      }
-      label {
-        display: block;
-        font-size: 14px;
-        font-weight: 600;
-        margin: 16px 0 6px;
-      }
-      input[type='time'] {
-        width: 100%;
-        font: 16px Inter, sans-serif;
-        min-height: 46px;
-        padding: 8px 12px;
-        border: 1px solid #b9ad97;
-        border-radius: 8px;
-        background: #fff;
-        color: var(--paper-ink);
-        box-shadow: inset 0 2px 3px #0002;
-      }
-      input[type='time']:focus-visible {
-        outline: 3px solid var(--go);
-        outline-offset: 1px;
       }
       .seg {
         display: flex;
@@ -1799,6 +1699,300 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         * {
           transition: none !important;
         }
+      }
+
+      /* ---- mobile-first layout: four steps, one screen each ---- */
+      body {
+        padding-bottom: calc(96px + env(safe-area-inset-bottom));
+      }
+      .top {
+        position: sticky;
+        top: 0;
+        z-index: 12;
+        padding: calc(8px + env(safe-area-inset-top)) 16px 10px;
+        background:
+          var(--noise),
+          linear-gradient(180deg, #3f2617, #33200f);
+        box-shadow:
+          0 6px 14px #0006,
+          inset 0 -1px 0 #ffffff14;
+      }
+      .topbar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        max-width: 560px;
+        margin: 0 auto;
+      }
+      .home {
+        display: grid;
+        place-items: center;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: #0000002e;
+        color: var(--cream);
+        text-decoration: none;
+        font-size: 18px;
+      }
+      .home:focus-visible,
+      .steps a:focus-visible {
+        outline: 3px solid var(--cream);
+        outline-offset: 2px;
+      }
+      .brand {
+        font:
+          800 22px/1 'Big Shoulders Display',
+          sans-serif;
+        color: var(--cream);
+      }
+      .steps ol {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 6px;
+        max-width: 560px;
+        margin: 8px auto 0;
+        padding: 0;
+        list-style: none;
+      }
+      .steps a {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        min-height: 36px;
+        padding: 0 6px;
+        border-radius: 999px;
+        background: #00000030;
+        color: var(--cream-mute);
+        text-decoration: none;
+        font: 600 13px/1 Inter, sans-serif;
+        white-space: nowrap;
+      }
+      .steps .n {
+        display: grid;
+        place-items: center;
+        flex: none;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #ffffff24;
+        color: var(--cream);
+        font: 800 12px/1 Inter, sans-serif;
+      }
+      .steps a.done {
+        color: var(--cream);
+      }
+      .steps a[aria-current] {
+        background: var(--cream);
+        color: #3a2216;
+        box-shadow: 0 2px 0 #0004;
+      }
+      .steps a[aria-current] .n {
+        background: #3a2216;
+        color: var(--cream);
+      }
+      /* On a phone, only the current step spells out its name; the others are just numbers. */
+      @media (max-width: 480px) {
+        .steps ol {
+          display: flex;
+        }
+        .steps li {
+          flex: none;
+        }
+        .steps li:has([aria-current]) {
+          flex: 1;
+        }
+        .steps a:not([aria-current]) {
+          width: 40px;
+          padding: 0;
+        }
+        .steps a:not([aria-current]) .lbl {
+          display: none;
+        }
+      }
+      main {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 18px 16px 0;
+      }
+      .screen.narrow {
+        max-width: 560px;
+        margin: 0 auto;
+      }
+      .screen h1 {
+        margin: 4px 0 18px;
+        font:
+          800 clamp(34px, 9vw, 48px) / 1.02 'Big Shoulders Display',
+          Impact,
+          sans-serif;
+      }
+      .sub-h {
+        margin: 28px 0 12px;
+        font:
+          800 24px/1.1 'Big Shoulders Display',
+          sans-serif;
+        color: var(--cream);
+        text-shadow: 0 2px 6px #0006;
+      }
+
+      /* step 1: workout types as index cards you pick */
+      .types {
+        display: grid;
+        gap: 12px;
+      }
+      .types button {
+        position: relative;
+        display: grid;
+        gap: 4px;
+        min-height: 78px;
+        padding: 14px 18px 14px 56px;
+        border: 0;
+        border-radius: 6px;
+        text-align: left;
+        cursor: pointer;
+        color: var(--paper-ink);
+        font: inherit;
+        background:
+          var(--noise-soft),
+          #fffefa;
+        box-shadow:
+          0 8px 16px #0007,
+          0 1px 0 #0003;
+        transition: transform 0.15s ease;
+      }
+      .types button::before {
+        content: '';
+        position: absolute;
+        left: 18px;
+        top: 50%;
+        width: 22px;
+        height: 22px;
+        transform: translateY(-50%);
+        border-radius: 50%;
+        border: 2px solid #b9ad97;
+        background: #fff;
+        box-shadow: inset 0 1px 2px #0003;
+      }
+      .types button[aria-checked='true'] {
+        transform: translateY(-2px) rotate(-0.5deg);
+        box-shadow:
+          0 0 0 3px var(--go),
+          0 12px 20px #0007;
+      }
+      .types button[aria-checked='true']::before {
+        border-color: var(--go);
+        background: radial-gradient(circle, var(--go) 0 42%, #fff 47%);
+      }
+      .types button:focus-visible {
+        outline: 3px solid var(--cream);
+        outline-offset: 4px;
+      }
+      .types b {
+        font:
+          800 27px/1 'Big Shoulders Display',
+          sans-serif;
+      }
+      .types span {
+        font:
+          700 21px/1.1 Caveat,
+          cursive;
+        color: var(--pen);
+      }
+      #len {
+        gap: 10px;
+      }
+      #len button {
+        min-height: 52px;
+        font-size: 16px;
+      }
+
+
+      /* step 3: the table */
+      .hint {
+        margin: -8px 0 16px;
+        color: var(--cream-mute);
+        font-size: 14px;
+      }
+      .screen .rail {
+        margin-top: 0;
+      }
+      @media (max-width: 560px) {
+        .rail {
+          margin-inline: -8px;
+        }
+        .felt {
+          padding: 14px;
+        }
+        .hand {
+          gap: 12px 10px;
+        }
+      }
+
+
+      /* the bottom bar: Back and Next, where the thumb is */
+      .navbar {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 12;
+        padding: 10px 16px calc(12px + env(safe-area-inset-bottom));
+        background:
+          var(--noise),
+          linear-gradient(180deg, #4a2b1c, var(--leather));
+        box-shadow:
+          0 -6px 16px #0006,
+          inset 0 2px 0 #ffffff1a;
+      }
+      .navin {
+        display: flex;
+        gap: 12px;
+        max-width: 560px;
+        margin: 0 auto;
+      }
+      .navin .btn {
+        min-width: 96px;
+        min-height: 54px;
+      }
+      .navin .go {
+        flex: 1;
+        width: auto;
+        margin: 0;
+        min-height: 54px;
+      }
+
+      /* ---- a card picked up off the table to read (touch screens) ---- */
+      .inspect {
+        position: fixed;
+        inset: 0;
+        z-index: 30;
+        display: grid;
+        place-items: center;
+        padding: 16px;
+        background: #0009;
+        backdrop-filter: blur(2px);
+      }
+      .inspect[hidden] {
+        display: none;
+      }
+      .ibox {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 18px;
+      }
+      .iwrap {
+        width: min(86vw, 380px, calc((100dvh - 150px) * 5 / 7));
+        container-type: inline-size;
+      }
+      .ibtns {
+        display: flex;
+        gap: 12px;
+        width: 100%;
+      }
+      .ibtns .btn {
+        flex: 1;
       }
     </style>
   </body>

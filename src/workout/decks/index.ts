@@ -10,5 +10,6 @@
 import type { Deck } from '../types'
 import { bodyweight } from './bodyweight'
 import { cardio } from './cardio'
+import { mobility } from './mobility'
 
-export const DECKS: Deck[] = [bodyweight, cardio]
+export const DECKS: Deck[] = [bodyweight, cardio, mobility]

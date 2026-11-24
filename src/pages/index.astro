@@ -3,6 +3,7 @@ import { Image } from 'astro:assets'
 import recipesPreview from '../content/recipes/parmesan-egg-in-the-hole.png'
 import spellsPreview from '../assets/spells-card.png'
 import hydroserverPreview from '../assets/hydroserver-preview.png'
+import strengthPreview from '../assets/strength-deck-preview.png'
 ---
 
 <!doctype html>
@@ -501,7 +502,7 @@ import hydroserverPreview from '../assets/hydroserver-preview.png'
     >
       <div class="section-head">
         <h2 class="section-title"><span class="prompt">$ ls</span>projects/</h2>
-        <span class="section-meta">4 directories</span>
+        <span class="section-meta">5 directories</span>
       </div>
 
       <div class="cards">
@@ -620,6 +621,36 @@ import hydroserverPreview from '../assets/hydroserver-preview.png'
             </div>
           </div>
         </div>
+
+        <a
+          class="card"
+          href="/strength"
+        >
+          <div class="card-window">
+            <div class="lights"><span></span><span></span><span></span></div>
+            <span class="path">~/strength</span>
+          </div>
+          <div class="card-preview-wrap">
+            <div class="card-preview strength-preview">
+              <Image
+                src={strengthPreview}
+                alt="Five workout cards dealt on red felt, one per movement suit"
+                widths={[320, 640]}
+                sizes="(min-width: 760px) 320px, 100vw"
+              />
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="card-head">
+              <h3 class="card-title">Strength deck</h3>
+              <span class="card-arrow">→</span>
+            </div>
+            <p class="card-desc">Deal a five-card at-home strength workout, one card per movement, with a timed schedule to run it.</p>
+            <div class="card-foot">
+              <span class="status">live</span>
+            </div>
+          </div>
+        </a>
       </div>
     </section>
 
@@ -1107,6 +1138,10 @@ import hydroserverPreview from '../assets/hydroserver-preview.png'
       }
       .card-preview.hydro-preview img {
         object-position: center top;
+        filter: saturate(0.9) brightness(0.9);
+      }
+      .card-preview.strength-preview img {
+        object-position: left top;
         filter: saturate(0.9) brightness(0.9);
       }
 

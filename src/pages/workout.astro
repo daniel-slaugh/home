@@ -1295,14 +1295,13 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
             }).join('')
         const stats: [string, string][] = [
           [mmss(Math.max(0, (Date.now() - r.t0) / 1000)), 'Total time'],
-          [String(r.h.length), r.h.length === 1 ? 'Exercise' : 'Exercises'],
-          [String(r.steps.length), 'Steps'],
+          [String(n), 'Cards played'],
         ]
         return `<div class="cheer" style="--hand-time:${(0.4 + n * 0.09).toFixed(2)}s">
           <div class="cheer-confetti" aria-hidden="true">${confetti}</div>
           <div class="cheer-hand" aria-hidden="true" style="--n:${n}">${fan}</div>
           <p class="cheer-kicker">Workout complete</p>
-          <p class="cheer-title">Every card played.</p>
+          <p class="cheer-title">Deck cleared.</p>
           <dl class="cheer-stats">${stats.map(([v, k]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join('')}</dl>
         </div>`
       }
@@ -2250,7 +2249,7 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
       }
       .cheer-stats {
         display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         width: 100%;
         margin: 22px 0 0;
         border-block: 1px solid #f4e8cf33;

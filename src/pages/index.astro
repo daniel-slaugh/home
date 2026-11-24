@@ -3,7 +3,7 @@ import { Image } from 'astro:assets'
 import recipesPreview from '../content/recipes/parmesan-egg-in-the-hole.png'
 import spellsPreview from '../assets/spells-card.png'
 import hydroserverPreview from '../assets/hydroserver-preview.png'
-import strengthPreview from '../assets/strength-deck-preview.png'
+import workoutPreview from '../assets/workout-decks-preview.png'
 ---
 
 <!doctype html>
@@ -624,17 +624,17 @@ import strengthPreview from '../assets/strength-deck-preview.png'
 
         <a
           class="card"
-          href="/strength"
+          href="/workout"
         >
           <div class="card-window">
             <div class="lights"><span></span><span></span><span></span></div>
-            <span class="path">~/strength</span>
+            <span class="path">~/workout</span>
           </div>
           <div class="card-preview-wrap">
-            <div class="card-preview strength-preview">
+            <div class="card-preview workout-preview">
               <Image
-                src={strengthPreview}
-                alt="Five workout cards dealt on red felt, one per movement suit"
+                src={workoutPreview}
+                alt="Five exercise cards dealt on card-table felt, one per movement"
                 widths={[320, 640]}
                 sizes="(min-width: 760px) 320px, 100vw"
               />
@@ -642,10 +642,10 @@ import strengthPreview from '../assets/strength-deck-preview.png'
           </div>
           <div class="card-body">
             <div class="card-head">
-              <h3 class="card-title">Strength deck</h3>
+              <h3 class="card-title">Workout decks</h3>
               <span class="card-arrow">→</span>
             </div>
-            <p class="card-desc">Deal a five-card at-home strength workout, one card per movement, with a timed schedule to run it.</p>
+            <p class="card-desc">Mix exercise decks, deal a five-card workout, and run it on a timer.</p>
             <div class="card-foot">
               <span class="status">live</span>
             </div>
@@ -1140,7 +1140,7 @@ import strengthPreview from '../assets/strength-deck-preview.png'
         object-position: center top;
         filter: saturate(0.9) brightness(0.9);
       }
-      .card-preview.strength-preview img {
+      .card-preview.workout-preview img {
         object-position: left top;
         filter: saturate(0.9) brightness(0.9);
       }

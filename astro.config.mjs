@@ -9,6 +9,9 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineConfig({
   site: 'https://danielslaugh.com',
   integrations: [mdx(), sitemap()],
+  redirects: {
+    '/strength': '/workout',
+  },
   image: {
     service: {
       entrypoint: 'astro/assets/services/compile',

@@ -1,0 +1,1555 @@
+---
+import { DECKS } from '../workout/decks'
+
+// Fonts that decks ask for in their art.
+const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Boolean))] as string[]
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1"
+    />
+    <title>Workout Decks</title>
+    <meta
+      name="description"
+      content="Pick one or more exercise decks, deal a five-card workout, and run it on a timer."
+    />
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      sizes="any"
+      href="/favicon.svg?v=2"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="/favicon-32.png?v=2"
+    />
+    <link
+      rel="preconnect"
+      href="https://fonts.googleapis.com"
+    />
+    <link
+      rel="preconnect"
+      href="https://fonts.gstatic.com"
+      crossorigin
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=Caveat:wght@600;700&family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    {
+      deckFonts.map((href) => (
+        <link
+          href={href}
+          rel="stylesheet"
+        />
+      ))
+    }
+  </head>
+  <body>
+    <header class="wrap top">
+      <p class="crumb"><a href="/">← Byte Garden</a></p>
+      <h1>Workout decks</h1>
+      <p class="lede">Open a deck or two, deal five cards (one per movement), and work through them together.</p>
+    </header>
+
+    <section
+      class="wrap pick"
+      aria-labelledby="h-decks"
+    >
+      <div class="pick-grid">
+        <div>
+          <h2 id="h-decks">Choose your decks</h2>
+          <p class="help">Tap a deck to open it. Every open deck goes into the shuffle.</p>
+          <div
+            class="shelf"
+            id="decks"
+          >
+          </div>
+        </div>
+        <aside
+          class="slip"
+          aria-labelledby="h-mix"
+        >
+          <h2 id="h-mix">The mix</h2>
+          <div id="mix"></div>
+        </aside>
+      </div>
+    </section>
+
+    <section
+      class="wrap"
+      aria-labelledby="h-hand"
+    >
+      <div class="rail">
+        <div class="felt">
+          <div class="head">
+            <h2 id="h-hand">Your hand</h2>
+            <p class="hint">Tap the deck to reshuffle, or tap one card to redraw just that card.</p>
+          </div>
+          <div class="hand">
+            <div class="slot">
+              <button
+                class="pile"
+                id="deck"
+                aria-label="Shuffle and deal a new hand"
+              ></button>
+            </div>
+            <div class="slot"><div class="card pending" role="button" tabindex="0"></div></div>
+            <div class="slot"><div class="card pending" role="button" tabindex="0"></div></div>
+            <div class="slot"><div class="card pending" role="button" tabindex="0"></div></div>
+            <div class="slot"><div class="card pending" role="button" tabindex="0"></div></div>
+            <div class="slot"><div class="card pending" role="button" tabindex="0"></div></div>
+          </div>
+          <div class="bar"><button class="deal" id="deal">Shuffle and deal</button></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="wrap lower">
+      <div class="pad">
+        <h2>Today's schedule</h2>
+        <p class="sub" id="schedSub"></p>
+        <ol class="times" id="times"></ol>
+      </div>
+      <aside class="icard">
+        <h2>Start</h2>
+        <label for="start">Start time</label>
+        <input type="time" id="start" />
+        <label id="lenLab">Workout length</label>
+        <div class="seg" role="group" aria-labelledby="lenLab"><button data-v="20">20 min</button><button data-v="30">30 min</button><button data-v="45">45 min</button></div>
+        <button class="go" id="go">Start the workout</button>
+        <p class="small">Each card gets a block of time: do a set of its reps, rest about 45 seconds, and repeat until the block ends.</p>
+      </aside>
+    </section>
+
+    <div class="run" id="run" role="dialog" aria-modal="true" aria-labelledby="rb">
+      <div class="rtop"><div class="rwrap"><div><h2 id="rb">Warm-up</h2><p id="rs"></p></div><div class="clock" id="rclock">0:00<small id="rleft"></small></div></div></div>
+      <div class="rbody">
+        <div id="rmain"></div>
+        <div class="rbtns"><button class="btn main" id="rnext">Next</button><button class="btn" id="rback">Back</button><button class="btn" id="rend">End</button></div>
+      </div>
+    </div>
+
+    <script>
+      import { DECKS } from '../workout/decks'
+      import { SUITS, type Deck, type Suit } from '../workout/types'
+      import { dealHand, exactShares, redrawFrom, shareLabel, type Dealt } from '../workout/deal'
+
+      const $ = <T extends HTMLElement = HTMLElement>(s: string) => document.querySelector(s) as T
+      const esc = (s: string) => s.replace(/[&<>"]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[ch] as string)
+
+      const SUIT: Record<Suit, [string, string, string]> = { legs: ['♠', 'Legs', ''], push: ['♥', 'Push', 'red'], pull: ['♦', 'Pull', 'red'], hinge: ['♣', 'Hinge', ''], core: ['★', 'Core', 'joker'] }
+      const LEN: Record<number, { warm: number; card: number; core: number; cool: number }> = { 20: { warm: 3, card: 3, core: 4, cool: 1 }, 30: { warm: 5, card: 5, core: 4, cool: 1 }, 45: { warm: 5, card: 8, core: 6, cool: 2 } }
+      const KEY = 'workoutdecks.v1'
+
+      /** A deck's art as CSS custom properties, for its box, card backs and card faces. */
+      const art = (d: Deck) => {
+        const a = d.art
+        return esc(`--back:${a.back.background};--back-border:${a.back.border};--box:${a.box.color};--box-ink:${a.box.ink};--box-label:${a.box.label};--letter:${a.lettering.font};--letter-scale:${a.lettering.scale ?? 1};--red:${a.ink.red};--black:${a.ink.black};--star:${a.ink.star}`)
+      }
+
+      interface State {
+        start: string
+        len: number
+        decks: Record<string, number>
+        hand: [string, string][] | null
+      }
+      let st: State = { start: '06:30', len: 30, decks: { [DECKS[0].id]: 100 }, hand: null }
+      try {
+        const s = JSON.parse(localStorage.getItem(KEY) || 'null')
+        if (s) st = { start: s.start || st.start, len: s.len || st.len, decks: s.decks || st.decks, hand: s.hand || null }
+      } catch (e) {}
+      const deckById = (id: string) => DECKS.find((d) => d.id === id)
+      for (const id of Object.keys(st.decks)) if (!deckById(id)) delete st.decks[id]
+      if (!Object.keys(st.decks).length) st.decks = { [DECKS[0].id]: 100 }
+      if (!LEN[st.len]) st.len = 30
+      const save = () => {
+        try {
+          localStorage.setItem(KEY, JSON.stringify(st))
+        } catch (e) {}
+      }
+      const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches
+
+      const picked = () => DECKS.filter((d) => d.id in st.decks)
+      const mix = () => picked().map((deck) => ({ deck, weight: st.decks[deck.id] }))
+      const multi = () => picked().length > 1
+
+      function newHand() {
+        st.hand = dealHand(mix()).map((x) => [x.deck.id, x.card.id])
+        save()
+      }
+      function hand(): Dealt[] {
+        const out = (st.hand || []).map(([d, c], i) => {
+          const deck = deckById(d)
+          const card = deck?.cards.find((x) => x.id === c)
+          return deck && card && card.suit === SUITS[i] ? { deck, card } : null
+        })
+        if (out.length !== SUITS.length || out.some((x) => !x)) {
+          newHand()
+          return hand()
+        }
+        return out as Dealt[]
+      }
+
+      // ---- deck shelf and mix ----
+      function renderDecks() {
+        $('#decks').innerHTML =
+          DECKS.map((d) => {
+            const on = d.id in st.decks
+            return `<button class="tuck" data-id="${d.id}" aria-pressed="${on}" style="${art(d)}" title="${esc(d.blurb)}">
+              <span class="box" aria-hidden="true">
+                <span class="lid"></span>
+                <span class="peek"><i></i><i></i></span>
+                <span class="side"></span>
+                <span class="bface"><span class="art"></span><span class="plate"><b>${esc(d.name)}</b><small>${d.cards.length} cards</small></span><span class="suits">♠ ♥ ♦ ♣ ★</span></span>
+                <span class="seal"></span>
+              </span>
+              <span class="cap">${on ? '✓ In the shuffle' : 'Tap to open'}</span>
+              <span class="gear">${esc(d.gear)}</span>
+            </button>`
+          }).join('') + '<div class="spot" aria-hidden="true"><span>More decks<br>on the way</span></div>'
+        fitNames()
+      }
+      /** Shrink each deck name until it fits on its box label, whatever the deck's lettering. */
+      function fitNames() {
+        document.querySelectorAll<HTMLElement>('.plate b').forEach((b) => {
+          b.style.fontSize = ''
+          const room = (b.parentElement as HTMLElement).clientWidth * 0.9
+          if (b.scrollWidth > room) b.style.fontSize = `${parseFloat(getComputedStyle(b).fontSize) * (room / b.scrollWidth)}px`
+        })
+      }
+      document.fonts?.ready.then(fitNames)
+      new ResizeObserver(fitNames).observe($('#decks'))
+      /** Keep the picked decks' weights adding up to 100. `keep` holds its value; the rest share what's left in proportion. */
+      function balance(keep?: string) {
+        const ids = picked().map((d) => d.id)
+        const fixed = keep && ids.includes(keep) ? Math.min(100, Math.max(0, st.decks[keep])) : 0
+        const others = ids.filter((id) => id !== keep)
+        const sum = others.reduce((s, id) => s + Math.max(0, st.decks[id] || 0), 0)
+        const room = 100 - fixed
+        let given = 0
+        others.forEach((id, i) => {
+          const share = i === others.length - 1 ? room - given : Math.round(sum ? (Math.max(0, st.decks[id] || 0) / sum) * room : room / others.length)
+          st.decks[id] = share
+          given += share
+        })
+        if (keep && ids.includes(keep)) st.decks[keep] = fixed
+      }
+      function mixLabel(m: { weight: number }[], i: number) {
+        const total = m.reduce((s, x) => s + x.weight, 0)
+        const pct = total ? Math.round((m[i].weight / total) * 100) : i === 0 ? 100 : 0
+        const n = shareLabel(
+          exactShares(
+            m.map((x) => x.weight),
+            SUITS.length
+          )[i]
+        )
+        return `${pct}% · ${n} card${n === '1' ? '' : 's'}`
+      }
+      function renderMix() {
+        const m = mix()
+        if (m.length < 2) {
+          $('#mix').innerHTML = `<p class="solo-mix">Every card comes from <b>${esc(m[0].deck.name)}</b>. Open a second deck to mix them.</p>`
+          return
+        }
+        $('#mix').innerHTML = m
+          .map(
+            (x, i) =>
+              `<div class="mx" style="${art(x.deck)}"><label for="mx-${x.deck.id}"><span>${esc(x.deck.name)}</span><output>${mixLabel(m, i)}</output></label><input type="range" id="mx-${x.deck.id}" data-id="${x.deck.id}" min="0" max="100" step="1" value="${x.weight}"></div>`
+          )
+          .join('')
+      }
+      function renderPile() {
+        const p = picked()
+        const layers = [0, 1, 2].map((i) => p[i % p.length])
+        const n = p.reduce((s, d) => s + d.cards.length, 0)
+        $('#deck').innerHTML =
+          layers
+            .reverse()
+            .map((d, i) => `<span class="b l${2 - i}" style="${art(d)}"></span>`)
+            .join('') + `<span class="lab">Shuffle<small>${n} cards${multi() ? ` · ${p.length} decks` : ''}</small></span>`
+      }
+      $('#decks').addEventListener('click', (e) => {
+        const b = (e.target as HTMLElement).closest<HTMLButtonElement>('.tuck')
+        if (!b) return
+        const id = b.dataset.id as string
+        if (id in st.decks) {
+          if (picked().length === 1) {
+            b.animate?.([{ transform: 'translateX(0)' }, { transform: 'translateX(-5px)' }, { transform: 'translateX(5px)' }, { transform: 'translateX(0)' }], { duration: 260 })
+            return
+          }
+          delete st.decks[id]
+          balance()
+        } else {
+          st.decks[id] = Math.round(100 / (picked().length + 1))
+          balance(id)
+        }
+        renderDecks()
+        renderMix()
+        newHand()
+        deal(true)
+      })
+      $('#mix').addEventListener('input', (e) => {
+        const r = e.target as HTMLInputElement
+        if (!r.dataset.id) return
+        st.decks[r.dataset.id] = Number(r.value)
+        balance(r.dataset.id)
+        const m = mix()
+        document.querySelectorAll<HTMLInputElement>('#mix input').forEach((x, i) => {
+          if (x !== r) x.value = String(m[i].weight)
+        })
+        document.querySelectorAll<HTMLOutputElement>('#mix output').forEach((o, i) => (o.textContent = mixLabel(m, i)))
+      })
+      $('#mix').addEventListener('change', (e) => {
+        if (!(e.target as HTMLInputElement).dataset.id) return
+        newHand()
+        deal(true)
+      })
+
+      // ---- the hand ----
+      function face(x: Dealt, label: number | string, extra = '') {
+        const [sym, name, cls] = SUIT[x.card.suit]
+        const c = x.card
+        const kind = multi() ? `${name} · ${esc(x.deck.name)}` : name
+        return `<div class="face front ${cls} ${extra}" style="${art(x.deck)}"><div class="idx"><span>${label}</span><span class="s">${sym}</span></div><p class="kind">${kind}</p><h3>${esc(c.name)}</h3><p class="reps">${esc(c.reps)}</p><p class="cue">${esc(c.cue)}</p><p class="alt"><b>Easier</b> ${esc(c.easier)}<br><b>Harder</b> ${esc(c.harder)}</p></div>`
+      }
+      const cards = [...document.querySelectorAll<HTMLElement>('.card')]
+      function fill(i: number, x: Dealt) {
+        cards[i].innerHTML = face(x, i + 1) + `<div class="face back" style="${art(x.deck)}"></div>`
+        cards[i].setAttribute('aria-label', `Card ${i + 1}, ${x.card.name}, ${x.card.reps}. Tap to redraw.`)
+      }
+
+      // ---- schedule ----
+      const toMin = (t: string) => {
+        const [h, m] = (t || '06:30').split(':').map(Number)
+        return h * 60 + m
+      }
+      const fmt = (m: number) => {
+        m = (m + 1440) % 1440
+        const h = Math.floor(m / 60) % 12 || 12
+        return `${h}:${String(m % 60).padStart(2, '0')}`
+      }
+      type Block = { type: 'warm' | 'cool'; name: string; dur: number } | { type: 'card'; x: Dealt; i: number; name: string; dur: number }
+      function blocks(): Block[] {
+        const L = LEN[st.len]
+        const out: Block[] = [{ type: 'warm', name: 'Warm-up', dur: L.warm }]
+        hand().forEach((x, i) => out.push({ type: 'card', x, i, name: x.card.name, dur: x.card.suit === 'core' ? L.core : L.card }))
+        out.push({ type: 'cool', name: 'Cool-down', dur: L.cool })
+        return out
+      }
+      function plan() {
+        let t = toMin(st.start)
+        const rows = blocks().map((b) => {
+          const at = t
+          t += b.dur
+          if (b.type === 'warm') return [at, 'Warm-up', `${b.dur} min: marching or jumping jacks, 10 squats, 5 push-ups, 10 glute bridges, 20 arm circles.`]
+          if (b.type === 'cool') return [at, 'Cool-down', `${b.dur} min: hamstring stretch, hip flexor stretch, child's pose.`]
+          const [sym, , cls] = SUIT[b.x.card.suit]
+          return [at, `<span class="s ${cls}">${sym}</span>${esc(b.x.card.name)}`, `${b.dur} min · ${esc(b.x.card.reps)} per set, rest about 45 sec between sets.`]
+        }) as [number, string, string][]
+        rows.push([t, 'Done', 'Log what you did.'])
+        $('#times').innerHTML = rows.map(([at, h, p]) => `<li><span class="t">${fmt(at)}</span><div><h3>${h}</h3><p>${p}</p></div></li>`).join('')
+        $('#schedSub').textContent = `${st.len} minutes, side by side, in the order the cards were dealt.`
+        document.querySelectorAll<HTMLButtonElement>('.seg button').forEach((b) => b.setAttribute('aria-pressed', String(Number(b.dataset.v) === st.len)))
+        renderPile()
+      }
+
+      function deal(animate: boolean) {
+        hand().forEach((x, i) => fill(i, x))
+        plan()
+        cards.forEach((el) => el.classList.remove('pending'))
+        if (!animate || reduce || !cards[0].animate) return
+        const deck = $('#deck'),
+          dr = deck.getBoundingClientRect()
+        deck.animate([{ transform: 'rotate(0)' }, { transform: 'rotate(-4deg) translateY(-4px)' }, { transform: 'rotate(3deg)' }, { transform: 'rotate(0)' }], { duration: 380, easing: 'ease-in-out' })
+        cards.forEach((el, i) => {
+          const r = el.getBoundingClientRect()
+          const dx = dr.left + dr.width / 2 - (r.left + r.width / 2),
+            dy = dr.top + dr.height / 2 - (r.top + r.height / 2),
+            sc = dr.width / r.width
+          el.animate([{ transform: `translate(${dx}px,${dy}px) scale(${sc}) rotateY(180deg) rotate(-6deg)` }, { transform: `translate(${dx * 0.35}px,${dy * 0.35 - 36}px) rotateY(150deg) rotate(4deg)`, offset: 0.5 }, { transform: 'none' }], { duration: 720, delay: 380 + i * 170, easing: 'cubic-bezier(.2,.75,.25,1)', fill: 'backwards' })
+        })
+      }
+      function redraw(i: number) {
+        const cur = hand()[i]
+        const card = redrawFrom(cur.deck, cur.card)
+        const x = { deck: cur.deck, card }
+        ;(st.hand as [string, string][])[i] = [cur.deck.id, card.id]
+        save()
+        const el = cards[i]
+        if (reduce || !el.animate) {
+          fill(i, x)
+          plan()
+          return
+        }
+        el.animate([{ transform: 'none' }, { transform: 'rotateY(90deg)' }], { duration: 170, easing: 'ease-in' }).finished.then(() => {
+          fill(i, x)
+          plan()
+          el.animate([{ transform: 'rotateY(-90deg)' }, { transform: 'none' }], { duration: 240, easing: 'ease-out' })
+        })
+      }
+      cards.forEach((el, i) => {
+        el.addEventListener('click', () => redraw(i))
+        el.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            redraw(i)
+          }
+        })
+      })
+      const reshuffle = () => {
+        newHand()
+        deal(true)
+      }
+      $('#deck').addEventListener('click', reshuffle)
+      $('#deal').addEventListener('click', reshuffle)
+      document.querySelectorAll<HTMLButtonElement>('.seg button').forEach((b) =>
+        b.addEventListener('click', () => {
+          st.len = Number(b.dataset.v)
+          save()
+          plan()
+        })
+      )
+      const startIn = $<HTMLInputElement>('#start')
+      startIn.value = st.start
+      startIn.addEventListener('input', () => {
+        if (startIn.value) {
+          st.start = startIn.value
+          save()
+          plan()
+        }
+      })
+
+      // ---- run mode ----
+      let run: { steps: Block[]; i: number; t0: number; bs: number; end?: boolean } | null = null
+      let tick: number | undefined
+      let lock: WakeLockSentinel | null = null
+      const mmss = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`
+      const rclock = () => $('#rclock').firstChild as Text
+      function show() {
+        if (!run) return
+        const b = run.steps[run.i],
+          nx = run.steps[run.i + 1]
+        run.bs = Date.now()
+        $('#rb').textContent = b.name
+        let html = '',
+          sub = `Block ${run.i + 1} of ${run.steps.length} · ${b.dur} min`
+        if (b.type === 'warm') html = '<ol class="list"><li>2 minutes marching or jumping jacks</li><li>10 bodyweight squats</li><li>5 push-ups, any height</li><li>10 glute bridges</li><li>20 arm circles each way</li></ol>'
+        if (b.type === 'card') {
+          html = `<div class="solo">${face(b.x, b.i + 1, 'mini')}</div>`
+          sub += ' · set, rest 45 sec, repeat'
+        }
+        if (b.type === 'cool') html = "<ol class=\"list\"><li>Hamstring stretch, 30 sec each side</li><li>Hip flexor lunge stretch, 30 sec each side</li><li>Child's pose, 30 sec</li></ol>"
+        $('#rs').textContent = sub
+        $('#rmain').innerHTML = html
+        $('#rnext').textContent = nx ? 'Next: ' + nx.name : 'Finish'
+        $<HTMLButtonElement>('#rback').disabled = run.i === 0
+        clock()
+      }
+      function clock() {
+        if (!run || run.end) return
+        const b = run.steps[run.i],
+          t = Date.now(),
+          left = b.dur * 60 - (t - run.bs) / 1000
+        rclock().textContent = mmss((t - run.t0) / 1000)
+        $('#rleft').textContent = left >= 0 ? `${mmss(left)} left in this block` : `${mmss(-left)} over`
+      }
+      function finish() {
+        if (!run) return
+        run.end = true
+        clearInterval(tick)
+        $('#rb').textContent = 'Done.'
+        $('#rs').textContent = 'Nice work, both of you.'
+        rclock().textContent = mmss((Date.now() - run.t0) / 1000)
+        $('#rleft').textContent = 'total time'
+        $('#rmain').innerHTML = '<ol class="list">' + hand().map((x) => `<li>${esc(x.card.name)}</li>`).join('') + '</ol>'
+        $('#rnext').style.display = 'none'
+        $<HTMLButtonElement>('#rback').disabled = true
+        $('#rend').textContent = 'Close'
+      }
+      $('#go').addEventListener('click', async () => {
+        run = { steps: blocks(), i: 0, t0: Date.now(), bs: Date.now() }
+        $('#rnext').style.display = ''
+        $('#rend').textContent = 'End'
+        $('#run').classList.add('on')
+        document.body.style.overflow = 'hidden'
+        show()
+        tick = window.setInterval(clock, 250)
+        $('#rnext').focus()
+        try {
+          lock = await navigator.wakeLock.request('screen')
+        } catch (e) {
+          lock = null
+        }
+      })
+      $('#rnext').addEventListener('click', () => {
+        if (!run || run.end) return
+        if (run.i === run.steps.length - 1) finish()
+        else {
+          run.i++
+          show()
+        }
+      })
+      $('#rback').addEventListener('click', () => {
+        if (run && !run.end && run.i > 0) {
+          run.i--
+          show()
+        }
+      })
+      $('#rend').addEventListener('click', () => {
+        clearInterval(tick)
+        run = null
+        $('#run').classList.remove('on')
+        document.body.style.overflow = ''
+        if (lock) {
+          lock.release().catch(() => {})
+          lock = null
+        }
+      })
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && run) $('#rend').click()
+      })
+
+      balance()
+      renderDecks()
+      renderMix()
+      requestAnimationFrame(() => deal(true))
+    </script>
+
+    <style is:global>
+      /*
+        A card table in a garage: a wood tabletop, a felt table with a leather rail,
+        decks in tuck boxes, a notepad for the schedule and an index card for the controls.
+        Physical things look the same in light and dark mode, so the page has one look.
+        Deck-specific colours (--back, --box, --letter, ...) come from each deck's art.
+      */
+      :root {
+        color-scheme: light;
+        --noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .22 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+        --noise-soft: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .35  0 0 0 0 .3  0 0 0 0 .2  0 0 0 .07 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+        --cream: #f4e8cf;
+        --cream-mute: #dcc8a4;
+        --felt: #a8131d;
+        --felt-deep: #6e0a12;
+        --leather: #3a2216;
+        --paper: #fffdf6;
+        --paper-ink: #2a2320;
+        --paper-mute: #6a5e55;
+        --pen: #22307a;
+        --rule: #bfd0e8;
+        --go: #1f3fb4;
+        --go-edge: #13286f;
+        --cbg: #fffdfa;
+      }
+      * {
+        box-sizing: border-box;
+        min-width: 0;
+      }
+      html,
+      body {
+        margin: 0;
+      }
+      body {
+        color: var(--cream);
+        font:
+          16px/1.55 Inter,
+          system-ui,
+          sans-serif;
+        overflow-x: clip;
+        background:
+          var(--noise),
+          repeating-linear-gradient(179deg, #0000 0 38px, #00000014 38px 41px, #0000 41px 97px),
+          repeating-linear-gradient(180deg, #00000010 0 1px, #0000 1px 6px, #ffffff08 6px 7px, #0000 7px 17px),
+          linear-gradient(180deg, #6e4629, #573620 45%, #47291a);
+        background-color: #573620;
+        padding-bottom: 48px;
+      }
+      .wrap {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding-inline: max(4vw, 16px);
+      }
+      h1,
+      h2 {
+        margin: 0;
+      }
+
+      /* ---- header, carved into the tabletop ---- */
+      .top {
+        padding-top: clamp(22px, 3.5vw, 40px);
+      }
+      .crumb {
+        margin: 0 0 8px;
+        font-size: 14px;
+      }
+      .crumb a {
+        color: var(--cream-mute);
+        text-decoration: none;
+      }
+      .crumb a:hover {
+        color: var(--cream);
+        text-decoration: underline;
+      }
+      h1 {
+        font:
+          800 clamp(44px, 6vw, 68px) / 1 'Big Shoulders Display',
+          Impact,
+          sans-serif;
+        color: var(--cream);
+        text-shadow:
+          0 -1px 0 #0009,
+          0 2px 0 #ffffff1c,
+          0 6px 14px #0006;
+      }
+      .lede {
+        margin: 8px 0 0;
+        color: var(--cream-mute);
+        font-size: 17px;
+        max-width: 60ch;
+      }
+
+      /* ---- deck shelf ---- */
+      .pick {
+        margin-top: clamp(22px, 3vw, 34px);
+      }
+      .pick-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 360px);
+        gap: clamp(22px, 3vw, 44px);
+        align-items: start;
+      }
+      @media (max-width: 860px) {
+        .pick-grid {
+          grid-template-columns: minmax(0, 1fr);
+        }
+      }
+      .pick h2 {
+        font:
+          800 30px/1.1 'Big Shoulders Display',
+          sans-serif;
+        color: var(--cream);
+        text-shadow: 0 2px 6px #0006;
+      }
+      .help {
+        margin: 2px 0 0;
+        color: var(--cream-mute);
+        font-size: 14px;
+      }
+      .shelf {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(132px, 168px));
+        gap: 10px 26px;
+        margin-top: 22px;
+      }
+      @media (max-width: 560px) {
+        .shelf {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 6px 22px;
+        }
+      }
+      .tuck {
+        display: block;
+        width: 100%;
+        padding: 0;
+        border: 0;
+        background: none;
+        color: var(--cream);
+        font: inherit;
+        text-align: center;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .tuck:focus-visible {
+        outline: 3px solid var(--cream);
+        outline-offset: 6px;
+        border-radius: 8px;
+      }
+      .box {
+        position: relative;
+        display: block;
+        aspect-ratio: 0.72;
+        margin: 30% 8% 0 0;
+        isolation: isolate;
+        container-type: inline-size;
+        transition: transform 0.25s ease;
+      }
+      .tuck:hover .box {
+        transform: translateY(-3px);
+      }
+      .box > span {
+        position: absolute;
+      }
+      /* cards inside the box: visible through the thumb notch, and standing up when it's open */
+      .peek {
+        z-index: 1;
+        left: 9%;
+        right: 9%;
+        top: 1%;
+        height: 72%;
+        transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .peek i {
+        position: absolute;
+        inset: 0;
+        border-radius: 6px;
+        background: var(--back);
+        border: 4px solid var(--back-border);
+        box-shadow: 0 1px 2px #0005;
+      }
+      .peek i:nth-child(2) {
+        transform: rotate(6deg) translate(5%, 3%);
+      }
+      .bface {
+        z-index: 2;
+        inset: 0;
+        border-radius: 3px;
+        background:
+          var(--noise),
+          linear-gradient(100deg, #ffffff1f, #0000 30%, #0000 70%, #00000024),
+          var(--box);
+        box-shadow:
+          inset 0 0 0 1px #ffffff26,
+          0 12px 18px #0008,
+          0 2px 0 #0005;
+        -webkit-mask: radial-gradient(17% 9% at 50% 0, #0000 97%, #000 100%);
+        mask: radial-gradient(17% 9% at 50% 0, #0000 97%, #000 100%);
+        overflow: hidden;
+      }
+      .bface .art {
+        position: absolute;
+        inset: 9% 9% 9% 9%;
+        border-radius: 4px;
+        background: var(--back);
+        border: 3px solid var(--back-border);
+      }
+      .bface .plate {
+        position: absolute;
+        left: 13%;
+        right: 13%;
+        top: 34%;
+        padding: 9% 4% 8%;
+        border-radius: 10px;
+        background: var(--box-label);
+        box-shadow:
+          0 0 0 2px var(--box),
+          0 0 0 3.5px var(--box-label),
+          0 3px 6px #0004;
+        color: var(--box-ink);
+      }
+      .plate b {
+        display: block;
+        font: 800 16cqw/1 var(--letter);
+        white-space: nowrap;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+      }
+      .plate small {
+        display: block;
+        margin-top: 4px;
+        font:
+          700 9.5px/1 Inter,
+          sans-serif;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        opacity: 0.85;
+      }
+      .bface .suits {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 13%;
+        color: var(--back-border);
+        font-size: 11px;
+        letter-spacing: 0.2em;
+        text-shadow: 0 1px 1px #0006;
+      }
+      .side {
+        z-index: 2;
+        top: 0;
+        bottom: 0;
+        right: -8%;
+        width: 8%;
+        background:
+          var(--noise),
+          color-mix(in srgb, var(--box) 55%, #000);
+        clip-path: polygon(0 0, 100% 3.5%, 100% 98%, 0 100%);
+      }
+      .lid {
+        z-index: 3;
+        left: 0;
+        right: -8%;
+        top: -4.5%;
+        height: 4.5%;
+        background: color-mix(in srgb, var(--box) 82%, #fff);
+        clip-path: polygon(0 100%, 6% 0, 100% 0, 92% 100%);
+        transition:
+          top 0.35s ease,
+          height 0.35s ease,
+          filter 0.35s ease;
+      }
+      .seal {
+        z-index: 4;
+        left: 50%;
+        width: 15%;
+        top: -4.5%;
+        height: 15%;
+        transform: translateX(-50%);
+        background: linear-gradient(180deg, #efe3c6, #d7c296);
+        box-shadow: 0 1px 2px #0005;
+        border-radius: 1px;
+        transition: opacity 0.2s ease;
+      }
+      .tuck[aria-pressed='true'] .peek {
+        transform: translateY(-26%);
+      }
+      .tuck[aria-pressed='true'] .lid {
+        z-index: 0;
+        top: -30%;
+        height: 30%;
+        filter: brightness(0.78);
+        clip-path: polygon(0 100%, 10% 8%, 18% 0, 82% 0, 90% 8%, 92% 100%);
+      }
+      .tuck[aria-pressed='true'] .seal {
+        opacity: 0;
+      }
+      .cap {
+        display: block;
+        margin-top: 14px;
+        font-weight: 600;
+        font-size: 14px;
+        color: var(--cream-mute);
+      }
+      .tuck[aria-pressed='true'] .cap {
+        color: var(--cream);
+      }
+      .gear {
+        display: block;
+        font-size: 13px;
+        color: var(--cream-mute);
+        opacity: 0.9;
+      }
+      .spot {
+        display: grid;
+        place-items: center;
+        aspect-ratio: 0.72;
+        margin: 30% 8% 0 0;
+        border: 2px dashed #f4e8cf55;
+        border-radius: 6px;
+        color: var(--cream-mute);
+        text-align: center;
+        font:
+          700 18px/1.15 'Big Shoulders Display',
+          sans-serif;
+        background: #0000000f;
+      }
+
+      /* ---- the mix: a slip of paper taped to the table ---- */
+      .slip {
+        position: relative;
+        margin-top: 14px;
+        padding: 26px 22px 20px;
+        background:
+          var(--noise-soft),
+          linear-gradient(180deg, #fffdf6, #f6efdf);
+        color: var(--paper-ink);
+        border-radius: 2px;
+        box-shadow:
+          0 10px 22px #0007,
+          0 1px 0 #0003;
+        transform: rotate(-0.8deg);
+      }
+      .slip::before {
+        content: '';
+        position: absolute;
+        top: -11px;
+        left: 50%;
+        width: 92px;
+        height: 24px;
+        transform: translateX(-50%) rotate(2deg);
+        background: #f3e7c2b8;
+        box-shadow: 0 1px 2px #0002;
+      }
+      .slip h2 {
+        font:
+          700 30px/1 Caveat,
+          cursive;
+        color: var(--pen);
+        text-shadow: none;
+      }
+      .solo-mix {
+        margin: 8px 0 0;
+        color: var(--paper-mute);
+        font-size: 15px;
+      }
+      .solo-mix b {
+        color: var(--paper-ink);
+        font-weight: 600;
+      }
+      .mx {
+        margin-top: 14px;
+      }
+      .mx label {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        margin: 0 0 4px;
+        font-size: 15px;
+        font-weight: 600;
+      }
+      .mx output {
+        color: var(--paper-mute);
+        font-weight: 500;
+        font-variant-numeric: tabular-nums;
+      }
+      .mx input {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 100%;
+        height: 32px;
+        background: none;
+        cursor: pointer;
+      }
+      .mx input::-webkit-slider-runnable-track {
+        height: 8px;
+        border-radius: 4px;
+        background: linear-gradient(90deg, var(--box), color-mix(in srgb, var(--box) 70%, #fff));
+        box-shadow: inset 0 1px 2px #0006;
+      }
+      .mx input::-moz-range-track {
+        height: 8px;
+        border-radius: 4px;
+        background: linear-gradient(90deg, var(--box), color-mix(in srgb, var(--box) 70%, #fff));
+        box-shadow: inset 0 1px 2px #0006;
+      }
+      .mx input::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 24px;
+        height: 24px;
+        margin-top: -8px;
+        border-radius: 50%;
+        border: 0;
+        background: radial-gradient(circle at 35% 30%, #fff6d8, #d6ab4a 45%, #8a6418);
+        box-shadow: 0 2px 3px #0007;
+      }
+      .mx input::-moz-range-thumb {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        border: 0;
+        background: radial-gradient(circle at 35% 30%, #fff6d8, #d6ab4a 45%, #8a6418);
+        box-shadow: 0 2px 3px #0007;
+      }
+      .mx input:focus-visible {
+        outline: 3px solid var(--pen);
+        outline-offset: 2px;
+        border-radius: 6px;
+      }
+
+      /* ---- the card table ---- */
+      .rail {
+        margin-top: clamp(30px, 4vw, 48px);
+        padding: clamp(8px, 1.3vw, 16px);
+        border-radius: clamp(20px, 3vw, 34px);
+        background:
+          var(--noise),
+          radial-gradient(130% 80% at 50% 0%, #5a3523, var(--leather) 60%, #24140c);
+        box-shadow:
+          0 22px 44px #000a,
+          inset 0 2px 0 #ffffff1f,
+          inset 0 -3px 0 #0006;
+      }
+      .felt {
+        position: relative;
+        padding: clamp(18px, 3vw, 36px);
+        border-radius: clamp(13px, 2vw, 22px);
+        background:
+          var(--noise),
+          radial-gradient(120% 100% at 50% 0%, var(--felt), var(--felt-deep));
+        box-shadow:
+          inset 0 0 0 1px #0004,
+          inset 0 12px 34px #0007;
+        outline: 2px dashed #d9b27a66;
+        outline-offset: clamp(3px, 0.6vw, 7px);
+        color: #fff;
+      }
+      .head {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: end;
+        justify-content: space-between;
+        gap: 6px 24px;
+        margin-bottom: 18px;
+      }
+      .head h2 {
+        font:
+          800 clamp(32px, 4vw, 42px) / 1 'Big Shoulders Display',
+          sans-serif;
+        text-shadow: 0 2px 4px #0005;
+      }
+      .hint {
+        margin: 0;
+        font-size: 14px;
+        color: #ffe1e1;
+      }
+      .hand {
+        display: grid;
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        gap: 14px;
+      }
+      @media (max-width: 960px) {
+        .hand {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+      }
+      @media (max-width: 560px) {
+        .hand {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 10px;
+        }
+      }
+      .slot {
+        perspective: 1100px;
+      }
+      .pile {
+        position: relative;
+        display: block;
+        width: 100%;
+        aspect-ratio: 5/7;
+        border: 0;
+        padding: 0;
+        background: none;
+        cursor: pointer;
+        color: #fff;
+      }
+      .pile .b {
+        position: absolute;
+        inset: 0;
+        border-radius: 12px;
+        background: var(--back);
+        border: 7px solid var(--back-border);
+        box-shadow: 0 2px 0 #0004;
+      }
+      .pile .l2 {
+        transform: translate(7px, 7px) rotate(1.5deg);
+        box-shadow: 0 6px 12px #0006;
+      }
+      .pile .l1 {
+        transform: translate(3.5px, 3.5px) rotate(-1deg);
+      }
+      .pile .lab {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 14px;
+        padding-inline: 10px;
+        text-align: center;
+        font:
+          800 20px/1.1 'Big Shoulders Display',
+          sans-serif;
+        text-shadow: 0 1px 3px #0008;
+      }
+      .pile .lab small {
+        display: block;
+        font:
+          500 13px/1.3 Inter,
+          sans-serif;
+        color: #ffffffe0;
+      }
+      .pile:focus-visible {
+        outline: 3px solid #fff;
+        outline-offset: 6px;
+        border-radius: 12px;
+      }
+      .card {
+        position: relative;
+        display: grid;
+        transform-style: preserve-3d;
+        aspect-ratio: 5/7;
+        border-radius: 12px;
+        cursor: pointer;
+        outline: none;
+      }
+      .card.pending {
+        visibility: hidden;
+      }
+      .card:focus-visible .front {
+        outline: 3px solid #fff;
+        outline-offset: 3px;
+      }
+      .card .face,
+      .solo .face {
+        grid-area: 1/1;
+        border-radius: 12px;
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
+      }
+      .card .back {
+        transform: rotateY(180deg);
+        background: var(--back);
+        border: 7px solid var(--back-border);
+        box-shadow: 0 2px 0 #0004;
+      }
+      .front {
+        background:
+          linear-gradient(160deg, #ffffff, #0000 40%),
+          var(--cbg);
+        color: var(--black);
+        padding: 11px 12px 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        box-shadow:
+          0 2px 0 #0003,
+          0 12px 22px #0004;
+      }
+      .idx {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font: 800 calc(21px * var(--letter-scale, 1)) / 1 var(--letter);
+        min-height: 22px;
+      }
+      .idx .s {
+        font:
+          22px/1 system-ui,
+          sans-serif;
+      }
+      .red .idx,
+      .red .reps {
+        color: var(--red);
+      }
+      .joker .idx,
+      .joker .reps {
+        color: var(--star);
+      }
+      .kind {
+        margin: 2px 0 0;
+        font-size: 13px;
+        color: #6b6064;
+      }
+      .front h3 {
+        margin: 0;
+        font:
+          700 17px/1.2 Inter,
+          sans-serif;
+        text-wrap: balance;
+        color: #1a1416;
+      }
+      .reps {
+        margin: 2px 0;
+        font: 800 calc(25px * var(--letter-scale, 1)) / 1.05 var(--letter);
+      }
+      .cue {
+        margin: 0;
+        font-size: 13px;
+        line-height: 1.4;
+        color: #3a3134;
+      }
+      .alt {
+        margin: auto 0 0;
+        padding-top: 6px;
+        border-top: 1px solid #eadfe2;
+        font-size: 13px;
+        line-height: 1.35;
+        color: #4a4044;
+      }
+      .alt b {
+        font-weight: 600;
+        color: #1a1416;
+      }
+      .bar {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 24px;
+      }
+
+      /* chunky physical buttons */
+      .deal,
+      .seg button,
+      .go,
+      .btn {
+        transition:
+          transform 0.08s ease,
+          box-shadow 0.08s ease;
+      }
+      .deal {
+        background: linear-gradient(180deg, #fffaf0, #eadfc6);
+        color: var(--felt-deep);
+        font:
+          800 21px/1 'Big Shoulders Display',
+          sans-serif;
+        border: 0;
+        border-radius: 999px;
+        padding: 0 26px;
+        min-height: 48px;
+        cursor: pointer;
+        box-shadow:
+          0 4px 0 #b8a57f,
+          0 8px 14px #0006;
+      }
+      .deal:active {
+        transform: translateY(3px);
+        box-shadow:
+          0 1px 0 #b8a57f,
+          0 3px 6px #0006;
+      }
+      .deal:focus-visible {
+        outline: 3px solid #fff;
+        outline-offset: 3px;
+      }
+
+      /* ---- notepad and index card ---- */
+      .lower {
+        display: grid;
+        grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+        grid-template-areas: 'pad card';
+        gap: clamp(24px, 4vw, 56px);
+        align-items: start;
+        margin-top: clamp(34px, 4vw, 52px);
+      }
+      @media (max-width: 900px) {
+        .lower {
+          grid-template-columns: minmax(0, 1fr);
+          grid-template-areas: 'card' 'pad';
+        }
+      }
+      .pad {
+        grid-area: pad;
+        position: relative;
+        padding: 44px clamp(16px, 2.5vw, 28px) 22px clamp(58px, 7vw, 76px);
+        background:
+          var(--noise-soft),
+          var(--paper);
+        color: var(--paper-ink);
+        border-radius: 3px 3px 6px 6px;
+        box-shadow:
+          0 3px 0 #e8e0cf,
+          0 6px 0 #d9cfba,
+          0 18px 34px #0008;
+      }
+      .pad::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        height: 22px;
+        border-radius: 3px 3px 0 0;
+        background:
+          radial-gradient(circle at 50% 55%, #2c1c12 0 4px, #0000 4.5px) 8px 0 / 28px 22px repeat-x,
+          linear-gradient(180deg, #8f1d1d, #6d1515);
+      }
+      .pad::after {
+        content: '';
+        position: absolute;
+        top: 22px;
+        bottom: 0;
+        left: clamp(44px, 5.5vw, 60px);
+        width: 2px;
+        background: #e8a3a3;
+      }
+      .pad h2,
+      .icard h2 {
+        font:
+          700 40px/1 Caveat,
+          cursive;
+        color: var(--pen);
+      }
+      .sub {
+        margin: 4px 0 0;
+        color: var(--paper-mute);
+      }
+      .times {
+        list-style: none;
+        padding: 0;
+        margin: 16px 0 0;
+      }
+      .times li {
+        display: grid;
+        grid-template-columns: 3.4em minmax(0, 1fr);
+        gap: 14px;
+        padding: 12px 0;
+        border-top: 1px solid var(--rule);
+      }
+      .t {
+        font:
+          700 30px/1 Caveat,
+          cursive;
+        color: var(--pen);
+        white-space: nowrap;
+      }
+      .times h3 {
+        margin: 0;
+        font-size: 17px;
+        line-height: 1.3;
+      }
+      .times h3 .s {
+        margin-right: 6px;
+      }
+      .times h3 .s.red {
+        color: #c8102e;
+      }
+      .times h3 .s.joker {
+        color: var(--pen);
+      }
+      .times p {
+        margin: 3px 0 0;
+        color: var(--paper-mute);
+      }
+      .icard {
+        grid-area: card;
+        position: relative;
+        padding: 18px 22px 22px;
+        background:
+          var(--noise-soft),
+          linear-gradient(#0000 52px, #e58c8c 52px 54px, #0000 54px),
+          repeating-linear-gradient(#0000 0 29px, #c9d8ec 29px 30px) 0 54px / 100% calc(100% - 54px) no-repeat,
+          #fffefa;
+        color: var(--paper-ink);
+        border-radius: 4px;
+        box-shadow:
+          0 14px 28px #0008,
+          0 1px 0 #0003;
+      }
+      @media (min-width: 901px) {
+        .icard {
+          position: sticky;
+          top: 16px;
+          transform: rotate(0.7deg);
+        }
+      }
+      .icard h2 {
+        line-height: 34px;
+      }
+      label {
+        display: block;
+        font-size: 14px;
+        font-weight: 600;
+        margin: 16px 0 6px;
+      }
+      input[type='time'] {
+        width: 100%;
+        font: 16px Inter, sans-serif;
+        min-height: 46px;
+        padding: 8px 12px;
+        border: 1px solid #b9ad97;
+        border-radius: 8px;
+        background: #fff;
+        color: var(--paper-ink);
+        box-shadow: inset 0 2px 3px #0002;
+      }
+      input[type='time']:focus-visible {
+        outline: 3px solid var(--go);
+        outline-offset: 1px;
+      }
+      .seg {
+        display: flex;
+        gap: 8px;
+      }
+      .seg button {
+        flex: 1;
+        font: 600 15px Inter, sans-serif;
+        color: var(--paper-ink);
+        background: linear-gradient(180deg, #fbf6ea, #e9dfc9);
+        border: 1px solid #c9bb9d;
+        border-radius: 10px;
+        min-height: 44px;
+        cursor: pointer;
+        box-shadow: 0 3px 0 #c2b292;
+      }
+      .seg button[aria-pressed='true'] {
+        background: linear-gradient(180deg, #2a4bc4, var(--go));
+        border-color: var(--go-edge);
+        color: #fff;
+        transform: translateY(2px);
+        box-shadow:
+          0 1px 0 var(--go-edge),
+          inset 0 2px 3px #0005;
+      }
+      .seg button:focus-visible {
+        outline: 3px solid var(--go);
+        outline-offset: 2px;
+      }
+      .go {
+        display: block;
+        width: 100%;
+        margin-top: 22px;
+        min-height: 60px;
+        background: linear-gradient(180deg, #2f52cc, var(--go));
+        color: #fff;
+        border: 0;
+        border-radius: 14px;
+        font:
+          800 27px/1 'Big Shoulders Display',
+          sans-serif;
+        cursor: pointer;
+        text-shadow: 0 1px 0 #0006;
+        box-shadow:
+          0 6px 0 var(--go-edge),
+          0 12px 18px #0005;
+      }
+      .go:active {
+        transform: translateY(4px);
+        box-shadow:
+          0 2px 0 var(--go-edge),
+          0 4px 8px #0005;
+      }
+      .go:focus-visible,
+      .btn:focus-visible {
+        outline: 3px solid var(--go);
+        outline-offset: 4px;
+      }
+      .small {
+        font-size: 14px;
+        color: var(--paper-mute);
+        margin: 14px 0 0;
+      }
+
+      /* ---- run mode: the card on the felt ---- */
+      .run {
+        position: fixed;
+        inset: 0;
+        z-index: 20;
+        display: none;
+        flex-direction: column;
+        overflow: auto;
+        color: #fff;
+        background:
+          var(--noise),
+          radial-gradient(120% 90% at 50% 0%, var(--felt), var(--felt-deep));
+      }
+      .run.on {
+        display: flex;
+      }
+      .rtop {
+        padding: 16px max(4vw, 16px);
+        background:
+          var(--noise),
+          linear-gradient(180deg, #4a2b1c, var(--leather));
+        box-shadow:
+          0 6px 16px #0007,
+          inset 0 -2px 0 #0006;
+      }
+      .rwrap {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: end;
+        gap: 8px 20px;
+        max-width: 900px;
+        margin: 0 auto;
+      }
+      .rtop h2 {
+        font:
+          800 clamp(34px, 6vw, 48px) / 1.05 'Big Shoulders Display',
+          sans-serif;
+        color: var(--cream);
+      }
+      .rtop p {
+        margin: 2px 0 0;
+        color: var(--cream-mute);
+      }
+      .clock {
+        text-align: right;
+        font:
+          800 clamp(40px, 8vw, 64px) / 1 'Big Shoulders Display',
+          sans-serif;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+        color: var(--cream);
+      }
+      .clock small {
+        display: block;
+        font:
+          500 14px/1.4 Inter,
+          sans-serif;
+        color: var(--cream-mute);
+      }
+      .rbody {
+        flex: 1;
+        width: 100%;
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 24px max(4vw, 16px) 28px;
+      }
+      .solo {
+        display: grid;
+        max-width: 300px;
+      }
+      .list {
+        margin: 0;
+        padding: 18px 20px 18px 2.4em;
+        font-size: 18px;
+        max-width: 560px;
+        background:
+          var(--noise-soft),
+          var(--paper);
+        color: var(--paper-ink);
+        border-radius: 3px;
+        box-shadow: 0 10px 22px #0007;
+        transform: rotate(-0.5deg);
+      }
+      .list li {
+        margin: 6px 0;
+      }
+      .rbtns {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 26px;
+      }
+      .btn {
+        min-height: 50px;
+        padding: 0 20px;
+        border-radius: 12px;
+        border: 0;
+        background: linear-gradient(180deg, #fffaf0, #eadfc6);
+        color: var(--paper-ink);
+        font: 600 16px Inter, sans-serif;
+        cursor: pointer;
+        box-shadow:
+          0 4px 0 #b8a57f,
+          0 8px 14px #0005;
+      }
+      .btn:active:not(:disabled) {
+        transform: translateY(3px);
+        box-shadow:
+          0 1px 0 #b8a57f,
+          0 3px 6px #0005;
+      }
+      .btn.main {
+        background: linear-gradient(180deg, #2f52cc, var(--go));
+        color: #fff;
+        font:
+          800 24px/1 'Big Shoulders Display',
+          sans-serif;
+        padding: 0 28px;
+        flex: 1 1 220px;
+        box-shadow:
+          0 5px 0 var(--go-edge),
+          0 10px 16px #0005;
+      }
+      .btn.main:active {
+        box-shadow:
+          0 2px 0 var(--go-edge),
+          0 4px 8px #0005;
+      }
+      .btn:disabled {
+        opacity: 0.5;
+        cursor: default;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          transition: none !important;
+        }
+      }
+    </style>
+  </body>
+</html>

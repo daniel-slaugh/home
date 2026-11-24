@@ -56,7 +56,6 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
     <header class="wrap top">
       <p class="crumb"><a href="/">← Byte Garden</a></p>
       <h1>Workout decks</h1>
-      <p class="lede">Open a deck or two, deal five cards (one per movement), and work through them together.</p>
     </header>
 
     <section
@@ -65,8 +64,7 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
     >
       <div class="pick-grid">
         <div>
-          <h2 id="h-decks">Choose your decks</h2>
-          <p class="help">Tap a deck to open it. Every open deck goes into the shuffle.</p>
+          <h2 id="h-decks">Decks</h2>
           <div
             class="shelf"
             id="decks"
@@ -75,9 +73,11 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         </div>
         <aside
           class="slip"
+          id="slip"
           aria-labelledby="h-mix"
+          hidden
         >
-          <h2 id="h-mix">The mix</h2>
+          <h2 id="h-mix">Mix</h2>
           <div id="mix"></div>
         </aside>
       </div>
@@ -89,16 +89,18 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
     >
       <div class="rail">
         <div class="felt">
-          <div class="head">
-            <h2 id="h-hand">Your hand</h2>
-            <p class="hint">Tap the deck to reshuffle, or tap one card to redraw just that card.</p>
-          </div>
+          <h2
+            class="vh"
+            id="h-hand"
+          >
+            Your hand
+          </h2>
           <div class="hand">
             <div class="slot">
               <button
                 class="pile"
                 id="deck"
-                aria-label="Shuffle and deal a new hand"
+                aria-label="Shuffle and deal a new hand. Tap any card to redraw just that card."
               ></button>
             </div>
             <div class="slot"><div class="card pending" role="button" tabindex="0"></div></div>
@@ -107,7 +109,6 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
             <div class="slot"><div class="card pending" role="button" tabindex="0"></div></div>
             <div class="slot"><div class="card pending" role="button" tabindex="0"></div></div>
           </div>
-          <div class="bar"><button class="deal" id="deal">Shuffle and deal</button></div>
         </div>
       </div>
     </section>
@@ -115,17 +116,14 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
     <section class="wrap lower">
       <div class="pad">
         <h2>Today's schedule</h2>
-        <p class="sub" id="schedSub"></p>
         <ol class="times" id="times"></ol>
       </div>
       <aside class="icard">
-        <h2>Start</h2>
-        <label for="start">Start time</label>
+        <label for="start">Time</label>
         <input type="time" id="start" />
-        <label id="lenLab">Workout length</label>
+        <label id="lenLab">Length</label>
         <div class="seg" role="group" aria-labelledby="lenLab"><button data-v="20">20 min</button><button data-v="30">30 min</button><button data-v="45">45 min</button></div>
-        <button class="go" id="go">Start the workout</button>
-        <p class="small">Each card gets a block of time: do a set of its reps, rest about 45 seconds, and repeat until the block ends.</p>
+        <button class="go" id="go">Start</button>
       </aside>
     </section>
 
@@ -140,7 +138,7 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
     <script>
       import { DECKS } from '../workout/decks'
       import { SUITS, type Deck, type Suit } from '../workout/types'
-      import { dealHand, exactShares, redrawFrom, shareLabel, type Dealt } from '../workout/deal'
+      import { dealHand, redrawFrom, type Dealt } from '../workout/deal'
 
       const $ = <T extends HTMLElement = HTMLElement>(s: string) => document.querySelector(s) as T
       const esc = (s: string) => s.replace(/[&<>"]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[ch] as string)
@@ -152,7 +150,7 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
       /** A deck's art as CSS custom properties, for its box, card backs and card faces. */
       const art = (d: Deck) => {
         const a = d.art
-        return esc(`--back:${a.back.background};--back-border:${a.back.border};--box:${a.box.color};--box-ink:${a.box.ink};--box-label:${a.box.label};--letter:${a.lettering.font};--letter-scale:${a.lettering.scale ?? 1};--red:${a.ink.red};--black:${a.ink.black};--star:${a.ink.star}`)
+        return esc(`--back:${a.back.background};--back-border:${a.back.border};--box:${a.box.color};--box-ink:${a.box.ink};--box-label:${a.box.label};--letter:${a.lettering.font};--letter-scale:${a.lettering.scale ?? 1};--face:${a.face.background};--face-text:${a.face.text};--face-muted:${a.face.muted};--face-line:${a.face.line};--face-accent:${a.face.accent};--red:${a.suits.red};--black:${a.suits.black};--star:${a.suits.star}`)
       }
 
       interface State {
@@ -179,7 +177,6 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
 
       const picked = () => DECKS.filter((d) => d.id in st.decks)
       const mix = () => picked().map((deck) => ({ deck, weight: st.decks[deck.id] }))
-      const multi = () => picked().length > 1
 
       function newHand() {
         st.hand = dealHand(mix()).map((x) => [x.deck.id, x.card.id])
@@ -203,18 +200,16 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         $('#decks').innerHTML =
           DECKS.map((d) => {
             const on = d.id in st.decks
-            return `<button class="tuck" data-id="${d.id}" aria-pressed="${on}" style="${art(d)}" title="${esc(d.blurb)}">
+            return `<button class="tuck" data-id="${d.id}" aria-pressed="${on}" aria-label="${esc(d.name)} deck" style="${art(d)}" title="${esc(d.blurb)} ${esc(d.gear)}.">
               <span class="box" aria-hidden="true">
                 <span class="lid"></span>
                 <span class="peek"><i></i><i></i></span>
                 <span class="side"></span>
-                <span class="bface"><span class="art"></span><span class="plate"><b>${esc(d.name)}</b><small>${d.cards.length} cards</small></span><span class="suits">♠ ♥ ♦ ♣ ★</span></span>
+                <span class="bface"><span class="art"></span><span class="plate"><b>${esc(d.name)}</b></span><span class="suits">♠ ♥ ♦ ♣ ★</span></span>
                 <span class="seal"></span>
               </span>
-              <span class="cap">${on ? '✓ In the shuffle' : 'Tap to open'}</span>
-              <span class="gear">${esc(d.gear)}</span>
             </button>`
-          }).join('') + '<div class="spot" aria-hidden="true"><span>More decks<br>on the way</span></div>'
+          }).join('')
         fitNames()
       }
       /** Shrink each deck name until it fits on its box label, whatever the deck's lettering. */
@@ -244,19 +239,14 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
       }
       function mixLabel(m: { weight: number }[], i: number) {
         const total = m.reduce((s, x) => s + x.weight, 0)
-        const pct = total ? Math.round((m[i].weight / total) * 100) : i === 0 ? 100 : 0
-        const n = shareLabel(
-          exactShares(
-            m.map((x) => x.weight),
-            SUITS.length
-          )[i]
-        )
-        return `${pct}% · ${n} card${n === '1' ? '' : 's'}`
+        return `${total ? Math.round((m[i].weight / total) * 100) : i === 0 ? 100 : 0}%`
       }
       function renderMix() {
         const m = mix()
+        $('#slip').hidden = m.length < 2
+        $('.pick-grid').classList.toggle('one-deck', m.length < 2)
         if (m.length < 2) {
-          $('#mix').innerHTML = `<p class="solo-mix">Every card comes from <b>${esc(m[0].deck.name)}</b>. Open a second deck to mix them.</p>`
+          $('#mix').innerHTML = ''
           return
         }
         $('#mix').innerHTML = m
@@ -269,12 +259,11 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
       function renderPile() {
         const p = picked()
         const layers = [0, 1, 2].map((i) => p[i % p.length])
-        const n = p.reduce((s, d) => s + d.cards.length, 0)
         $('#deck').innerHTML =
           layers
             .reverse()
             .map((d, i) => `<span class="b l${2 - i}" style="${art(d)}"></span>`)
-            .join('') + `<span class="lab">Shuffle<small>${n} cards${multi() ? ` · ${p.length} decks` : ''}</small></span>`
+            .join('') + `<span class="lab">Shuffle</span>`
       }
       $('#decks').addEventListener('click', (e) => {
         const b = (e.target as HTMLElement).closest<HTMLButtonElement>('.tuck')
@@ -315,10 +304,10 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
 
       // ---- the hand ----
       function face(x: Dealt, label: number | string, extra = '') {
-        const [sym, name, cls] = SUIT[x.card.suit]
+        const [sym, , cls] = SUIT[x.card.suit]
         const c = x.card
-        const kind = multi() ? `${name} · ${esc(x.deck.name)}` : name
-        return `<div class="face front ${cls} ${extra}" style="${art(x.deck)}"><div class="idx"><span>${label}</span><span class="s">${sym}</span></div><p class="kind">${kind}</p><h3>${esc(c.name)}</h3><p class="reps">${esc(c.reps)}</p><p class="cue">${esc(c.cue)}</p><p class="alt"><b>Easier</b> ${esc(c.easier)}<br><b>Harder</b> ${esc(c.harder)}</p></div>`
+        const corner = (pos: string) => `<span class="corner ${pos}" aria-hidden="true"><b>${label}</b><i>${sym}</i></span>`
+        return `<div class="face front ${cls} ${extra}" style="${art(x.deck)}">${corner('tl')}${corner('br')}<span class="pip" aria-hidden="true">${sym}</span><div class="fbody"><h3>${esc(c.name)}</h3><p class="reps">${esc(c.reps)}</p><p class="cue">${esc(c.cue)}</p><p class="alt"><span><span class="vh">Easier: </span><i aria-hidden="true">−</i>${esc(c.easier)}</span><span><span class="vh">Harder: </span><i aria-hidden="true">+</i>${esc(c.harder)}</span></p></div></div>`
       }
       const cards = [...document.querySelectorAll<HTMLElement>('.card')]
       function fill(i: number, x: Dealt) {
@@ -349,14 +338,13 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         const rows = blocks().map((b) => {
           const at = t
           t += b.dur
-          if (b.type === 'warm') return [at, 'Warm-up', `${b.dur} min: marching or jumping jacks, 10 squats, 5 push-ups, 10 glute bridges, 20 arm circles.`]
-          if (b.type === 'cool') return [at, 'Cool-down', `${b.dur} min: hamstring stretch, hip flexor stretch, child's pose.`]
+          if (b.type === 'warm') return [at, 'Warm-up', '']
+          if (b.type === 'cool') return [at, 'Cool-down', '']
           const [sym, , cls] = SUIT[b.x.card.suit]
-          return [at, `<span class="s ${cls}">${sym}</span>${esc(b.x.card.name)}`, `${b.dur} min · ${esc(b.x.card.reps)} per set, rest about 45 sec between sets.`]
+          return [at, `<span class="s ${cls}">${sym}</span>${esc(b.x.card.name)}`, esc(b.x.card.reps)]
         }) as [number, string, string][]
-        rows.push([t, 'Done', 'Log what you did.'])
-        $('#times').innerHTML = rows.map(([at, h, p]) => `<li><span class="t">${fmt(at)}</span><div><h3>${h}</h3><p>${p}</p></div></li>`).join('')
-        $('#schedSub').textContent = `${st.len} minutes, side by side, in the order the cards were dealt.`
+        rows.push([t, 'Done', ''])
+        $('#times').innerHTML = rows.map(([at, h, p]) => `<li><span class="t">${fmt(at)}</span><div><h3>${h}</h3>${p ? `<p>${p}</p>` : ''}</div></li>`).join('')
         document.querySelectorAll<HTMLButtonElement>('.seg button').forEach((b) => b.setAttribute('aria-pressed', String(Number(b.dataset.v) === st.len)))
         renderPile()
       }
@@ -409,7 +397,6 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         deal(true)
       }
       $('#deck').addEventListener('click', reshuffle)
-      $('#deal').addEventListener('click', reshuffle)
       document.querySelectorAll<HTMLButtonElement>('.seg button').forEach((b) =>
         b.addEventListener('click', () => {
           st.len = Number(b.dataset.v)
@@ -440,14 +427,15 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         run.bs = Date.now()
         $('#rb').textContent = b.name
         let html = '',
-          sub = `Block ${run.i + 1} of ${run.steps.length} · ${b.dur} min`
-        if (b.type === 'warm') html = '<ol class="list"><li>2 minutes marching or jumping jacks</li><li>10 bodyweight squats</li><li>5 push-ups, any height</li><li>10 glute bridges</li><li>20 arm circles each way</li></ol>'
+          sub = ''
+        if (b.type === 'warm') html = '<ol class="list"><li>2 min marching or jumping jacks</li><li>10 squats</li><li>5 push-ups</li><li>10 glute bridges</li><li>20 arm circles each way</li></ol>'
         if (b.type === 'card') {
           html = `<div class="solo">${face(b.x, b.i + 1, 'mini')}</div>`
-          sub += ' · set, rest 45 sec, repeat'
+          sub = 'Set, rest 45 sec, repeat'
         }
-        if (b.type === 'cool') html = "<ol class=\"list\"><li>Hamstring stretch, 30 sec each side</li><li>Hip flexor lunge stretch, 30 sec each side</li><li>Child's pose, 30 sec</li></ol>"
+        if (b.type === 'cool') html = "<ol class=\"list\"><li>Hamstring stretch, 30 sec each side</li><li>Hip flexor stretch, 30 sec each side</li><li>Child's pose, 30 sec</li></ol>"
         $('#rs').textContent = sub
+        $('#rleft').textContent = `${run.i + 1} / ${run.steps.length}`
         $('#rmain').innerHTML = html
         $('#rnext').textContent = nx ? 'Next: ' + nx.name : 'Finish'
         $<HTMLButtonElement>('#rback').disabled = run.i === 0
@@ -458,8 +446,7 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         const b = run.steps[run.i],
           t = Date.now(),
           left = b.dur * 60 - (t - run.bs) / 1000
-        rclock().textContent = mmss((t - run.t0) / 1000)
-        $('#rleft').textContent = left >= 0 ? `${mmss(left)} left in this block` : `${mmss(-left)} over`
+        rclock().textContent = left >= 0 ? mmss(left) : `+${mmss(-left)}`
       }
       function finish() {
         if (!run) return
@@ -468,7 +455,7 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         $('#rb').textContent = 'Done.'
         $('#rs').textContent = 'Nice work, both of you.'
         rclock().textContent = mmss((Date.now() - run.t0) / 1000)
-        $('#rleft').textContent = 'total time'
+        $('#rleft').textContent = 'total'
         $('#rmain').innerHTML = '<ol class="list">' + hand().map((x) => `<li>${esc(x.card.name)}</li>`).join('') + '</ol>'
         $('#rnext').style.display = 'none'
         $<HTMLButtonElement>('#rback').disabled = true
@@ -546,7 +533,6 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         --rule: #bfd0e8;
         --go: #1f3fb4;
         --go-edge: #13286f;
-        --cbg: #fffdfa;
       }
       * {
         box-sizing: border-box;
@@ -608,12 +594,6 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
           0 2px 0 #ffffff1c,
           0 6px 14px #0006;
       }
-      .lede {
-        margin: 8px 0 0;
-        color: var(--cream-mute);
-        font-size: 17px;
-        max-width: 60ch;
-      }
 
       /* ---- deck shelf ---- */
       .pick {
@@ -624,6 +604,9 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         grid-template-columns: minmax(0, 1fr) minmax(0, 360px);
         gap: clamp(22px, 3vw, 44px);
         align-items: start;
+      }
+      .pick-grid.one-deck {
+        grid-template-columns: minmax(0, 1fr);
       }
       @media (max-width: 860px) {
         .pick-grid {
@@ -636,11 +619,6 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
           sans-serif;
         color: var(--cream);
         text-shadow: 0 2px 6px #0006;
-      }
-      .help {
-        margin: 2px 0 0;
-        color: var(--cream-mute);
-        font-size: 14px;
       }
       .shelf {
         display: grid;
@@ -750,16 +728,6 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         text-transform: uppercase;
         letter-spacing: 0.02em;
       }
-      .plate small {
-        display: block;
-        margin-top: 4px;
-        font:
-          700 9.5px/1 Inter,
-          sans-serif;
-        letter-spacing: 0.16em;
-        text-transform: uppercase;
-        opacity: 0.85;
-      }
       .bface .suits {
         position: absolute;
         left: 0;
@@ -819,36 +787,6 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
       .tuck[aria-pressed='true'] .seal {
         opacity: 0;
       }
-      .cap {
-        display: block;
-        margin-top: 14px;
-        font-weight: 600;
-        font-size: 14px;
-        color: var(--cream-mute);
-      }
-      .tuck[aria-pressed='true'] .cap {
-        color: var(--cream);
-      }
-      .gear {
-        display: block;
-        font-size: 13px;
-        color: var(--cream-mute);
-        opacity: 0.9;
-      }
-      .spot {
-        display: grid;
-        place-items: center;
-        aspect-ratio: 0.72;
-        margin: 30% 8% 0 0;
-        border: 2px dashed #f4e8cf55;
-        border-radius: 6px;
-        color: var(--cream-mute);
-        text-align: center;
-        font:
-          700 18px/1.15 'Big Shoulders Display',
-          sans-serif;
-        background: #0000000f;
-      }
 
       /* ---- the mix: a slip of paper taped to the table ---- */
       .slip {
@@ -882,15 +820,6 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
           cursive;
         color: var(--pen);
         text-shadow: none;
-      }
-      .solo-mix {
-        margin: 8px 0 0;
-        color: var(--paper-mute);
-        font-size: 15px;
-      }
-      .solo-mix b {
-        color: var(--paper-ink);
-        font-weight: 600;
       }
       .mx {
         margin-top: 14px;
@@ -979,25 +908,6 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         outline-offset: clamp(3px, 0.6vw, 7px);
         color: #fff;
       }
-      .head {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: end;
-        justify-content: space-between;
-        gap: 6px 24px;
-        margin-bottom: 18px;
-      }
-      .head h2 {
-        font:
-          800 clamp(32px, 4vw, 42px) / 1 'Big Shoulders Display',
-          sans-serif;
-        text-shadow: 0 2px 4px #0005;
-      }
-      .hint {
-        margin: 0;
-        font-size: 14px;
-        color: #ffe1e1;
-      }
       .hand {
         display: grid;
         grid-template-columns: repeat(6, minmax(0, 1fr));
@@ -1016,6 +926,9 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
       }
       .slot {
         perspective: 1100px;
+        display: grid;
+        align-items: start;
+        container-type: inline-size;
       }
       .pile {
         position: relative;
@@ -1055,13 +968,6 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
           sans-serif;
         text-shadow: 0 1px 3px #0008;
       }
-      .pile .lab small {
-        display: block;
-        font:
-          500 13px/1.3 Inter,
-          sans-serif;
-        color: #ffffffe0;
-      }
       .pile:focus-visible {
         outline: 3px solid #fff;
         outline-offset: 6px;
@@ -1071,7 +977,8 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         position: relative;
         display: grid;
         transform-style: preserve-3d;
-        aspect-ratio: 5/7;
+        min-height: 140cqw;
+        align-self: stretch;
         border-radius: 12px;
         cursor: pointer;
         outline: none;
@@ -1096,113 +1003,156 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         border: 7px solid var(--back-border);
         box-shadow: 0 2px 0 #0004;
       }
+      /* The card face: the deck's own colour, a double frame, corner indices and a centre pip. */
       .front {
-        background:
-          linear-gradient(160deg, #ffffff, #0000 40%),
-          var(--cbg);
-        color: var(--black);
-        padding: 11px 12px 12px;
+        position: relative;
+        container-type: inline-size;
         display: flex;
         flex-direction: column;
-        gap: 3px;
-        box-shadow:
-          0 2px 0 #0003,
-          0 12px 22px #0004;
-      }
-      .idx {
-        display: flex;
-        justify-content: space-between;
         align-items: center;
-        font: 800 calc(21px * var(--letter-scale, 1)) / 1 var(--letter);
-        min-height: 22px;
+        justify-content: center;
+        gap: 6px;
+        padding: 30px 14px;
+        overflow: hidden;
+        text-align: center;
+        color: var(--face-text);
+        background:
+          linear-gradient(155deg, #ffffff1c, #0000 38%, #0000 70%, #0000002e),
+          var(--face);
+        box-shadow:
+          0 2px 0 #0004,
+          0 12px 22px #0005,
+          inset 0 0 0 1px #ffffff1f;
       }
-      .idx .s {
+      .front::before {
+        content: '';
+        position: absolute;
+        inset: 6px;
+        border: 3px double var(--face-line);
+        border-radius: 8px;
+        opacity: 0.75;
+        pointer-events: none;
+      }
+      .corner {
+        position: absolute;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2px;
+        color: var(--black);
+      }
+      .corner b {
+        font: 800 calc(clamp(15px, 12cqw, 24px) * var(--letter-scale, 1)) / 1 var(--letter);
+      }
+      .corner i {
         font:
-          22px/1 system-ui,
+          normal clamp(12px, 9cqw, 18px) / 1 system-ui,
           sans-serif;
       }
-      .red .idx,
-      .red .reps {
+      .corner.tl {
+        top: 12px;
+        left: 12px;
+      }
+      .corner.br {
+        right: 12px;
+        bottom: 12px;
+        transform: rotate(180deg);
+      }
+      .pip {
+        display: grid;
+        place-items: center;
+        width: 44cqw;
+        aspect-ratio: 1;
+        border-radius: 50%;
+        border: 1px solid var(--face-line);
+        box-shadow: inset 0 0 0 4px #0000, inset 0 0 0 5px color-mix(in srgb, var(--face-line) 45%, #0000);
+        color: var(--black);
+        font:
+          clamp(26px, 24cqw, 64px) / 1 system-ui,
+          sans-serif;
+        order: 1;
+      }
+      .red .corner,
+      .red .pip {
         color: var(--red);
       }
-      .joker .idx,
-      .joker .reps {
+      .joker .corner,
+      .joker .pip {
         color: var(--star);
       }
-      .kind {
-        margin: 2px 0 0;
-        font-size: 13px;
-        color: #6b6064;
+      .fbody {
+        display: contents;
       }
       .front h3 {
+        order: 0;
         margin: 0;
+        max-width: 100%;
         font:
-          700 17px/1.2 Inter,
+          700 clamp(14px, 9.5cqw, 24px) / 1.2 Inter,
           sans-serif;
         text-wrap: balance;
-        color: #1a1416;
       }
       .reps {
-        margin: 2px 0;
-        font: 800 calc(25px * var(--letter-scale, 1)) / 1.05 var(--letter);
-      }
-      .cue {
+        order: 2;
         margin: 0;
-        font-size: 13px;
-        line-height: 1.4;
-        color: #3a3134;
+        color: var(--face-accent);
+        font: 800 calc(clamp(18px, 14cqw, 36px) * var(--letter-scale, 1)) / 1.05 var(--letter);
+        text-wrap: balance;
       }
+      .cue,
       .alt {
-        margin: auto 0 0;
-        padding-top: 6px;
-        border-top: 1px solid #eadfe2;
-        font-size: 13px;
-        line-height: 1.35;
-        color: #4a4044;
+        order: 3;
+        display: none;
+        margin: 0;
+        color: var(--face-muted);
+        text-align: left;
       }
-      .alt b {
-        font-weight: 600;
-        color: #1a1416;
+      /* In run mode the card is big enough for the coaching cue and easier/harder. */
+      .solo .front {
+        aspect-ratio: 5 / 7;
+        padding: 52px 30px 56px;
+        gap: 14px;
       }
-      .bar {
-        display: flex;
-        justify-content: flex-end;
-        margin-top: 24px;
+      .solo .pip {
+        width: 30cqw;
+      }
+      .solo .cue,
+      .solo .alt {
+        display: block;
+        width: 100%;
+        font-size: 15px;
+        line-height: 1.45;
+      }
+      .solo .alt {
+        padding-top: 10px;
+        border-top: 1px solid color-mix(in srgb, var(--face-line) 55%, #0000);
+      }
+      .alt > span {
+        display: block;
+      }
+      .alt i {
+        display: inline-block;
+        width: 1.1em;
+        font-style: normal;
+        font-weight: 700;
+        color: var(--face-accent);
+      }
+      .vh {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
       }
 
       /* chunky physical buttons */
-      .deal,
       .seg button,
       .go,
       .btn {
         transition:
           transform 0.08s ease,
           box-shadow 0.08s ease;
-      }
-      .deal {
-        background: linear-gradient(180deg, #fffaf0, #eadfc6);
-        color: var(--felt-deep);
-        font:
-          800 21px/1 'Big Shoulders Display',
-          sans-serif;
-        border: 0;
-        border-radius: 999px;
-        padding: 0 26px;
-        min-height: 48px;
-        cursor: pointer;
-        box-shadow:
-          0 4px 0 #b8a57f,
-          0 8px 14px #0006;
-      }
-      .deal:active {
-        transform: translateY(3px);
-        box-shadow:
-          0 1px 0 #b8a57f,
-          0 3px 6px #0006;
-      }
-      .deal:focus-visible {
-        outline: 3px solid #fff;
-        outline-offset: 3px;
       }
 
       /* ---- notepad and index card ---- */
@@ -1261,10 +1211,6 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
           700 40px/1 Caveat,
           cursive;
         color: var(--pen);
-      }
-      .sub {
-        margin: 4px 0 0;
-        color: var(--paper-mute);
       }
       .times {
         list-style: none;
@@ -1406,11 +1352,6 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         outline: 3px solid var(--go);
         outline-offset: 4px;
       }
-      .small {
-        font-size: 14px;
-        color: var(--paper-mute);
-        margin: 14px 0 0;
-      }
 
       /* ---- run mode: the card on the felt ---- */
       .run {
@@ -1481,7 +1422,7 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
       }
       .solo {
         display: grid;
-        max-width: 300px;
+        max-width: 360px;
       }
       .list {
         margin: 0;

@@ -15,7 +15,14 @@ export const bodyweight: Deck = {
     },
     box: { color: '#1f3fb4', ink: '#1a2f8a', label: '#fffdfa' },
     lettering: { font: "'Big Shoulders Display', Impact, sans-serif" },
-    ink: { red: '#c8102e', black: '#1a1416', star: '#1f3fb4' },
+    face: {
+      background: 'radial-gradient(130% 90% at 50% 0%, #2d4ac2, #16286f)',
+      text: '#fbf4e4',
+      muted: '#cfd7f6',
+      line: '#d9b25c',
+      accent: '#f2ca6a',
+    },
+    suits: { red: '#ff9d8f', black: '#fbf4e4', star: '#f2ca6a' },
   },
   cards: [
     c('tsq', 'legs', 'Tempo squat', '10–15', 'Three seconds down, stand up fast. Chest tall, knees track over toes.', 'Squat to the couch', 'Pause 3 sec at the bottom'),

@@ -17,7 +17,14 @@ export const cardio: Deck = {
     },
     box: { color: '#d9461a', ink: '#b8360f', label: '#fff6ec' },
     lettering: { font: "Bungee, 'Big Shoulders Display', Impact, sans-serif", href: 'https://fonts.googleapis.com/css2?family=Bungee&display=swap', scale: 0.72 },
-    ink: { red: '#d9461a', black: '#1c1a24', star: '#0f7c7a' },
+    face: {
+      background: 'radial-gradient(130% 90% at 50% 0%, #c9481b, #82270b)',
+      text: '#fff6ec',
+      muted: '#ffdcc4',
+      line: '#ffc98a',
+      accent: '#ffe08a',
+    },
+    suits: { red: '#ffe08a', black: '#fff6ec', star: '#8ff0e4' },
   },
   cards: [
     c('hk', 'legs', 'High knees', '30–40 sec', 'Run in place, driving each knee to hip height. Stay on the balls of your feet and pump your arms.', 'March with high knees', 'Go as fast as you can'),

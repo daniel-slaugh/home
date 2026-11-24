@@ -49,8 +49,21 @@ export interface DeckArt {
     /** Size of the card indices and reps relative to the default (1). Wide fonts look better around 0.75. */
     scale?: number
   }
-  /** Suit colours printed on the card faces. */
-  ink: {
+  /** The front of every card in the deck. */
+  face: {
+    /** CSS `background` for the card face. */
+    background: string
+    /** Exercise name and main text. */
+    text: string
+    /** Coaching cue and easier/harder lines. */
+    muted: string
+    /** The thin frame printed inside the card edge. */
+    line: string
+    /** Reps. */
+    accent: string
+  }
+  /** Suit colours on the card faces (indices and the big centre pip). */
+  suits: {
     red: string
     black: string
     /** The core (★) suit. */

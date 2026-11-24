@@ -15,27 +15,28 @@ export const TYPES: { id: WorkoutType; name: string }[] = [
 
 /** Five minutes per phase is the lower end of the American Heart Association's guidance. */
 const ROUTINE_LENGTH = { warm: ROUTINE_MINUTES, cool: ROUTINE_MINUTES }
-export const LENGTHS: Record<number, { warm: number; cool: number }> = {
-  20: ROUTINE_LENGTH,
-  30: ROUTINE_LENGTH,
-  45: ROUTINE_LENGTH,
+export const LENGTHS: Record<number, { warm: number; cool: number; cards: number }> = {
+  20: { ...ROUTINE_LENGTH, cards: 3 },
+  30: { ...ROUTINE_LENGTH, cards: 5 },
+  45: { ...ROUTINE_LENGTH, cards: 8 },
 }
 
 /** Sets of each card (Sets) and laps of the circuit (Circuit). Variety does each card once. */
 export const SETS = 2
 export const LAPS = 2
 
-/** Target seconds per set, including rest, used to decide how many cards to deal. */
-const TARGET_SET_SECONDS = 144
 const INTERVAL_SECONDS = 30
+/** A Variety card budgets about this much time for its one set and rest. */
+const TARGET_SET_SECONDS = 144
 
 const repeatsFor = (type: WorkoutType) => (type === 'sets' ? SETS : type === 'circuit' ? LAPS : 1)
+const exerciseSeconds = (length: number) => (length - LENGTHS[length].warm - LENGTHS[length].cool) * 60
 
-/** How many cards fill a length for this type (never more than the decks hold). */
+/** Exercise cards for the selected mode and length, capped by the available deck. */
 export function cardCount(type: WorkoutType, len: number, available = Infinity): number {
-  const L = LENGTHS[len] ?? LENGTHS[30]
-  const slots = ((len - L.warm - L.cool) * 60) / TARGET_SET_SECONDS
-  return Math.max(1, Math.min(available, Math.round(slots / repeatsFor(type))))
+  const length = LENGTHS[len] ? len : 30
+  const count = type === 'variety' ? Math.round(exerciseSeconds(length) / TARGET_SET_SECONDS) : LENGTHS[length].cards
+  return Math.max(1, Math.min(available, count))
 }
 
 /** A workout step. Work time accounts for all sets in the step and their rest. */
@@ -60,7 +61,7 @@ export function buildPlan(type: WorkoutType, len: number, cards: Card[]): Plan {
   const repeat = repeatsFor(type)
   const steps: Step[] = [{ kind: 'warm', secs: L.warm * 60 }]
   const workSets = n * repeat
-  const workIntervals = Math.max(workSets, ((length - L.warm - L.cool) * 60) / INTERVAL_SECONDS)
+  const workIntervals = Math.max(workSets, exerciseSeconds(length) / INTERVAL_SECONDS)
   let scheduledSets = 0
   // Round cumulative boundaries so each set gets a whole interval and the rounding doesn't add up.
   const addWork = (card: number, label: string, sets = 1) => {

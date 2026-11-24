@@ -504,7 +504,7 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         rows.push([t, 'Done', ''])
         $('#times').innerHTML = rows.map(([at, h, p]) => `<li><span class="t">${fmt(at)}</span><div><h3>${h}</h3>${p ? `<p>${p}</p>` : ''}</div></li>`).join('')
         // Each workout type says exactly what it means at this length with these decks.
-        const total = uniqueCards(mix())
+        const available = uniqueCards(mix())
         const how: Record<WorkoutType, (n: number) => string> = {
           circuit: (n) => `${LAPS} laps through ${n} cards`,
           sets: (n) => `${SETS} sets of each of ${n} cards`,
@@ -512,7 +512,7 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         }
         document.querySelectorAll<HTMLElement>('[data-how]').forEach((el) => {
           const t = el.dataset.how as WorkoutType
-          el.textContent = how[t](cardCount(t, st.len, total))
+          el.textContent = how[t](cardCount(t, st.len, available))
         })
         document.querySelectorAll<HTMLButtonElement>('#len button').forEach((b) => b.setAttribute('aria-pressed', String(Number(b.dataset.v) === st.len)))
         document.querySelectorAll<HTMLButtonElement>('#type button').forEach((b) => b.setAttribute('aria-checked', String(b.dataset.v === st.type)))
@@ -602,13 +602,27 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
       /** Routine cards enter and leave above the hand without touching the exercise pile. */
       async function flipRoutine(el: HTMLElement, direction: 'in' | 'out', from = REST) {
         const leaving = direction === 'out'
+        const slot = el.parentElement as HTMLElement
         if (leaving) await unzoom([el])
-        else (el.parentElement as HTMLElement).classList.add('moving')
+        else slot.classList.add('moving')
         still(el)
         lift(el, 280)
         const offscreen = 'translate(0px, -100dvh) rotate(0deg) rotateY(180deg) scale(1)'
-        const frames = leaving ? [{ transform: from }, { transform: offscreen }] : [{ transform: offscreen }, { transform: REST }]
-        const flip = el.animate(frames, { duration: 360, easing: leaving ? 'ease-in' : 'ease-out', fill: leaving ? 'forwards' : 'none' })
+        let frames: Keyframe[] = leaving ? [{ transform: from }, { transform: offscreen }] : [{ transform: offscreen }, { transform: REST }]
+        let duration = 360
+        // A card beyond the visible fan still flies through view before it settles into its slot.
+        if (!leaving && fanOn && slot.style.opacity === '0') {
+          const rect = slot.getBoundingClientRect()
+          const x = (innerWidth / 2 - rect.left - rect.width / 2) * el.offsetWidth / rect.width
+          frames = [
+            { transform: `translate(${x}px, -100dvh) rotate(0deg) rotateY(180deg) scale(1)` },
+            { offset: 0.55, transform: `translate(${x}px, -50px) rotate(0deg) rotateY(25deg) scale(1)` },
+            { transform: REST },
+          ]
+          duration = 500
+          slot.animate([{ opacity: 1 }, { opacity: 1, offset: 0.75 }, { opacity: 0 }], { duration })
+        }
+        const flip = el.animate(frames, { duration, easing: leaving ? 'ease-in' : 'ease-out', fill: leaving ? 'forwards' : 'none' })
         el.style.transform = ''
         try {
           await flip.finished
@@ -665,23 +679,24 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
       function dealOut(list: HTMLElement[]) {
         let delay = 120
         list.forEach((el) => (el.parentElement as HTMLElement).classList.add('moving'))
-        list.forEach((el, i) => {
+        return Promise.all(list.map((el, i) => {
           still(el)
           const keys = dealKeys(el)
           // Waiting on the pile, the first card to be dealt is on top...
           lift(el, 100 + list.length - i)
           // ...and once it leaves (by then the card before it has cleared the pile), it stays
           // above everything already dealt until it lands.
-          const start = delay
-          setTimeout(() => lift(el, 300 + i), start)
-          el.animate(keys, { duration: DEAL_MS, delay: start, fill: 'backwards' })
+          const liftTimer = setTimeout(() => lift(el, 300 + i), delay)
+          const arrival = el.animate(keys, { duration: DEAL_MS, delay, fill: 'backwards' })
             .finished.then(() => {
               lift(el, 0)
               settled(el)
             })
             .catch(() => {})
-          delay = start + Math.max(90, clearOfPile(el, keys))
-        })
+            .finally(() => clearTimeout(liftTimer))
+          delay += Math.max(90, clearOfPile(el, keys))
+          return arrival
+        }))
       }
 
       let dealRun = 0
@@ -689,45 +704,76 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
       let laid: string[] = []
       const cardKey = (x: TableCard) => x.kind === 'work' ? `${x.exercise.deck.id}/${x.exercise.card.id}` : `${x.kind}/${x.routine.card.id}`
       /**
-       * Make the table match the hand. Only exercise cards travel to and from the pile.
+       * Present new cards in workout order. Redrawing the exercise hand keeps its routine cards in place.
        */
-      async function deal(animate: boolean) {
-        const run = ++dealRun
+      async function deal(redrawExercises = false) {
         const exercises = hand()
         const h = tableHand(exercises)
         const want = h.map(cardKey)
         const previous = laid
+        if (!redrawExercises && want.length === previous.length && want.every((key, i) => key === previous[i])) {
+          layoutFan()
+          return cards.forEach(fit)
+        }
+        const run = ++dealRun
+        const animate = motion()
         let sameExercises = 0
         while (sameExercises < exercises.length && sameExercises < previous.length - 2 && previous[sameExercises + 1] === want[sameExercises + 1]) sameExercises++
+        const redrawAllExercises = redrawExercises || cards.some((el) => isExercise(el) && (el.classList.contains('pending') || el.parentElement?.classList.contains('moving')))
         const changesAt = (order: string[], other: string[], i: number) => {
           if (i === 0) return order[0] !== other[0]
           if (i === order.length - 1) return order.length !== other.length || order[i] !== other[i]
-          return i > sameExercises
+          return redrawAllExercises || i > sameExercises
         }
         const returning = cards.filter((el, i) => !el.classList.contains('pending') && changesAt(previous, want, i))
-        // Until they're dealt, the new cards are the top of the pile, so that's what it shows.
-        renderPile(exercises.slice(sameExercises))
-        if (animate && motion() && returning.length) {
-          await Promise.all([
-            tuck(returning.filter(isExercise)),
-            ...returning.filter((el) => !isExercise(el)).map((el) => flipRoutine(el, 'out')),
-          ])
+        const upcomingExercises = exercises.slice(redrawAllExercises ? 0 : sameExercises)
+        renderPile(upcomingExercises)
+        if (animate && returning.length) {
+          returning.filter((el) => !isExercise(el)).forEach((el) => {
+            still(el)
+            el.classList.add('pending')
+          })
+          await tuck(returning.filter(isExercise))
           if (run !== dealRun) return
         }
         slots(h.length)
         pos = Math.min(pos, h.length - 1)
         layoutFan()
         schedule()
-        h.forEach((x, i) => fill(i, x))
-        cards.forEach((el) => el.classList.remove('pending'))
+        const arriving: HTMLElement[] = []
+        cards.forEach((el, i) => {
+          if (el.classList.contains('pending') || changesAt(want, previous, i)) {
+            fill(i, h[i])
+            arriving.push(el)
+          }
+        })
         laid = want
-        if (!animate || !motion()) {
-          cards.forEach(still)
-          return cards.forEach(settled)
+        if (!animate) {
+          return arriving.forEach((el) => {
+            still(el)
+            settled(el)
+            el.classList.remove('pending')
+          })
         }
-        const arriving = cards.filter((_, i) => changesAt(want, previous, i))
-        dealOut(arriving.filter(isExercise))
-        arriving.filter((el) => !isExercise(el)).forEach((el) => void flipRoutine(el, 'in'))
+        arriving.forEach((el) => el.classList.add('pending'))
+        renderPile(upcomingExercises)
+        const warm = arriving.find((el) => el.dataset.kind === 'warm')
+        if (warm) {
+          warm.classList.remove('pending')
+          await flipRoutine(warm, 'in')
+          if (run !== dealRun) return
+        }
+        const arrivingExercises = arriving.filter(isExercise)
+        arrivingExercises.forEach((el) => el.classList.remove('pending'))
+        const exerciseDeal = dealOut(arrivingExercises)
+        renderPile()
+        await exerciseDeal
+        if (run !== dealRun) return
+        const cool = arriving.find((el) => el.dataset.kind === 'cool')
+        if (cool) {
+          cool.classList.remove('pending')
+          await flipRoutine(cool, 'in')
+        }
       }
       const busy = new Set<number>()
       /**
@@ -737,7 +783,7 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
       async function redraw(i: number, from?: string) {
         const current = tableHand()[i]
         const el = cards[i]
-        if (busy.has(i) || !current || !el || el.parentElement?.classList.contains('moving')) return
+        if (busy.has(i) || !current || !el || el.classList.contains('pending') || el.parentElement?.classList.contains('moving')) return
         let next: TableCard
         if (current.kind === 'work') {
           next = { ...current, exercise: swap(current.number - 1) }
@@ -1162,7 +1208,7 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         if (motion()) screen.animate([{ opacity: 0, transform: `translateX(${dir * 28}px)` }, { opacity: 1, transform: 'none' }], { duration: 260, easing: 'cubic-bezier(.2,.8,.2,1)' })
         schedule()
         // Arriving at the table deals the hand (or just the cards that changed since last time).
-        if (next === 'cards') deal(true)
+        if (next === 'cards') deal()
       }
       // Steps change the address with pushState rather than location.hash, so the browser
       // doesn't jump to an element that happens to share the step's name (like #decks).

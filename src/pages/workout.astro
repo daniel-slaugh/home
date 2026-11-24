@@ -466,13 +466,13 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
       }
       function tableFace(x: TableCard) {
         if (x.kind === 'work') return face(x.exercise, x.number)
-        return routineFace(x.routine, x.kind, LENGTHS[st.len][x.kind] * 60, true)
+        return routineFace(x.routine, x.kind, true)
       }
       function fill(i: number, x: TableCard) {
         const { deck } = x.kind === 'work' ? x.exercise : x.routine
         const description = x.kind === 'work'
           ? `Card ${x.number}, ${x.exercise.card.name}, ${x.exercise.card.reps}. ${x.exercise.card.cue}`
-          : `${ROUTINE_LABELS[x.kind]}, ${x.routine.card.name}. ${x.routine.card.moves.join(', ')}.`
+          : `${ROUTINE_LABELS[x.kind]}, ${x.routine.card.name}. ${x.routine.card.moves.map(([move, secs]) => `${move}, ${secs} seconds`).join('. ')}.`
         cards[i].innerHTML = tableFace(x) + `<div class="face stock back" style="${art(deck)}"></div>`
         cards[i].setAttribute('aria-label', `${description} Swap card.`)
         cards[i].dataset.kind = x.kind
@@ -1023,15 +1023,10 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         progress.value = done
         progress.setAttribute('aria-valuetext', label)
       }
-      function routineFace({ deck, card, number }: ReturnType<typeof drawRoutine>, phase: RoutinePhase, secs: number, showPhase = false) {
-        const rounds = phase === 'cool' ? secs / (card.moves.length * 30) : 1
-        const moves = card.moves.map((move, i) => {
-          const duration = phase === 'cool' ? 30 : i === 0 ? secs - (card.moves.length - 1) * 60 : 60
-          return `<li><span>${esc(move)}</span><b>${mmss(duration)}</b></li>`
-        }).join('')
-        const repeat = rounds > 1 ? `<p class="routine-rounds">${rounds} rounds</p>` : ''
+      function routineFace({ deck, card }: ReturnType<typeof drawRoutine>, phase: RoutinePhase, showPhase = false) {
+        const moves = card.moves.map(([move, secs]) => `<li><span>${esc(move)}</span><b>${secs} sec</b></li>`).join('')
         const label = showPhase ? `<p class="routine-phase">${ROUTINE_LABELS[phase]}</p>` : ''
-        return cardFront(deck, card.suit, number, `${label}<h3>${esc(card.name)}</h3>${repeat}<ol class="routine-moves">${moves}</ol>`)
+        return cardFront(deck, card.suit, ROUTINE_LABELS[phase][0], `${label}<h3>${esc(card.name)}</h3><ol class="routine-moves">${moves}</ol>`)
       }
       function show() {
         if (!run) return
@@ -1047,7 +1042,7 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
           html = `<div class="solo"><div class="card static">${face(x, s.card + 1)}</div></div>`
         } else {
           title = ROUTINE_LABELS[s.kind]
-          html = `<div class="solo"><div class="card static">${routineFace(run.routines[s.kind], s.kind, s.secs)}</div></div>`
+          html = `<div class="solo"><div class="card static">${routineFace(run.routines[s.kind], s.kind)}</div></div>`
         }
         $('#rb').textContent = title
         $('#rclock-label').textContent = clockLabel
@@ -2051,12 +2046,6 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         color: var(--face-accent);
         font: 800 calc(6cqw * var(--fit)) / 1.1 var(--letter);
       }
-      .routine-rounds {
-        order: 2;
-        margin: 0;
-        color: var(--face-accent);
-        font: 800 calc(7cqw * var(--fit)) / 1.1 var(--letter);
-      }
       .routine-moves {
         order: 3;
         width: 100%;
@@ -2077,6 +2066,7 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
       .routine-moves b {
         color: var(--face-accent);
         font-variant-numeric: tabular-nums;
+        white-space: nowrap;
       }
       .routine-card {
         display: flex;

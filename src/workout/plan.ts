@@ -1,4 +1,5 @@
 import type { Card } from './types'
+import { ROUTINE_MINUTES } from './decks/routines'
 
 /**
  * How the cards turn into a timed workout. Every card describes ONE set, and its text
@@ -12,11 +13,12 @@ export const TYPES: { id: WorkoutType; name: string }[] = [
   { id: 'variety', name: 'Variety' },
 ]
 
-/** Warm-up and cool-down minutes for each length. */
+/** Five minutes per phase is the lower end of the American Heart Association's guidance. */
+const ROUTINE_LENGTH = { warm: ROUTINE_MINUTES, cool: ROUTINE_MINUTES }
 export const LENGTHS: Record<number, { warm: number; cool: number }> = {
-  20: { warm: 3, cool: 1 },
-  30: { warm: 4, cool: 2 },
-  45: { warm: 5, cool: 3 },
+  20: ROUTINE_LENGTH,
+  30: ROUTINE_LENGTH,
+  45: ROUTINE_LENGTH,
 }
 
 /** Sets of each card (Sets) and laps of the circuit (Circuit). Variety does each card once. */

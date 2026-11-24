@@ -475,6 +475,7 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
           : `${ROUTINE_LABELS[x.kind]}, ${x.routine.card.name}. ${x.routine.card.moves.join(', ')}.`
         cards[i].innerHTML = tableFace(x) + `<div class="face stock back" style="${art(deck)}"></div>`
         cards[i].setAttribute('aria-label', `${description} Swap card.`)
+        cards[i].dataset.kind = x.kind
         fit(cards[i])
       }
 
@@ -597,6 +598,26 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
         if (zoomed) await new Promise((r) => setTimeout(r, 240))
       }
       const settled = (el: HTMLElement) => (el.parentElement as HTMLElement).classList.remove('moving')
+      const isExercise = (el: HTMLElement) => el.dataset.kind === 'work'
+      /** Routine cards enter and leave above the hand without touching the exercise pile. */
+      async function flipRoutine(el: HTMLElement, direction: 'in' | 'out', from = REST) {
+        const leaving = direction === 'out'
+        if (leaving) await unzoom([el])
+        else (el.parentElement as HTMLElement).classList.add('moving')
+        still(el)
+        lift(el, 280)
+        const offscreen = 'translate(0px, -100dvh) rotate(0deg) rotateY(180deg) scale(1)'
+        const frames = leaving ? [{ transform: from }, { transform: offscreen }] : [{ transform: offscreen }, { transform: REST }]
+        const flip = el.animate(frames, { duration: 360, easing: leaving ? 'ease-in' : 'ease-out', fill: leaving ? 'forwards' : 'none' })
+        el.style.transform = ''
+        try {
+          await flip.finished
+          if (!leaving) {
+            lift(el, 0)
+            settled(el)
+          }
+        } catch {}
+      }
       /**
        * Return cards to the deck: each one flips face down, slides over to the pile and tucks
        * underneath it. The rightmost goes first, so the leftmost ends up at the very bottom.
@@ -668,21 +689,29 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
       let laid: string[] = []
       const cardKey = (x: TableCard) => x.kind === 'work' ? `${x.exercise.deck.id}/${x.exercise.card.id}` : `${x.kind}/${x.routine.card.id}`
       /**
-       * Make the table match the hand. Cards that are already in the right place stay put; the
-       * rest are tucked back under the deck and the new ones are dealt off the top.
+       * Make the table match the hand. Only exercise cards travel to and from the pile.
        */
       async function deal(animate: boolean) {
         const run = ++dealRun
         const exercises = hand()
         const h = tableHand(exercises)
         const want = h.map(cardKey)
-        let same = 0
-        while (same < laid.length && same < want.length && laid[same] === want[same]) same++
-        const shown = cards.filter((c) => !c.classList.contains('pending'))
+        const previous = laid
+        let sameExercises = 0
+        while (sameExercises < exercises.length && sameExercises < previous.length - 2 && previous[sameExercises + 1] === want[sameExercises + 1]) sameExercises++
+        const changesAt = (order: string[], other: string[], i: number) => {
+          if (i === 0) return order[0] !== other[0]
+          if (i === order.length - 1) return order.length !== other.length || order[i] !== other[i]
+          return i > sameExercises
+        }
+        const returning = cards.filter((el, i) => !el.classList.contains('pending') && changesAt(previous, want, i))
         // Until they're dealt, the new cards are the top of the pile, so that's what it shows.
-        renderPile(exercises.slice(Math.max(0, same - 1)))
-        if (animate && motion() && shown.length > same) {
-          await tuck(shown.slice(same))
+        renderPile(exercises.slice(sameExercises))
+        if (animate && motion() && returning.length) {
+          await Promise.all([
+            tuck(returning.filter(isExercise)),
+            ...returning.filter((el) => !isExercise(el)).map((el) => flipRoutine(el, 'out')),
+          ])
           if (run !== dealRun) return
         }
         slots(h.length)
@@ -696,7 +725,9 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
           cards.forEach(still)
           return cards.forEach(settled)
         }
-        dealOut(cards.slice(same))
+        const arriving = cards.filter((_, i) => changesAt(want, previous, i))
+        dealOut(arriving.filter(isExercise))
+        arriving.filter((el) => !isExercise(el)).forEach((el) => void flipRoutine(el, 'in'))
       }
       const busy = new Set<number>()
       /**
@@ -716,24 +747,31 @@ const deckFonts = [...new Set(DECKS.map((d) => d.art.lettering.href).filter(Bool
           next = { ...current, routine }
           save()
         }
-        if (!motion()) {
+        const replace = () => {
           laid[i] = cardKey(next)
+          if (next.kind === 'work') schedule()
+          fill(i, next)
+        }
+        if (!motion()) {
           el.style.transform = ''
-          schedule()
-          return fill(i, next)
+          return replace()
         }
         busy.add(i)
         const version = dealRun
-        await tuck([el], from)
+        if (next.kind === 'work') await tuck([el], from)
+        else await flipRoutine(el, 'out', from)
         if (version !== dealRun) {
           busy.delete(i)
           return
         }
-        laid[i] = cardKey(next)
-        schedule()
-        fill(i, next)
-        dealOut([el])
-        setTimeout(() => busy.delete(i), DEAL_MS + 150)
+        replace()
+        if (next.kind === 'work') {
+          dealOut([el])
+          setTimeout(() => busy.delete(i), DEAL_MS + 150)
+        } else {
+          await flipRoutine(el, 'in')
+          busy.delete(i)
+        }
       }
       $('#deck').addEventListener('click', () => {
         setHand('cycle')
